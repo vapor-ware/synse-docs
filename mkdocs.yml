@@ -1,0 +1,109 @@
+# Project information
+site_name: Synse
+site_description: A platform for infrastructure monitoring and control.
+site_author: Vapor IO
+
+# Repository
+repo_name: vaporio/synse-docs
+repo_url: https://github.com/vapor-ware/synse-docs
+edit_uri: tree/master/docs
+
+# Copyright
+copyright: 'Copyright &copy; 2019 Vapor IO'
+
+# Configuration
+theme:
+  name: material
+
+  # Default values
+  feature:
+    tabs: true
+  palette:
+    primary: green
+    accent: green
+  font:
+    text: Roboto
+    code: Roboto Mono
+  favicon: assets/img/favicon.ico
+  logo: assets/img/logo-white.png
+
+  # Don't include MkDocs' JavaScript
+  include_search_page: false
+  search_index_only: true
+
+# Navigation
+nav:
+  - Home: index.md
+  - Plugins: plugins.md
+  - Helm Charts: helm.md
+  - Contributing: contributing.md
+  - Releases: releases.md
+  - License: license.md
+  - Synse Server:
+    - Introduction: server/intro.md
+    - v3 API Reference: server/api.v3.md
+    - User Guide:
+      - Getting: server/user/getting.md
+      - Quickstart: server/user/quickstart.md
+      - Configuration: server/user/configuration.md
+      - Deploying: server/user/deploying.md
+      - Monitoring: server/user/monitoring.md
+      - Advanced: server/user/advanced.md
+    - Developer Guide:
+      - Setup: server/developer/setup.md
+      - Testing: server/developer/testing.md
+      - Debugging: server/developer/debugging.md
+      - Localization: server/developer/localization.md
+  - Synse SDK:
+    - Introduction: sdk/intro.md
+    - User Guide:
+      - Basic: sdk/user/basic.md
+      - Architecture: sdk/user/architecture.md
+      - Configuration: sdk/user/configuration.md
+      - Advanced: sdk/user/advanced.md
+      - Tutorial: sdk/user/tutorial.md
+    - Developer Guide:
+      - Setup: sdk/developer/setup.md
+      - Testing: sdk/developer/testing.md
+  - Synse CLI:
+    - Introduction: cli/intro.md
+  - Client (Python):
+    - Introduction: client-python/intro.md
+  - Client (Go):
+    - Introduction: client-go/intro.md
+
+
+# Extensions
+markdown_extensions:
+  - markdown.extensions.admonition
+  - markdown.extensions.codehilite:
+      guess_lang: false
+  - markdown.extensions.attr_list
+  - markdown.extensions.def_list
+  - markdown.extensions.footnotes
+  - markdown.extensions.meta
+  - markdown.extensions.tables
+  - markdown.extensions.toc:
+      permalink: true
+      toc_depth: 3
+  - pymdownx.arithmatex
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.critic
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:pymdownx.emoji.to_svg
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink:
+      repo_url_shorthand: true
+      user: vapor-ware
+      repo: synse-docs
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
