@@ -19,8 +19,6 @@ image tags would be created:
 - `vaporio/synse-server:v1.2`
 - `vaporio/synse-server:v1.2.3`
 
-A `-slim` variant is also built for all images. This variant excludes the built-in emulator plugin.
-
 ## Helm
 
 A [Helm](https://helm.sh/) chart for Synse Server is available from the [Synse Charts repository](https://charts.vapor.io).

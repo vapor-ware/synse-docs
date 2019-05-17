@@ -2,14 +2,14 @@
 site_name: Synse
 site_description: A platform for infrastructure monitoring and control.
 site_author: Vapor IO
+copyright: 'Copyright &copy; 2019 Vapor IO'
+
 
 # Repository
 repo_name: vaporio/synse-docs
 repo_url: https://github.com/vapor-ware/synse-docs
 edit_uri: tree/master/docs
 
-# Copyright
-copyright: 'Copyright &copy; 2019 Vapor IO'
 
 # Configuration
 theme:
@@ -30,6 +30,7 @@ theme:
   # Don't include MkDocs' JavaScript
   include_search_page: false
   search_index_only: true
+
 
 # Navigation
 nav:

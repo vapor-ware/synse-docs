@@ -11,6 +11,16 @@ expected response data.
 In the API [Reference](#reference) section below, each item describes the URI and method(s) for
 the endpoint, as well as the expected response data on success, and possible error codes on failure.
 
+Within this document:
+
+- `localhost:5000`, `#!shell ${server}`, and other references to the hostname/IP and port
+  of the Synse Server instance are all functionally equivalent and serve only as a placeholder
+  which should be replaced with instance's IP/port.
+- The examples provided for each item use the [Synse Python Client](https://github.com/vapor-ware/synse-client-python)
+  for the Python examples.
+- All specified URI parameters are required.
+- All specified query parameters are optional.
+
 ### Requests
 
 Each item defines the basic endpoint information in a table which looks like:
@@ -20,7 +30,7 @@ Each item defines the basic endpoint information in a table which looks like:
 | HTTP | **GET** | `/test` |
 
 This says that for the HTTP API, issue a GET request against the `/test` URI. Given a Synse Server
-instance running at `http://localhost:5000`, this would translate to
+instance running at `localhost:5000`, this would translate to
 
 ```
 GET http://localhost:5000/test
@@ -31,26 +41,18 @@ GET http://localhost:5000/test
 Each item also defines a *Response Data* section, which describes the JSON payload that is returned
 on success. For the HTTP API, this is the exact data that is returned (no additional formatting is done).
 
-## WebSocket API  
+## WebSocket API
 
-In the API [Reference](#reference) section below, each item describes the *event* of the request
-for the WebSocket API.
+You can connect to the WebSocket API via:
 
-| | | |
-| --- | --- | --- |
-| WebSocket | **event** | `"request/status"` |
-
-This says that for the WebSocket API, send a message with the `event` field set as `"request/status"`. 
-
-A WebSocket session can be started via:
 ```bash
 ws://${server}/v3/connect
 ```
+
 where `${server}` is the hostname[:port] of the Synse Server instance.
 
-### Requests
-
-Requests through the WebSocket API use the following message scheme:
+In the API [Reference](#reference) section below, each item describes the *event* of the request
+for the WebSocket API. Both client requests and server responses use the same message format:
 
 ```json
 {
@@ -64,9 +66,38 @@ The fields of the request structure are described below:
 
 | Field | Description |
 | :---- | :---------- |
-| *id* | The numeric ID of the message. Each session should track and increment its own IDs. This can be used for matching responses with their originating requests. |
-| *event* | The type of the message that is being sent. |
-| *data* | Any data to provide to the server. The data accepted here would be equivalent to HTTP URI parameters and query parameters. |
+| *id* | The numeric ID of the message. Each client session should track and increment its own IDs. The server reflects this ID in the response message(s). This can be used for matching responses with their originating requests. |
+| *event* | The type of the message that is being sent. All client requests are prefixed with `request/`. All server responses are prefixed with `response/`. |
+| *data* | The data being sent. For **requests**, this will include the equivalent of URI parameters and query parameters. If a given event does not have any such parameters, this can be left empty (`"data": {}`) or it can be omitted entirely. For **responses**, this will hold the server response data -- this is equivalent to the response you would get from the HTTP API. |
+
+An error is returned with `response/error`. If the error occurs prior to the request
+being parsed (or due to an invalid request which cannot be parsed), the return ID will be -1.
+
+Within this document:
+
+- The contents of the `data` field for a given request are not explicitly called out. They are instead
+  implied from the HTTP URI parameters (required) and query parameters (optional). The names of the
+  parameters correspond to their keys in the `data` field.
+- One exception to the above is for writes - POSTed data is specified via the `payload` key.
+
+### Requests
+
+Each item defines the basic event information in a table which looks like:
+
+| | | |
+| --- | --- | --- |
+| WebSocket | **request** | `"request/status"` |
+| | **response** | `"response/status"` |
+
+This says that for the WebSocket API, issue a status request using the `request/status` event.
+This would translate into the message:
+
+```json
+{
+  "id": 0,
+  "event": "request/status"
+}
+```
 
 ### Responses
 
@@ -75,6 +106,28 @@ Responses use the same message scheme, where:
 - the response `id` is the request ID reflected back
 - the `event` is the corresponding response event for the given request type
 - the `data` contains the JSON data defined in the *Response Data* section
+
+The table, above, also lists the response event corresponding to the given request
+event. A consolidated table of all request-response event mappings follows. Note
+that all requests can have an error response.
+
+| Request | Response |
+| :------ | :------- |
+| `request/status`        | `response/status` |
+| `request/version`       | `response/version` |
+| `request/config`        | `response/config` |
+| `request/plugin`        | `response/plugin` |
+| `request/plugin_health` | `response/plugin_health` |
+| `request/scan`          | `response/device_summary` |
+| `request/tags`          | `response/tags` |
+| `request/info`          | `response/device` |
+| `request/read`          | `response/reading` |
+| `request/read_device`   | `response/reading` |
+| `request/read_cache`    | `response/reading` |
+| `request/write_async`   | `response/write_async` |
+| `request/write_sync`    | `response/write_sync` |
+| `request/transaction`   | `response/transaction` |
+
 
 ## Reference
 
@@ -116,6 +169,12 @@ The fields of the response are described below:
 | *context* | Contextual message associated with the error's root cause. This will typically include the pertinent internal state. |
 
 ??? note "HTTP"
+    **Request**
+    ```
+    GET http://localhost:5000/v3/transaction/f041883c-cf87-55d7-a978-3d3103836412
+    ```
+    
+    **Response**
     ```json
     {
       "http_code": 404,
@@ -126,6 +185,18 @@ The fields of the response are described below:
     ```
 
 ??? note "WebSocket"
+    **Request**
+    ```json
+    {
+      "id": 0,
+      "event": "request/transaction",
+      "data": {
+        "transaction": "f041883c-cf87-55d7-a978-3d3103836412"
+      }
+    }
+    ```
+    
+    **Response**
     ```json
     {
       "id": 0,
@@ -147,8 +218,9 @@ The fields of the response are described below:
 
 | | | |
 | --- | --- | --- |
-| HTTP | **GET** | `/test` |
-| WebSocket | **event** | `"request/status"` |
+| HTTP      | **GET**      | `/test` |
+| WebSocket | **request**  | `"request/status"` |
+|           | **response** | `"response/status"` |
 
 A dependency and side-effect free check to see whether Synse Server is
 reachable and responsive.
@@ -158,12 +230,12 @@ will return a 200 response with the described JSON response. If the test
 endpoint is unreachable or otherwise fails, it will return a 500 response.
 
 ??? hint "Example"
-    **shell**
+    ***shell***
     ```shell
     curl http://${server}:5000/test
     ```
     
-    **python**
+    ***python***
     ```python
     from synse import client
     
@@ -190,6 +262,12 @@ The fields of the response are described below:
 | *timestamp* | The time at which the status was tested. |
 
 ??? note "HTTP"
+    **Request**
+    ```
+    GET http://localhost:5000/test
+    ```
+    
+    **Response**
     ```json
     {
       "status": "ok",
@@ -198,6 +276,15 @@ The fields of the response are described below:
     ```
 
 ??? note "WebSocket"
+    **Request**
+    ```json
+    {
+      "id": 0,
+      "event": "request/status"
+    }
+    ```
+    
+    **Response**
     ```json
     {
       "id": 0,
@@ -223,19 +310,20 @@ No JSON - route not reachable/service not ready
 
 | | | |
 | --- | --- | --- |
-| HTTP | **GET** | `/version` |
-| WebSocket | **event** | `"request/version"` |
+| HTTP      | **GET**      | `/version` |
+| WebSocket | **request**  | `"request/version"` |
+|           | **response** | `"response/version"` |
 
 Get the version info of the Synse Server instance. The API version
 provided by this endpoint should be used in subsequent requests.
 
 ??? hint "Example"
-    **shell**
+    ***shell***
     ```shell
     curl http://${server}:5000/version
     ```
     
-    **python**
+    ***python***
     ```python
     from synse import client
     
@@ -262,6 +350,12 @@ The fields of the response are described below:
 | *api_version* | The API version (major.minor) that can be used to construct subsequent API requests. |
 
 ??? note "HTTP"
+    **Request**
+    ```
+    GET http://localhost:5000/version
+    ```
+    
+    **Response**
     ```json
     {
       "version": "3.0.0",
@@ -270,6 +364,15 @@ The fields of the response are described below:
     ```
 
 ??? note "WebSocket"
+    **Request**
+    ```json
+    {
+      "id": 0,
+      "event": "request/version"
+    }
+    ```
+    
+    **Response**
     ```json
     {
       "id": 0,
@@ -295,8 +398,9 @@ No JSON - route not reachable/service not ready
 
 | | | |
 | --- | --- | --- |
-| HTTP | **GET** | `/v3/config` |
-| WebSocket | **event** | `"request/config"` |
+| HTTP      | **GET**      | `/v3/config` |
+| WebSocket | **request**  | `"request/config"` |
+|           | **response** | `"response/config"` |
 
 Get a the unified configuration of the Synse Server instance.
 
@@ -306,12 +410,12 @@ environment, and override config components. This endpoint provides the final jo
 which Synse Server ultimately runs with.
 
 ??? hint "Example"
-    **shell**
+    ***shell***
     ```shell
     curl http://${server}:5000/v3/config
     ```
     
-    **python**
+    ***python***
     ```python
     from synse import client
     
@@ -339,8 +443,9 @@ The [error response](#errors) can be one of:
 
 | | | |
 | --- | --- | --- |
-| HTTP | **GET** | `/v3/plugin/<plugin_id>` |
-| WebSocket | **event** | `"request/plugin"` |
+| HTTP      | **GET**      | `/v3/plugin/<plugin_id>` |
+| WebSocket | **request**  | `"request/plugin"` |
+|           | **response** | `"response/plugin"` |
 
 Get detailed information about the specified plugin.
 
@@ -351,12 +456,12 @@ marked as "inactive".
 You can get a summary of all currently registered plugins via [Plugins](#plugins).
 
 ??? hint "Example"
-    **shell**
+    ***shell***
     ```shell
     curl http://${server}:5000/v3/plugin/4032ffbe-80db-5aa5-b794-f35c88dff85c
     ```
     
-    **python**
+    ***python***
     ```python
     from synse import client
     
@@ -458,6 +563,12 @@ The health check elements here make up a snapshot of the plugin's health at a gi
 | *type* | The type of health check (e.g. periodic) |
 
 ??? note "HTTP"
+    **Request**
+    ```
+    GET http://localhost:5000/v3/plugin/4032ffbe-80db-5aa5-b794-f35c88dff85c
+    ```
+    
+    **Response**
     ```json
     {
       "name": "emulator plugin",
@@ -504,6 +615,18 @@ The health check elements here make up a snapshot of the plugin's health at a gi
     ```
 
 ??? note "WebSocket"
+    **Request**
+    ```json
+    {
+      "id": 0,
+      "event": "request/plugin",
+      "data": {
+        "plugin": "4032ffbe-80db-5aa5-b794-f35c88dff85c"
+      }
+    }
+    ```
+    
+    **Response**
     ```json
     {
       "id": 0,
@@ -568,18 +691,19 @@ The [error response](#errors) can be one of:
 
 | | | |
 | --- | --- | --- |
-| HTTP | **GET** | `/v3/plugin` |
-| WebSocket | **event** | `"request/plugin"` |
+| HTTP      | **GET**      | `/v3/plugin` |
+| WebSocket | **request**  | `"request/plugin"` |
+|           | **response** | `"response/plugin"` |
 
 Get a summary of all plugins currently registered with the server instance.
 
 ??? hint "Example"
-    **shell**
+    ***shell***
     ```shell
     curl http://${server}:5000/v3/plugin
     ```
     
-    **python**
+    ***python***
     ```python
     from synse import client
     
@@ -631,6 +755,12 @@ The fields of the response are described below:
 | *description* | A short description of the plugin. |
 
 ??? note "HTTP"
+    **Request**
+    ```
+    GET http://localhost:5000/v3/plugin
+    ```
+    
+    **Response**
     ```json
     [
       {
@@ -653,6 +783,15 @@ The fields of the response are described below:
     ```
 
 ??? note "WebSocket"
+    **Request**
+    ```json
+    {
+      "id": 0,
+      "event": "request/plugin"
+    }
+    ```
+    
+    **Response**
     ```json
     {
       "id": 0,
@@ -692,8 +831,9 @@ The [error response](#errors) can be one of:
 
 | | | |
 | --- | --- | --- |
-| HTTP | **GET** | `/v3/plugin/health` |
-| WebSocket | **event** | `"request/plugin_health"` |
+| HTTP      | **GET**      | `/v3/plugin/health` |
+| WebSocket | **request**  | `"request/plugin_health"` |
+|           | **response** | `"response/plugin_health"` |
 
 Get a summary of the health of registered plugins.
 
@@ -701,12 +841,12 @@ This provides an easy way to programmatically determine whether the plugins
 registered with Synse Server are considered healthy by Synse Server.
 
 ??? hint "Example"
-    **shell**
+    ***shell***
     ```shell
     curl http://${server}:5000/v3/plugin/health
     ```
     
-    **python**
+    ***python***
     ```python
     from synse import client
     
@@ -744,6 +884,12 @@ The fields of the response are described below:
 | *inactive* | The count of inactive plugins. (see: [plugin activity](server.md#plugin-activity)) |
 
 ??? note "HTTP"
+    **Request**
+    ```
+    GET http://localhost:5000/v3/plugin/health
+    ```
+    
+    **Response**
     ```json
     {
       "status": "healthy",
@@ -759,6 +905,15 @@ The fields of the response are described below:
     ```
 
 ??? note "WebSocket"
+    **Request**
+    ```json
+    {
+      "id": 0,
+      "event": "request/plugin_health"
+    }
+    ```
+    
+    **Response**
     ```json
     {
       "id": 0,
@@ -791,8 +946,9 @@ The [error response](#errors) can be one of:
 
 | | | |
 | --- | --- | --- |
-| HTTP | **GET** | `/v3/scan` |
-| WebSocket | **event** | `"request/scan"` |
+| HTTP      | **GET**      | `/v3/scan` |
+| WebSocket | **request**  | `"request/scan"` |
+|           | **response** | `"response/scan"` |
 
 List the devices that Synse knows about and can read from/write to via
 the configured plugins.
@@ -806,12 +962,12 @@ By default, scan results are sorted by device id. The `sort` query parameter
 can be used to modify the sort behavior.
 
 ??? hint "Example"
-    **shell**
+    ***shell***
     ```shell
     curl http://${server}:5000/v3/scan
     ```
     
-    **python**
+    ***python***
     ```python
     from synse import client
     
@@ -871,6 +1027,12 @@ The fields of the response are described below:
 | *tags* | A list of the tags associated with this device. One of the tags will be the `id` tag. |
 
 ??? note "HTTP"
+    **Request**
+    ```
+    GET http://localhost:5000/v3/scan
+    ```
+    
+    **Response**
     ```json
     [
       {
@@ -899,6 +1061,15 @@ The fields of the response are described below:
     ```
 
 ??? note "WebSocket"
+    **Request**
+    ```json
+    {
+      "id": 0,
+      "event": "request/scan"
+    }
+    ```
+    
+    **Response**
     ```json
     {
       "id": 0,
@@ -945,8 +1116,9 @@ The [error response](#errors) can be one of:
 
 | | | |
 | --- | --- | --- |
-| HTTP | **GET** | `/v3/tags` |
-| WebSocket | **event** | `"request/tags"` |
+| HTTP      | **GET**      | `/v3/tags` |
+| WebSocket | **request**  | `"request/tags"` |
+|           | **response** | `"response/tags"` |
 
 List all of the tags currently associated with devices.
 
@@ -964,12 +1136,12 @@ between namespaces in the `ns` query parameter value string, e.g.
 Tags are sorted alphanumerically.
 
 ??? hint "Example"
-    **shell**
+    ***shell***
     ```shell
     curl http://${server}:5000/v3/tags
     ```
     
-    **python**
+    ***python***
     ```python
     from synse import client
     
@@ -1001,6 +1173,12 @@ Tags are sorted alphanumerically.
 ```
 
 ??? note "HTTP"
+    **Request**
+    ```
+    GET http://localhost:5000/v3/tags
+    ```
+    
+    **Response**
     ```json
     [
       "system/type:airflow",
@@ -1014,6 +1192,15 @@ Tags are sorted alphanumerically.
     ```
 
 ??? note "WebSocket"
+    **Request**
+    ```json
+    {
+      "id": 0,
+      "event": "request/tags"
+    }
+    ```
+    
+    **Response**
     ```json
     {
       "id": 0,
@@ -1045,18 +1232,19 @@ The [error response](#errors) can be one of:
 
 | | | |
 | --- | --- | --- |
-| HTTP | **GET** | `/v3/info/<device_id>` |
-| WebSocket | **event** | `"request/info"` |
+| HTTP      | **GET**      | `/v3/info/<device_id>` |
+| WebSocket | **request**  | `"request/info"` |
+|           | **response** | `"response/info"` |
 
 Get the full set of metainfo and capabilities for a specified device.
 
 ??? hint "Example"
-    **shell**
+    ***shell***
     ```shell
     curl http://${server}:5000/v3/info/c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07
     ```
     
-    **python**
+    ***python***
     ```python
     from synse import client
     
@@ -1146,6 +1334,12 @@ The fields of the response are described below:
 | *unit.symbol* | A symbolic representation of the unit of measure (e.g. m/s). |
 
 ??? note "HTTP"
+    **Request**
+    ```
+    GET http://localhost:5000/v3/info/c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07
+    ```
+    
+    **Response**
     ```json
     {
       "timestamp": "2019-01-01T12:00:00Z",
@@ -1182,6 +1376,18 @@ The fields of the response are described below:
     ```
 
 ??? note "WebSocket"
+    **Request**
+    ```json
+    {
+      "id": 0,
+      "event": "request/info",
+      "data": {
+        "device": "c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07"
+      }
+    }
+    ```
+    
+    **Response**
     ```json
     {
       "id": 0,
@@ -1236,8 +1442,9 @@ The [error response](#errors) can be one of:
 
 | | | |
 | --- | --- | --- |
-| HTTP | **GET** | `/v3/read` |
-| WebSocket | **event** | `"request/read"` |
+| HTTP      | **GET**      | `/v3/read` |
+| WebSocket | **request**  | `"request/read"` |
+|           | **response** | `"response/reading"` |
 
 Read data from devices which match the set of provided tags. 
 
@@ -1256,12 +1463,12 @@ For readability, readings are sorted by a combination of originating plugin, any
 plugin-specified sort index on the reading's device, and by device id.
 
 ??? hint "Example"
-    **shell**
+    ***shell***
     ```shell
     curl http://${server}:5000/v3/read
     ```
     
-    **python**
+    ***python***
     ```python
     from synse import client
     
@@ -1398,6 +1605,12 @@ The fields of the response are described below:
 | *context* | A mapping of arbitrary values to provide additional context for the reading. |
 
 ??? note "HTTP"
+    **Request**
+    ```
+    GET http://localhost:5000/v3/read
+    ```
+    
+    **Response**
     ```json
     [
       {
@@ -1425,6 +1638,15 @@ The fields of the response are described below:
     ```
 
 ??? note "WebSocket"
+    **Request**
+    ```json
+    {
+      "id": 0,
+      "event": "request/read"
+    }
+    ```
+    
+    **Response**
     ```json
     {
       "id": 0,
@@ -1470,20 +1692,21 @@ The [error response](#errors) can be one of:
 
 | | | |
 | --- | --- | --- |
-| HTTP | **GET** | `/v3/read/<device_id>` |
-| WebSocket | **event** | `"request/read_device"` |
+| HTTP      | **GET**      | `/v3/read/<device_id>` |
+| WebSocket | **request**  | `"request/read_device"` |
+|           | **response** | `"response/reading"` |
 
 Read from the specified device. This endpoint is effectively the same as using the [`/read`](#read)
 endpoint where the label matches the [device id tag](tags.md#auto-generated), e.g.
 `http://HOST:5000/v3/read?tags=id:b33f7ac0`.
 
 ??? hint "Example"
-    **shell**
+    ***shell***
     ```shell
     curl http://${server}:5000/v3/read/c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07
     ```
     
-    **python**
+    ***python***
     ```python
     from synse import client
     
@@ -1537,6 +1760,12 @@ The fields of the response are described below:
 | *context* | A mapping of arbitrary values to provide additional context for the reading. |
 
 ??? note "HTTP"
+    **Request**
+    ```
+    GET http://localhost:5000/v3/read/c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07
+    ```
+    
+    **Response**
     ```json
     [
       {
@@ -1555,6 +1784,18 @@ The fields of the response are described below:
     ```
 
 ??? note "WebSocket"
+    **Request**
+    ```json
+    {
+      "id": 0,
+      "event": "request/read_device",
+      "data": {
+        "device": "c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07"
+      }
+    }
+    ```
+    
+    **Response**
     ```json
     {
       "id": 0,
@@ -1591,8 +1832,9 @@ The [error response](#errors) can be one of:
 
 | | | |
 | --- | --- | --- |
-| HTTP | **GET** | `/v3/readcache` |
-| WebSocket | **event** | `"request/read_cache"` |
+| HTTP      | **GET**      | `/v3/readcache` |
+| WebSocket | **request**  | `"request/read_cache"` |
+|           | **response** | `"response/reading"` |
 
 Stream reading data from the registered plugins.
 
@@ -1607,12 +1849,12 @@ of the configured plugins. When read caching is disabled, this will just return 
 the current state for all readings which is maintained by the plugin.
 
 ??? hint "Example"
-    **shell**
+    ***shell***
     ```shell
     curl http://${server}:5000/v3/readcache
     ```
     
-    **python**
+    ***python***
     ```python
     from synse import client
     
@@ -1668,6 +1910,12 @@ The fields of the response are described below:
 | *context* | A mapping of arbitrary values to provide additional context for the reading. |
 
 ??? note "HTTP"
+    **Request**
+    ```
+    GET http://localhost:5000/v3/readcache
+    ```
+    
+    **Response**
     ```json
     [
       {
@@ -1686,6 +1934,15 @@ The fields of the response are described below:
     ```
 
 ??? note "WebSocket"
+    **Request**
+    ```json
+    {
+      "id": 0,
+      "event": "request/read_cache"
+    }
+    ```
+    
+    **Response**
     ```json
     {
       "id": 0,
@@ -1722,8 +1979,9 @@ The [error response](#errors) can be one of:
 
 | | | | |
 | --- | --- | --- | --- |
-| HTTP | **POST** | `/v3/write/<device_id>` | `#!json {"action": "<action>", "data": "<data>"}` |
-| WebSocket | **event** | `"request/write_async"` | |
+| HTTP      | **POST**     | `/v3/write/<device_id>` | `#!json {"action": "<action>", "data": "<data>"}` |
+| WebSocket | **request**  | `"request/write_async"` | |
+|           | **response** | `"response/write_async"` |
 
 Write data to a device, in an asynchronous manner.
 
@@ -1742,7 +2000,7 @@ level and are exposed via the [`/info`](#info) endpoint. If a write is issued to
 does not support writing, an error is returned.
 
 ??? hint "Example"
-    **shell**
+    ***shell***
     ```shell
     curl \
       -H "Content-Type: application/json" \
@@ -1751,7 +2009,7 @@ does not support writing, an error is returned.
       http://${server}:5000/v3/write/4032ffbe-80db-5aa5-b794-f35c88dff85c
     ```
     
-    **python**
+    ***python***
     ```python
     from synse import client
     
@@ -1848,6 +2106,13 @@ The fields of the response are described below:
 | *timeout* | The timeout for the write transaction, after which it will be cancelled. This is effectively the maximum wait time for the transaction to resolve. This is defined by the plugin. |
 
 ??? note "HTTP"
+    **Request**
+    ```
+    POST http://localhost:5000/v3/write/f041883c-cf87-55d7-a978-3d3103836412
+         [{"action": "color", "data": "f38ac2"}, {"action": "state", "data": "blink"}]
+    ```
+    
+    **Response**
     ```json
     [
       {
@@ -1874,6 +2139,28 @@ The fields of the response are described below:
     ```
 
 ??? note "WebSocket"
+    **Request**
+    ```json
+    {
+      "id": 0,
+      "event": "request/write_async",
+      "data": {
+        "device": "f041883c-cf87-55d7-a978-3d3103836412",
+        "payload": [
+          {
+            "action": "color",
+            "data": "f38ac2"
+          },
+          {
+            "action": "state", 
+            "data": "blink"
+          }
+        ]
+      }
+    }
+    ```
+    
+    **Response**
     ```json
     {
       "id": 0,
@@ -1920,8 +2207,9 @@ The [error response](#errors) can be one of:
 
 | | | | |
 | --- | --- | --- | --- |
-| HTTP | **POST** | `/v3/write/wait/<device_id>` | `#!json {"action": "<action>", "data": "<data>"}` |
-| WebSocket | **event** | `"request/write_sync"` | |
+| HTTP      | **POST**     | `/v3/write/wait/<device_id>` | `#!json {"action": "<action>", "data": "<data>"}` |
+| WebSocket | **request**  | `"request/write_sync"` | |
+|           | **response** | `"response/write_sync"` |
 
 Write data to a device, waiting for the write to complete.
 
@@ -1935,7 +2223,7 @@ plugin, so there is likely to be a variance in response times when waiting. It i
 user to define a sane timeout such that the request does not prematurely terminate.
 
 ??? hint "Example"
-    **shell**
+    ***shell***
     ```shell
     curl \
       -H "Content-Type: application/json" \
@@ -1944,7 +2232,7 @@ user to define a sane timeout such that the request does not prematurely termina
       http://${server}:5000/v3/write/wait/4032ffbe-80db-5aa5-b794-f35c88dff85c
     ```
     
-    **python**
+    ***python***
     ```python
     from synse import client
     
@@ -2048,6 +2336,13 @@ successfully. While this endpoint will fail in cases where the plugin is not rea
 invalid, etc., it will not fail if a write fails to execute properly.
 
 ??? note "HTTP"
+    **Request**
+    ```
+    POST http://localhost:5000/v3/write/wait/f041883c-cf87-55d7-a978-3d3103836412
+         [{"action": "color", "data": "f38ac2"}, {"action": "state", "data": "blink"}]
+    ```
+    
+    **Response**
     ```json
     [
       {
@@ -2082,6 +2377,28 @@ invalid, etc., it will not fail if a write fails to execute properly.
     ```
 
 ??? note "WebSocket"
+    **Request**
+    ```json
+    {
+      "id": 0,
+      "event": "request/write_sync",
+      "data": {
+        "device": "f041883c-cf87-55d7-a978-3d3103836412",
+        "payload": [
+          {
+            "action": "color",
+            "data": "f38ac2"
+          },
+          {
+            "action": "state", 
+            "data": "blink"
+          }
+        ]
+      }
+    }
+    ```
+    
+    **Response**
     ```json
     {
       "id": 0,
@@ -2136,8 +2453,9 @@ The [error response](#errors) can be one of:
 
 | | | |
 | --- | --- | --- |
-| HTTP | **GET** | `/v3/transaction/<transaction_id>` |
-| WebSocket | **event** | `"request/transaction"` |
+| HTTP      | **GET**      | `/v3/transaction/<transaction_id>` |
+| WebSocket | **request**  | `"request/transaction"` |
+|           | **response** | `"response/transaction"` |
 
 Check the state and status of a write transaction.
 
@@ -2147,12 +2465,12 @@ length of time that a transaction is cached is configurable (see the Synse Serve
 If the provided transaction ID does not exist, an error is returned.
 
 ??? hint "Example"
-    **shell**
+    ***shell***
     ```shell
     curl http://${server}:5000/v3/transaction/2b717ced-58ff-43dc-ab6f-d4c0c6008ebb
     ```
     
-    **python**
+    ***python***
     ```python
     from synse import client
     
@@ -2202,6 +2520,12 @@ The fields of the response are described below:
 | *message* | Any context information relating to a transaction's error state. If there is no error, this will be an empty string. |
 
 ??? note "HTTP"
+    **Request**
+    ```
+    GET http://localhost:5000/v3/transaction/2b717ced-58ff-43dc-ab6f-d4c0c6008ebb
+    ```
+    
+    **Response**
     ```json
     {
       "id": "2b717ced-58ff-43dc-ab6f-d4c0c6008ebb",
@@ -2220,6 +2544,18 @@ The fields of the response are described below:
     ```
 
 ??? note "WebSocket"
+    **Request**
+    ```json
+    {
+      "id": 0,
+      "event": "request/transaction",
+      "data": {
+        "transaction": "2b717ced-58ff-43dc-ab6f-d4c0c6008ebb"
+      }
+    }
+    ```
+    
+    **Response**
     ```json
     {
       "id": 0,
@@ -2249,6 +2585,7 @@ The [error response](#errors) can be one of:
 * **404** - Transaction not found
 
 #### *Status*
+
 Transaction can have one of four statuses:
 
 | Status | Description |
@@ -2266,8 +2603,9 @@ Transaction can have one of four statuses:
 
 | | | |
 | --- | --- | --- |
-| HTTP | **GET** | `/v3/transaction` |
-| WebSocket | **event** | `"request/transaction"` |
+| HTTP      | **GET**      | `/v3/transaction` |
+| WebSocket | **request**  | `"request/transaction"` |
+|           | **response** | `"response/transaction"` |
 
 Check the state and status of a write transaction.
 
@@ -2277,12 +2615,12 @@ length of time that a transaction is cached is configurable (see the Synse Serve
 If the provided transaction ID does not exist, an error is returned.
 
 ??? hint "Example"
-    **shell**
+    ***shell***
     ```shell
     curl http://${server}:5000/v3/transaction
     ```
     
-    **python**
+    ***python***
     ```python
     from synse import client
     
@@ -2309,6 +2647,12 @@ If the provided transaction ID does not exist, an error is returned.
 ```
 
 ??? note "HTTP"
+    **Request**
+    ```
+    GET http://localhost:5000/v3/transaction
+    ```
+    
+    **Response**
     ```json
     [
       "2b717ced-58ff-43dc-ab6f-d4c0c6008ebb",
@@ -2317,6 +2661,15 @@ If the provided transaction ID does not exist, an error is returned.
     ```
 
 ??? note "WebSocket"
+    **Request**
+    ```json
+    {
+      "id": 0,
+      "event": "request/transaction"
+    }
+    ```
+    
+    **Response**
     ```json
     {
       "id": 0,
@@ -2364,7 +2717,7 @@ The underlying implementations for read and write are the same as the [`/read/{d
 and [`/write/wait/{device}`](#write-synchronous) requests, respectively.
 
 ??? hint "Example"
-    **shell**
+    ***shell***
     ```shell
     # read from the device
     curl http://${server}:5000/v3/device/4032ffbe-80db-5aa5-b794-f35c88dff85c
@@ -2377,7 +2730,7 @@ and [`/write/wait/{device}`](#write-synchronous) requests, respectively.
       http://${server}:5000/v3/device/4032ffbe-80db-5aa5-b794-f35c88dff85c
     ```
     
-    **python**
+    ***python***
     ```python
     from synse import client
     
@@ -2463,6 +2816,12 @@ The fields of the response are described below:
 | *context* | A mapping of arbitrary values to provide additional context for the reading. |
 
 ??? note "HTTP"
+    **Request**
+    ```
+    GET http://localhost:5000/v3/read/c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07
+    ```
+    
+    **Response**
     ```json
     [
       {
@@ -2481,26 +2840,8 @@ The fields of the response are described below:
     ```
 
 ??? note "WebSocket"
-    ```json
-    {
-      "id": 0,
-      "event": "response/reading",
-      "data": [
-        {
-          "device": "c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07",
-          "timestamp": "2019-01-01T12:00:00Z",
-          "type": "temperature",
-          "device_type": "temperature",
-          "unit": {
-            "name": "celsius",
-            "symbol": "C"
-          },
-          "value": 85,
-          "context": {}
-        }
-      ]
-    }
-    ```
+    Not supported - [read device](#read-device) is equivalent
+
 
 **`POST`**
 (See: [`/write`](#write-synchronous))
@@ -2538,6 +2879,13 @@ The fields of the response are described below:
 | *message* | Any context information relating to a transaction's error state. If there is no error, this will be an empty string. |
 
 ??? note "HTTP"
+    **Request**
+    ```
+    POST http://localhost:5000/v3/write/c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07
+         [{"action": "color", "data": "f38ac2"}, {"action": "state", "data": "blink"}]
+    ```
+    
+    **Response**
     ```json
     [
       {
@@ -2572,42 +2920,7 @@ The fields of the response are described below:
     ```
 
 ??? note "WebSocket"
-    ```json
-    {
-      "id": 0,
-      "event": "response/write_sync",
-      "data": [
-        {
-          "id": "ea80f074-bc80-4fdd-b842-8392514bd19b",
-          "created": "2019-01-01T12:00:00Z",
-          "updated": "2019-01-01T12:00:00Z",
-          "timeout": "30s",
-          "status": "DONE",
-          "context": {
-            "action": "color",
-            "data": "f38ac2",
-            "transaction": ""
-          },
-          "message": "",
-          "device": "f041883c-cf87-55d7-a978-3d3103836412"
-        },
-        {
-          "id": "56a32eba-1aa6-4868-84ee-fe01af8b2e6d",
-          "created": "2019-01-01T12:00:00Z",
-          "updated": "2019-01-01T12:00:00Z",
-          "timeout": "30s",
-          "status": "DONE",
-          "context": {
-            "action": "state",
-            "data": "blink",
-            "transaction": ""
-          },
-          "message": "",
-          "device": "f041883c-cf87-55d7-a978-3d3103836412"
-        }
-      ]
-    }
-    ```
+    Not supported - [write sync](#write-synchronous) is equivalent
 
 ##### Error
 
