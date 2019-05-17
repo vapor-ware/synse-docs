@@ -2,280 +2,297 @@
 hero: Deploying 
 ---
 
-Running Synse Server locally is useful for testing and familiarizing yourself
-with the API, but when using Synse Server, it will often be in some deployment.
-This section goes through some simple examples of how to set up various deployments
-with Synse Server and plugins.
+This page discusses different ways of deploying Synse Server. Because of Synse's
+plugin architecture, it is often easiest and most convenient to run Synse as a
+deployment of some sort. Two types of deployments are described here:
+
+- [Deploying with Docker Compose](#deploying-with-docker-compose)
+- [Deploying with Kubernetes](#deploying-with-kubernetes)
+
 
 ## Deploying with Docker Compose
 
-For a complete set of examples for deploying with ``docker compose``, see the
-emulator example deployments in the `deploy/docker directory <https://github.com/vapor-ware/synse-server/tree/master/deploy/docker>`_
-of the Synse Server source. This section goes into detail on how to deploy Synse Server
-with an externally running emulator plugin configured for TCP communication.
+If you've gone through the [quickstart](quickstart.md), you will have seen an
+example of this already in the [simple emulator deployment](quickstart.md#a-simple-emulator-deployment)
+section. Here, that example is extended to use some more advanced features.
 
-For Synse Server, all that we really need to do is specify the plugin in the
-container's configuration. As you may recall from the :ref:`configuration` section,
-this can be done either by adding in our own YAML config file, or by specifying
-an appropriate environment variable. Since we are only registering a single plugin
-in this example, we'll keep things easier and just specify via environment variable.
+!!! note
+    Even though communication via unix sockets is supported, it is recommended
+    to use TCP based communication when possible, as it is generally easier to
+    manage and configure.
 
-We already know that we will run the plugin in TCP mode, so all that's left is naming
-the plugin, and identifying which port it uses. The emulator plugin exposes port 5001
-by default, so we'll use that. As for a name, since it is the emulator plugin, we can
-just call it ``emulator``. Putting this all together, we get
+The [emulator plugin](https://github.com/vapor-ware/synse-emulator-plugin) will be
+[configured](../../sdk/user/configuration.md) for TCP with a secure communication
+channel using TLS certs. For this example, x509 self-signed certs [were generated](https://www.digitalocean.com/community/tutorials/openssl-essentials-working-with-ssl-certificates-private-keys-and-csrs)
+with the signing subject: `"/C=US/ST=Texas/L=Austin/O=Vapor/CN=emulator"`. Afterwards,
+we are left with:
 
-```yaml
-    environment:
-      SYNSE_PLUGIN_TCP: emulator-plugin:5001
+```
+.
+└── certs
+    ├── emulator-plugin.crt
+    ├── emulator-plugin.csr
+    ├── emulator-plugin.key
+    ├── rootCA.crt
+    ├── rootCA.key
+    └── rootCA.srl
 ```
 
-Here, ``emulator-plugin`` is being used as the host name. We'll need to link in
-the emulator container to the Synse Server container with that host name.
+The emulator plugin will use its built-in defaults for device configuration, but
+we will need to supply a custom plugin configuration to set up TLS. The following
+file is saved as `emulator-config.yml`:
 
 ```yaml
-    links:
-      - emulator-plugin
+version: 3
+debug: true
+network:
+  type: tcp
+  address: ":5001"
+  tls:
+    skipVerify: true
+    key: /tmp/ssl/emulator-plugin.key
+    cert: /tmp/ssl/emulator-plugin.crt
+    caCerts:
+      - /tmp/ssl/rootCA.crt
 ```
 
-This means that our emulator plugin service will be called ``emulator-plugin``. Before
-we move on to that, we should fill out the rest of the Synse Server configuration, namely
-specifying the container name, image, and ports
-
-```yaml
-    synse-server:
-      container_name: synse-server
-      image: vaporio/synse-server:latest-slim
-      ports:
-        - 5000:5000
-      environment:
-        SYNSE_PLUGIN_TCP: emulator-plugin:5001
-      links:
-        - emulator-plugin
-```
-
-Now, to configure the emulator plugin portion. The emulator plugin is available
-as a pre-built image ``vaporio/emulator-plugin``, so that will be the image we use here.
-Since Synse Server is configured to reach the emulator on port 5001, we will want to
-expose that port.
-
-The only remaining bit is configuring the plugin. Plugin configuration is discussed in
-the `SDK Documentation <https://github.com/vapor-ware/synse-sdk>`_. Briefly, a plugin takes
-different types of configuration:
-
-1. *device configuration* - This is specified by the user. It specifies the device instances
-   that this particular plugin will be interfacing with.
-2. *plugin configuration* - This is the general configuration for how the plugin should
-   behave. For example, you can configure the plugin to perform device actions in parallel
-   or in serial via this config.
-
-We do need to provide the instance config and the plugin config for the emulator plugin.
-See the SDK Documentation for more information on these configs.
-
-For our plugin config, we have the following ``config.yml``,
-
-```yaml
-    version: 1.0
-    debug: true
-    network:
-      type: tcp
-      address: ":5001"
-```
-
-Instance configurations can be much larger, as there may be many devices. For simplicity
-here, we will define a handful of temperature device instances in a file named ``devices.yml``.
-For a more complete example, see the emulator example deployments in the ``deploy`` directory
-of the Synse Server source repo.
-
-```yaml
-    version: 1.0
-    locations:
-      - name: r1b1
-        rack:
-          name: rack-1
-        board:
-          name: board-1
-    devices:
-      - name: temperature
-        metadata:
-          model: emul8-temp
-        outputs:
-          - type: temperature
-        instances:
-          - info: Temperature Sensor 1
-            location: r1b1
-            data:
-              id: 1
-          - info: Temperature Sensor 2
-            location: r1b1
-            data:
-              id: 2
-          - info: Temperature Sensor 3
-            location: r1b1
-            data:
-              id: 3
-          - info: Temperature Sensor 4
-            location: r1b1
-            data:
-              id: 4
-```
-
-Briefly, this defines four temperature sensors on 'rack-1', 'board-1'. The rack and board designation here are
-arbitrary for this example but are typically used to organized device across racks and boards.
-
-With these two files saved in the current working directory, we can mount them into the
-plugin emulator container.
-
-```yaml
-volumes:
-  - ./config.yml:/tmp/config/config.yml
-  - ./devices.yml:/tmp/devices/devices.yml
-```
-
-While there are default search paths that these files can be placed on, here we put them
-on custom paths. To specify to the plugin where these files are when not on a default
-search path, we can tell it with environment variables
+We could provide a custom configuration for Synse Server as well, but since we only
+need to supply two values (the certificate and the plugin address), we can do it simply
+through environment variables, e.g.
 
 ```yaml
 environment:
-  # sets the override directory location for plugin configuration
-  PLUGIN_CONFIG: /tmp/config
-  # sets the override directory location for device configuration
-  PLUGIN_DEVICE_CONFIG: /tmp/devices
+  SYNSE_PLUGIN_TCP: emulator:5001
+  SYNSE_GRPC_TLS_CERT: /tmp/ssl/emulator-plugin.crt
 ```
 
-Putting everything here together, we get the final compose file, ``compose.yml``:
+All that is left is mounting the certificates into the containers appropriately.
+Altogether, the compose file will look like:
 
 ```yaml
-version: "3"
+#
+# deploy.yml
+#
+# An example deployment of Synse Server and the Emulator Plugin
+# configured to communicate over TCP with TLS enabled.
+#
+
+version: '3'
 services:
+
+  # Synse Server
   synse-server:
     container_name: synse-server
-    image: vaporio/synse-server:latest-slim
+    image: vaporio/synse-server
     ports:
-      - 5000:5000
+    - "5000:5000"
     environment:
-      SYNSE_PLUGIN_TCP: emulator-plugin:5001
-    links:
-      - emulator-plugin
-
-  emulator-plugin:
-    container_name: emulator-plugin
-    image: vaporio/emulator-plugin
-    ports:
-      - 5001:5001
+      SYNSE_LOGGING: debug
+      SYNSE_PLUGIN_TCP: emulator:5001
+      SYNSE_GRPC_TLS_CERT: /tmp/ssl/emulator-plugin.crt
     volumes:
-      - ./config.yml:/tmp/config/config.yml
-      - ./devices.yml:/tmp/devices/device.yml
+    - ./certs/emulator-plugin.crt:/tmp/ssl/emulator-plugin.crt
+    links:
+    - emulator
+
+  # TCP-based Emulator Plugin
+  emulator:
+    container_name: emulator
+    image: vaporio/emulator-plugin
+    expose:
+    - "5001"
+    command: ["--debug"]
+    volumes:
+      # mount in the custom plugin config
+      - ./emulator-config.yaml:/tmp/config/config.yml
+      # mount in the keys/certs needed for gRPC TLS
+      - ./certs/emulator-plugin.crt:/tmp/ssl/emulator-plugin.crt
+      - ./certs/emulator-plugin.key:/tmp/ssl/emulator-plugin.key
+      - ./certs/rootCA.crt:/tmp/ssl/rootCA.crt
     environment:
+      # set config override path for custom plugin configuration
       PLUGIN_CONFIG: /tmp/config
-      PLUGIN_DEVICE_CONFIG: /tmp/devices
 ```
 
-To run it,
+This can be run with
 
-```console
-$ docker-compose -f compose.yml up -d
+```
+docker-compose -f deploy.yml up -d
 ```
 
-Once it starts up, you should be able to hit the Synse Server ``scan`` endpoint and
-see the four temperature devices that were configured.
+After it starts, you can inspect the logs to verify both containers have no errors
+and have the correct config. You can also check the [`/plugin`](../api.v3.md#plugin-info)
+endpoint to verify that the emulator was registered:
 
 ```console
-$ curl localhost:5000/synse/v2/scan
-{
-  "racks":[
-    {
-      "id":"rack-1",
-      "boards":[
-        {
-          "id":"board-1",
-          "devices":[
-            {
-              "id":"eb100067acb0c054cf877759db376b03",
-              "info":"Temperature Sensor 1",
-              "type":"temperature"
-            },
-            {
-              "id":"83cc1efe7e596e4ab6769e0c6e3edf88",
-              "info":"Temperature Sensor 2",
-              "type":"temperature"
-            },
-            {
-              "id":"db1e5deb43d9d0af6d80885e74362913",
-              "info":"Temperature Sensor 3",
-              "type":"temperature"
-            },
-            {
-              "id":"329a91c6781ce92370a3c38ba9bf35b2",
-              "info":"Temperature Sensor 4",
-              "type":"temperature"
-            }
-          ]
-        }
-      ]
-    }
-  ]
-}
-```
-
-Additionally, you can hit the ``plugins`` endpoint and should see the emulator plugin
-specified there just as it was configured.
-
-```console
-$ curl localhost:5000/synse/v2/plugins
+$ curl localhost:5000/v3/plugin
 [
   {
-    "tag":"vaporio\/emulator-plugin",
     "name":"emulator plugin",
-    "description":"A plugin with emulated devices and data",
     "maintainer":"vaporio",
-    "vcs":"github.com\/vapor-ware\/synse-emulator-plugin",
-    "version":{
-      "plugin_version":"2.0.0",
-      "sdk_version":"1.0.0",
-      "build_date":"2018-06-14T16:24:09",
-      "git_commit":"13e6478",
-      "git_tag":"1.0.2-5-g13e6478",
-      "arch":"amd64",
-      "os":"linux"
-    },
-    "network":{
-      "protocol":"tcp",
-      "address":"emulator-plugin:5001"
-    },
-    "health":{
-      "timestamp":"2018-06-28T18:03:02.0690155Z",
-      "status":"ok",
-      "message":"",
-      "checks":[
-        {
-          "name":"read buffer health",
-          "status":"ok",
-          "message":"",
-          "timestamp":"2018-06-28T18:02:56.4710872Z",
-          "type":"periodic"
-        },
-        {
-          "name":"write buffer health",
-          "status":"ok",
-          "message":"",
-          "timestamp":"2018-06-28T18:02:56.4710769Z",
-          "type":"periodic"
-        }
-      ]
-    }
+    "tag":"vaporio\/emulator-plugin",
+    "description":"A plugin with emulated devices and data",
+    "id":"897fcca8-d30f-5470-a261-2768c5acddab",
+    "active":true
   }
+]
+```
+
+And the [`/scan`](../api.v3.md#scan) endpoint to see the emulated devices.
+
+```console
+$ curl localhost:5000/v3/scan
+[
+  {
+    "id":"104aeeaa-2125-5649-8dcb-c516cf6f65c2",
+    "alias":"",
+    "info":"Synse Airflow Sensor",
+    "type":"airflow",
+    "plugin":"897fcca8-d30f-5470-a261-2768c5acddab",
+    "tags":[
+      "system/id:104aeeaa-2125-5649-8dcb-c516cf6f65c2",
+      "system/type:airflow"
+    ]
+  },
+  {
+    "id":"1c565336-8969-5818-94a6-e4f4a4cf99ba",
+    "alias":"",
+    "info":"Synse Pressure Sensor 1",
+    "type":"pressure",
+    "plugin":"897fcca8-d30f-5470-a261-2768c5acddab",
+    "tags":[
+      "system/id:1c565336-8969-5818-94a6-e4f4a4cf99ba",
+      "system/type:pressure"
+    ]
+  },
+  {
+    "id":"39a9ca9a-aabf-5241-998f-3d15068a8630",
+    "alias":"",
+    "info":"Synse Fan",
+    "type":"fan",
+    "plugin":"897fcca8-d30f-5470-a261-2768c5acddab",
+    "tags":[
+      "system/id:39a9ca9a-aabf-5241-998f-3d15068a8630",
+      "system/type:fan"
+    ]
+  },
+  ... 
 ]
 ```
 
 To bring the deployment down,
 
 ```console
-$ docker-compose -f compose.yml down
+$ docker-compose -f deploy.yml down
 ```
 
 ## Deploying with Kubernetes
 
-A simple example deployment of Synse Server and the containerized Plugin Emulator can
-be found in the project source's `deploy/k8s directory <https://github.com/vapor-ware/synse-server/tree/master/deploy/k8s>`_.
+Assuming a working understanding of [Kubernetes](https://kubernetes.io/), deploying Synse on
+Kubernetes is fairly simple. This section provides an example of a basic deployment of Synse
+Server and the [emulator plugin](https://github.com/vapor-ware/synse-emulator-plugin).
+
+For this example you will need:
+
+- a basic understanding of Kubernetes and manifest definitions
+- access to an operational Kubernetes cluster (minikube, kubernetes for docker desktop, GKE, etc.)
+- [`kubectl`](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed and configured 
+  with your cluster as the current context
+
+All that is needed to get Synse Server running with an emulator backend (similar to the [quickstart example](quickstart.md#a-simple-emulator-deployment))
+is a single deployment:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: synse
+  labels:
+    app: synse
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: synse
+  template:
+    metadata:
+      labels:
+        app: synse
+    spec:
+      containers:
+      - name: synse-server
+        image: vaporio/synse-server
+        ports:
+        - name: http
+          containerPort: 5000
+        env:
+        # Enable debug logging via ENV config
+        - name: SYNSE_LOGGING
+          value: debug
+        # Register the Emulator Plugin via ENV config
+        - name: SYNSE_PLUGIN_TCP
+          value: localhost:5001
+
+      - name: emulator-plugin
+        image: vaporio/emulator-plugin
+        ports:
+        - name: http
+          containerPort: 5001
+```
+
+This can be saved as `simple-deploy.yaml` and can be applied to the cluster
+
+```
+kubectl apply -f simple-deploy.yaml
+```
+
+You can check to see if the Pod came up and is running. Passing in the `-o wide` flag
+will also give the address of the Pod in the cluster.
+
+```console
+$ kubectl get pods -o wide
+NAME                    READY     STATUS    RESTARTS   AGE       IP           NODE
+synse-f6956f758-l7hz2   2/2       Running   0          28s       10.1.0.189   docker-for-desktop
+```
+
+You can't query the server endpoint directly without setting up a service, ingress, or some other means of
+access. Instead, you can [run a debug container](https://kubernetes.io/docs/tasks/debug-application-cluster/debug-service/#running-commands-in-a-pod)
+on the cluster to get on the same network.
+
+```console
+$ kubectl run -it --rm --restart=Never alpine --image=alpine sh
+If you don't see a command prompt, try pressing enter.
+/ #
+```
+
+We'll need something like `curl`, which can be installed with
+
+```console
+/ # apk add curl
+fetch http://dl-cdn.alpinelinux.org/alpine/v3.9/main/x86_64/APKINDEX.tar.gz
+fetch http://dl-cdn.alpinelinux.org/alpine/v3.9/community/x86_64/APKINDEX.tar.gz
+(1/5) Installing ca-certificates (20190108-r0)
+(2/5) Installing nghttp2-libs (1.35.1-r0)
+(3/5) Installing libssh2 (1.8.2-r0)
+(4/5) Installing libcurl (7.64.0-r1)
+(5/5) Installing curl (7.64.0-r1)
+Executing busybox-1.29.3-r10.trigger
+Executing ca-certificates-20190108-r0.trigger
+OK: 7 MiB in 19 packages
+```
+
+Now, using the Synse Pod IP from before, the API should be accessible:
+
+```console
+/ # curl 10.1.0.189:5000/test
+{
+  "status":"ok",
+  "timestamp":"2019-05-17T13:13:48.412790Z"
+}
+```
+
+You can explore other [API Endpoints](../api.v3.md), or remove the deployment (after exiting the debug container)
+
+```
+kubectl delete -f simple-deploy.yaml
+```

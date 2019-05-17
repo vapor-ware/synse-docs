@@ -2,346 +2,483 @@
 hero: Configuration 
 ---
 
-Synse Server tries to be flexible and easy to configure. Its default configurations
-allow it to run right out of the box. There are a number of configuration option
-which are described below.
+This page describes all of the configuration options and methodologies for Synse Server.
+It has a sane set of default configurations allowing it to run "out of the box",
+however minimal configuration is required to register any plugins with it.
 
 Synse Server has three sources of configuration:
 
 1. Built-in defaults
-2. User defined config (via YAML file)
+2. Configuration file (YAML)
 3. Environment variables
 
-In the list above, each configuration mode takes precedence over the option above it.
+Each item in the list above takes precedence over the item above it (e.g. environment
+variable configuration(s) would override YAML file configuration(s)).
 
-The default built-in configurations should be enough to get Synse Server minimally running,
-but it will not be very exciting or useful, since it has no plugins configured by
-default. Recall from the architecture section that plugins are what provide the underlying
-functionality to Synse Server, as they are the components that manages devices.
-
-When configuring Synse Server for your own use, you will at the very least need to configure
-the plugins for the devices you wish to interface with. The gRPC interface between Synse Server
-can be configured to use one of two supported protocols: TCP or Unix socket. In general, TCP is
-preferred, but there may be cases where using a unix socket could make more sense.
-
-.. note::
-
-    While there is a distinction in the does between "TCP plugins" and "Unix socket plugins", it is
-    important to note that the distinction is at a plugin configuration level. That is to say,
-    all plugins that use the SDK have the capability of either being configured for TCP or unix
-    socket -- they are not tied to a single protocol.
-
-## Plugin Registration
-
-Both TCP and Unix socket-based plugins can be configured either from config file or from
-environment variable.
-
-### Config File
-
-All plugins are configured under the `plugin` section of the configuration file. There are
-subsections for `tcp` and `unix` which take lists. The values in these lists would be the
-address for the plugin. For TCP-based plugins, this could be the IP address (with optional
-port). For Unix socket-based plugins, this would be the path to the socket.
-
-```yaml
-plugin:
-  tcp:
-    - 10.10.1.2:5001
-    - 10.10.1.4:5002
-  unix:
-    - /tmp/plugin/example.sock
-```
-
-### Environment Variable
-
-Plugins can be configured from environment variable as well. TCP-based plugins would use
-the `SYNSE_PLUGIN_TCP` environment variable, and Unix socket-based plugins would use
-the `SYNSE_PLUGIN_UNIX` environment variable. The value should be a comma-separated list
-of addresses. The equivalent environment-based configuration to the example config in the
-Config File section, above, would be:
-
-```
-SYNSE_PLUGIN_TCP=10.10.1.2:5001,10.10.1.4:5002
-SYNSE_PLUGIN_UNIX=/tmp/plugin/example.sock
-```
-
-### Default Path
-
-Unix sockets have one more avenue of configuration. To make it a bit easier to deal with
-unix sockets, a default path exists where they can be placed/mounted, and Synse Server
-will find them automatically with no additional configuration. This default path is
-`/tmp/synse/procs`. On startup, Synse Server will look through this directory and will
-search for sockets. If it finds any, it will use them and attempt to establish communication
-with a plugin.
-
-If a plugin is configured this way, it will still show up in the unified config provided by
-Synse Server's `/config` endpoint.
-
-
-### Kubernetes Service Discovery
-
-Plugins can also be registered via service discovery using Kubernetes Service Endpoints.
-Examples of how this is done can be found in the Advanced section. Currently,
-Synse Server only supports service discovery by matching labels on a service endpoint.
-In the future, discovery could be done using other bits of metadata and other Kubernetes
-objects. The Configuration Options section below describes the config options for
-service discovery via Kubernetes Service Endpoints.
-
-## Configuration Options
-
-This section outlines all of the configuration options for Synse Server. Note that these
-options are for the configuration YAML. These same options, excluding the plugin options
-(see sections above), can be set via environment variable by using the `SYNSE_` prefix
-on the upper-cased option name. For example, to set logging level to error via environment
-variable, `SYNSE_LOGGING=error`.
-
-
-:logging:
-    The logging level for Synse Server to use.
-
-    | *default*: ``info``
-    | *supported*: ``debug``, ``info``, ``warning``, ``error``, ``critical``
-
-:pretty_json:
-    Output the API response JSON so it is pretty and human readable.
-    This adds spacing and newlines to the JSON output.
-
-    | *default*: ``false``
-    | *supported*: ``true``, ``false``
-
-:locale:
-    The locale to use for logging and error output.
-
-    | *default*: ``en_US``
-    | *supported*: ``en_US``
-
-:plugin:
-    Configuration options for registering plugins with Synse Server.
-
-    :tcp:
-        TCP-based plugin configuration. This should be a list of addresses
-        for each of the TCP plugins to register, e.g. ``192.1.53.2:5022``
-
-    :unix:
-        Unix socket-based plugin configuration. This should be a list of
-        addresses for each of the Unix socket plugins to register. A unix
-        socket address is the path to the socket file, e.g. ``/tmp/example.sock``
-
-    :discover:
-        Configuration options for plugin service discovery.
-
-        :kubernetes:
-            Configuration options for plugin service discovery via Kubernetes.
-
-            :endpoints:
-                Configurations for plugin service discovery via Kubernetes
-                service endpoints.
-
-                :labels:
-                    The endpoint labels to filter by to select the services
-                    that are plugins. This should be a map where the key is
-                    the label name and the value is the value that the label
-                    should match to.
-
-:cache:
-    Configuration options for the Synse Server caches.
-
-    :meta:
-        Configuration options for the meta info caches. These caches
-        store the device meta information returned by the configured plugins.
-
-        :ttl:
-            Time to live for the meta info caches, in seconds.
-
-            | *default*: ``20``
-
-    :transaction:
-        Configuration options for the transaction cache. This cache tracks
-        the active transactions for recent write events.
-
-        :ttl:
-            Time to live for the transaction cache, in seconds.
-
-            | *default*: ``300``
-
-:grpc:
-    Configuration options relating to the gRPC communication layer
-    between Synse Server and any configured plugins.
-
-    :timeout:
-        The timeout for the gRPC connection, in seconds.
-
-        | *default*: ``3``
-
-
-    :tls:
-        Configuration options relating to securing the gRPC communication
-        layer with TLS/SSL.
-
-        :cert:
-            The fully qualified path to the cert to use when communicating
-            with plugins.
-
-Examples
---------
-
-Default Configuration
-~~~~~~~~~~~~~~~~~~~~~
-Below is what the default configuration for Synse Server looks like as YAML.
-
-.. code-block:: yaml
-
-    locale: en_US
-    pretty_json: false
-    logging: info
-    cache:
-      meta:
-        ttl: 20
-      transaction:
-        ttl: 300
-    grpc:
-      timeout: 3
-
-Complete Configuration
-~~~~~~~~~~~~~~~~~~~~~~
-Below is a valid (if contrived) and complete example configuration file.
-
-.. code-block:: yaml
-
-    logging: debug
-    pretty_json: true
-    locale: en_US
-    plugin:
-      tcp:
-        - localhost:6000
-        - 54.53.52.51:5555
-      unix:
-        - /tmp/run/example.sock
-      discover:
-        kubernetes:
-          endpoints:
-            labels:
-              app: synse
-              component: plugin
-    cache:
-      meta:
-        # time to live in seconds
-        ttl: 20
-      transaction:
-        # time to live in seconds
-        ttl: 300
-    grpc:
-      # timeout in seconds
-      timeout: 5
-      tls:
-        cert: /tmp/ssl/example.crt
-
-
-## Configuring Synse Server
-
-By now, you should have a good understanding of the configuration options for
-Synse Server as well as the different ways it can take configuration. Now, lets
-look at how to actually pass custom configurations to Synse Server.
+## Configuring the Server
 
 ### Specifying a Custom Config File
 
-Synse Server looks for a YAML file (``.yml`` or ``.yaml`` extension) named ``config``
-in the current working directory, ``./``, and within the ``synse/config`` directory.
-If the configuration file (``config.{yaml|yml}``) is not found in either of those
-locations, no config file is used and the Synse Server configuration will be built
-off of the defaults and whatever values are specified in the environment.
+Synse Server looks for a YAML file (`.yml` or `.yaml` extension) named `config` in the
+current working directory (`./`) and within the default configuration directory (`/etc/synse/server`).
+If the configuration file is not found in either of those locations, no config file is
+used and it will just use the default values and any specified environment variables.
 
-When running Synse Server as a Docker image, you would either have to:
+A custom configuration specified in `custom-config.yml` can be used to configure a
+Synse Server instance by placing the config in one of the search paths, e.g.
 
-- volume mount the custom configuration
-- build a custom Synse Server image that includes your configuration
-
-The first option is obviously the most flexible, thus preferable.
-
-To mount a custom configuration file, you must first have a configuration file.
-For this example, consider the YAML below to be contained within ``custom-config.yml``.
-
-```yaml
-logging: debug
-pretty_json: true
-plugin:
-  tcp:
-    - localhost:5001
 ```
-
-We can mount this into the Synse Server container with ``docker run``, e.g.
-
-```yaml
 docker run -d \
     -p 5000:5000 \
-    -v $PWD/custom_config.yml:/synse/config/config.yml \
-    --name synse-server \
+    -v $PWD/custom_config.yml:/etc/synse/server/config.yml \
     vaporio/synse-server
 ```
 
-Assuming the configuration is correct and Synse Server comes up, you should be able
-to verify that the config was picked up either by looking at the Synse Server logs,
-or by hitting the ``/config`` endpoint
+Assuming the configuration is correct and Synse Server could successfully load it,
+you can verify that the config was picked up either by looking at the server logs,
+or by hitting the [`/config`](../api.v3.md#config) endpoint.
 
-```bash
-curl localhost:5000/synse/v2/config
-```
-
-Configurations can also be mounted in via ``docker-compose``
+The above can also be done simply in a compose file:
 
 ```yaml
-version: "3"
+version: '3'
 services:
   synse-server:
-    container_name: synse-server
     image: vaporio/synse-server
     ports:
-      - 5000:5000
+    - "5000:5000"
     volumes:
-      - ./custom_config.yml:/synse/config/config.yml
+    - ./custom_config.yml:/etc/synse/server/config.yml
 ```
 
 ### Specifying Environment Variables
 
-As mentioned earlier, configuration options can be set by environment variable as well.
-This is done by joining the configuration key path with an underscore, upper casing, and
-appending to the ``SYNSE_`` prefix. That is to say, for a config ``{'foo': {'bar': 20}}``,
-to set the value of *bar* to 30, you would set ``SYNSE_FOO_BAR=30``.
+Many configuration options may also be set via environment variable. The general rule is
+that each environment variable is the upper-cased configuration key path joined with underscores
+and prefixed with `SYNSE_`. That is to say, for the example config `#!json {"foo": {"bar": 20}}`,
+the corresponding environment variable would be `SYNSE_FOO_BAR`.
 
-A more real example is to set the logging level to debug and to change the transaction
-cache TTL.
+As a more real example, logging and the transaction cache TTL can be set with:
 
-```bash
+```
 docker run -d \
     -p 5000:5000 \
     -e SYNSE_LOGGING=debug \
     -e SYNSE_CACHE_TRANSACTION_TTL=500 \
-    --name synse-server \
     vaporio/synse-server
 ```
 
-This can also be done via ``docker-compose``
+The above can also be done simply in a compose file:
 
 ```yaml
-version: "3"
+version: '3'
 services:
   synse-server:
-    container_name: synse-server
     image: vaporio/synse-server
     ports:
-      - 5000:5000
+    - "5000:5000"
     environment:
-      - SYNSE_LOGGING=debug
-      - SYNSE_CACHE_TRANSACTION_TTL=500
+    - SYNSE_LOGGING=debug
+    - SYNSE_CACHE_TRANSACTION_TTL=500
 ```
 
-A combination of both config file and environment configs can be provided, but
-as mentioned earlier, environment variable based configuration takes precedence
-over file based configuration.
+## Configuration Options
 
-### Specify Plugins via Environment
+This section describes the supported configuration values for Synse Server, including
+any restrictions on the values, any defaults, and whether or not it can be set
+via environment variable. 
 
-Plugin configurations can be specified via environment variable, but how this
-is done differs slightly from the other configuration options. See the
-`Plugin Registration`_ section for more on how to specify TCP and Unix
-socket plugin configuration via the environment.
+-----
+
+### Logging
+
+| | |
+| ------ | ------ |
+| ***description*** | The logging level for Synse Server. The values for this option are case-insensitive. |
+| ***type*** | string |
+| ***key*** | `logging` |
+| ***env variable*** | `SYNSE_LOGGING` |
+| ***default*** | `info` |
+| ***supported*** | `debug`, `info`, `warning`, `error` |
+
+```YAML tab=
+logging: info
+```
+
+```Environment tab=
+SYNSE_LOGGING=info
+```
+
+-----
+
+### Pretty JSON
+
+| | |
+| ------ | ------ |
+| ***description*** | Output the HTTP API response JSON in a "pretty" format by adding spaces and newlines. |
+| ***type*** | bool |
+| ***key*** | `pretty_json` |
+| ***env variable*** | -- |
+| ***default*** | `true` |
+| ***supported*** | `true`, `false` |
+
+```YAML tab=
+pretty_json: true
+```
+
+-----
+
+### Locale
+
+| | |
+| ------ | ------ |
+| ***description*** | Set the locale for logging messages and error output. |
+| ***type*** | string |
+| ***key*** | `locale` |
+| ***env variable*** | `LANGUAGE` |
+| ***default*** | `en_US` |
+| ***supported*** | `en_US` |
+
+```YAML tab=
+locale: en_US
+```
+
+```Environment tab=
+LANGUAGE=en_US
+```
+
+-----
+
+### Plugin
+
+Configuration options for registering plugins with the server instance.
+
+#### TCP
+
+| | |
+| ------ | ------ |
+| ***description*** | Register plugins configured for TCP-based communication. This is the preferred mode for registering plugins. This option holds list of addresses for each plugin to register. |
+| ***type*** | list[string] |
+| ***key*** | `plugin.tcp` |
+| ***env variable*** | `SYNSE_PLUGIN_TCP` |
+| ***default*** | -- |
+
+```YAML tab=
+plugin:
+  tcp:
+  - localhost:5001
+  - 192.1.53.2:5002
+```
+
+```Environment tab=
+SYNSE_PLUGIN_TCP="localhost:5001,192.1.53.2:5002"
+```
+
+#### Unix
+
+| | |
+| ------ | ------ |
+| ***description*** | Register plugins configured for Unix socket based communication. Generally, plugins should be configured for TCP. This option holds a list of paths to the unix sockets for each plugin to register. |
+| ***type*** | list[string] |
+| ***key*** | `plugin.unix` |
+| ***env variable*** | `SYNSE_PLUGIN_UNIX` |
+| ***default*** | -- |
+
+```YAML tab=
+plugin:
+  unix:
+  - /tmp/example.sock
+```
+
+```Environment tab=
+SYNSE_PLUGIN_UNIX="/tmp/example.sock"
+```
+
+!!! note
+    When registering a plugin via unix socket, Synse Server needs access to that socket. If the
+    server is running in a docker container, this means the socket must be mounted in. For convenience,
+    Synse Server creates the `/tmp/synse` directory on the container which can be used as a mount
+    location for sockets, e.g.
+    
+    ```
+    docker run \
+        ...
+        -v $PWD/plugin.sock:/tmp/synse/plugin.sock \
+        ...
+    ```
+
+#### Discover
+
+Configuration options for dynamic plugin discovery. Currently, the only mode of plugin discovery that is
+supported is via Kubernetes endpoint labels. As more modes are supported, this section will be updated.
+Examples of using Kubernetes discovery can be found on the [Advanced Usage](advanced.md) page. 
+
+***Kubernetes Namespace***
+
+| | |
+| ------ | ------ |
+| ***description*** | The Kubernetes namespace to use for any configured plugin selectors. If there are no plugin selectors defined, this will have no effect. |
+| ***type*** | string | 
+| ***key*** | `plugin.discover.kubernetes.namespace` |
+| ***env variable*** | `SYNSE_PLUGIN_DISCOVER_KUBERNETES_NAMESPACE` |
+| ***default*** | -- |
+
+```YAML tab=
+plugin:
+  discover:
+    kubernetes:
+      namespace: default
+```
+
+```Environment tab=
+SYNSE_PLUGIN_DISCOVER_KUBERNETES_NAMESPACE=default
+```
+
+***Kubernetes Endpoint Labels***
+
+| | |
+| ------ | ------ |
+| ***description*** | The endpoint labels to use as selectors for Kubernetes services which belong to plugins. This is a map where the key is the label name and the value is the value which the key should match to. |
+| ***type*** | map[string]string |
+| ***key*** | `plugin.discover.kubernetes.endpoints.labels` |
+| ***env variable*** | `SYNSE_PLUGIN_DISCOVER_KUBERNETES_ENDPOINTS_LABELS_<KEY>` |
+| ***default*** | -- |
+
+```YAML tab=
+plugin:
+  discover:
+    kubernetes:
+      endpoints:
+        labels:
+          app: synse
+          component: plugin
+```
+
+```Environment tab=
+SYNSE_PLUGIN_DISCOVER_KUBERNETES_ENDPOINTS_LABELS_APP=synse
+SYNSE_PLUGIN_DISCOVER_KUBERNETES_ENDPOINTS_LABELS_COMPONENT=plugin
+```
+
+-----
+
+### Cache
+
+Configuration options for Synse Server caches. There are two caches in the server:
+
+- **device**: A lookup cache for devices and their associated tags.
+- **transaction**: A lookup cache for write transactions and their associated devices.
+
+#### Device
+
+***Rebuild Every***
+
+| | |
+| ------ | ------ |
+| ***description*** | The time interval, in seconds, to invalidate and rebuild the device cache to ensure it is up to date. |
+| ***type*** | int |
+| ***key*** | `cache.device.rebuild_every` |
+| ***env variable*** | -- |
+| ***default*** | 180 |
+
+```YAML tab=
+cache:
+  device:
+    rebuild_every: 180  # three minutes
+```
+
+#### Transaction
+
+***TTL***
+
+| | |
+| ------ | ------ |
+| ***description*** | The time-to-live, in seconds, for a transaction in the cache. After this TTL, it will be cleared from the cache and removed from the system. |
+| ***type*** | int |
+| ***key*** | `cache.transaction.ttl` |
+| ***env variable*** | -- |
+| ***default*** | 300 |
+
+```YAML tab=
+cache:
+  transaction:
+    ttl: 300  # five minutes
+```
+
+-----
+
+### gRPC
+
+Configuration options for requests made from the server to plugins via the internal [gRPC API](https://github.com/vapor-ware/synse-server-grpc).
+
+***Timeout***
+
+| | |
+| ------ | ------ |
+| ***description*** | The timeout, in seconds, for a gRPC request. |
+| ***type*** | int |
+| ***key*** | `grpc.timeout` |
+| ***env variable*** | -- |
+| ***default*** | 3 |
+
+```YAML tab=
+grpc:
+  timeout: 3
+```
+
+#### TLS
+
+TLS configurations for the internal server --> plugin gRPC client.
+
+***Cert***
+
+| | |
+| ------ | ------ |
+| ***description*** | The path to the TLS certificate for securing the API connection. |
+| ***type*** | string |
+| ***key*** | `grpc.tls.cert` |
+| ***env variable*** | `SYNSE_GRPC_TLS_CERT` |
+| ***default*** | -- |
+
+```YAML tab=
+grpc:
+  tls:
+    cert: /path/to/cert.pem
+```
+
+```Environment tab=
+SYNSE_GRPC_TLS_CERT="/path/to/cert.pem"
+```
+
+-----
+
+### SSL
+
+Configuration options for securing the server's HTTP/WebSocket APIs.
+
+***Cert***
+
+| | |
+| ------ | ------ |
+| ***description*** | The path to the SSL/TLS certificate for securing the API connection. |
+| ***type*** | string |
+| ***key*** | `ssl.cert` |
+| ***env variable*** | `SYNSE_SSL_CERT` |
+| ***default*** | -- |
+
+```YAML tab=
+ssl:
+  cert: /path/to/cert.pem
+```
+
+```Environment tab=
+SYNSE_SSL_CERT="/path/to/cert.pem"
+```
+
+***Key***
+
+| | |
+| ------ | ------ |
+| ***description*** | The path to the SSL/TLS key for securing the API connection. |
+| ***type*** | string |
+| ***key*** | `ssl.key` |
+| ***env variable*** | `SYNSE_SSL_KEY` |
+| ***default*** | -- |
+
+```YAML tab=
+ssl:
+  key: /path/to/key.key
+```
+
+```Environment tab=
+SYNSE_SSL_KEY="/path/to/key.key"
+```
+
+-----
+
+### Metrics
+
+Configuration options for exposing application metrics via Prometheus exporter.
+
+***Enabled***
+
+| | |
+| ------ | ------ |
+| ***description*** | Enable application metrics export. |
+| ***type*** | bool |
+| ***key*** | `metrics.enabled` |
+| ***env variable*** | `SYNSE_METRICS_ENABLED` |
+| ***default*** | `false` |
+| ***supported*** | `true`, `false` |
+
+```YAML tab=
+metrics:
+  enabled: true
+```
+
+```Environment tab=
+SYNSE_METRICS_ENABLED=true
+```
+
+-----
+
+
+## Examples
+
+
+
+
+
+
+Examples
+--------
+
+## Default Configuration
+
+Below is what the default configuration for Synse Server looks like as YAML.
+
+```yaml
+locale: en_US
+pretty_json: false
+logging: info
+cache:
+  meta:
+    ttl: 20
+  transaction:
+    ttl: 300
+grpc:
+  timeout: 3
+```
+
+## Complete Configuration
+
+Below is a valid (if contrived) and complete example configuration file.
+
+```yaml
+logging: debug
+pretty_json: true
+locale: en_US
+plugin:
+  tcp:
+    - localhost:6000
+    - 54.53.52.51:5555
+  unix:
+    - /tmp/run/example.sock
+  discover:
+    kubernetes:
+      endpoints:
+        labels:
+          app: synse
+          component: plugin
+cache:
+  meta:
+    # time to live in seconds
+    ttl: 20
+  transaction:
+    # time to live in seconds
+    ttl: 300
+grpc:
+  # timeout in seconds
+  timeout: 5
+  tls:
+    cert: /tmp/ssl/example.crt
+```

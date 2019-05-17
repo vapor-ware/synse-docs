@@ -17,7 +17,7 @@ docker run -p 5000:5000 -e SYNSE_LOGGING=debug vaporio/synse-server
 or via compose file (or other orchestration configuration)
 
 ```yaml
-version: "3"
+version: '3'
 services:
   synse-server:
     image: vaporio/synse-server
@@ -33,5 +33,5 @@ When running Synse Server in a Docker container, its logs are output to the cont
 stdout/stderr, so they can be accessed via `docker logs`, e.g.
 
 ```
-docker logs synse-server --follow
+docker logs synse-server
 ```
