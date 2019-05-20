@@ -47,6 +47,7 @@ nav:
       - Getting: server/user/getting.md
       - Quickstart: server/user/quickstart.md
       - Configuration: server/user/configuration.md
+      - Device Tags: server/user/tags.md
       - Deploying: server/user/deploying.md
       - Monitoring: server/user/monitoring.md
       - Advanced: server/user/advanced.md

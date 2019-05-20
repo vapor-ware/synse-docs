@@ -16,7 +16,7 @@ Within this document:
 - `localhost:5000`, `#!shell ${server}`, and other references to the hostname/IP and port
   of the Synse Server instance are all functionally equivalent and serve only as a placeholder
   which should be replaced with instance's IP/port.
-- The examples provided for each item use the [Synse Python Client](https://github.com/vapor-ware/synse-client-python)
+- The examples provided for each item use the [Synse Python Client](../client-python/intro.md)
   for the Python examples.
 - All specified URI parameters are required.
 - All specified query parameters are optional.
@@ -116,17 +116,19 @@ that all requests can have an error response.
 | `request/status`        | `response/status` |
 | `request/version`       | `response/version` |
 | `request/config`        | `response/config` |
-| `request/plugin`        | `response/plugin` |
+| `request/plugin`        | `response/plugin_info` |
+| `request/plugins`       | `response/plugin_summary` |
 | `request/plugin_health` | `response/plugin_health` |
 | `request/scan`          | `response/device_summary` |
 | `request/tags`          | `response/tags` |
-| `request/info`          | `response/device` |
+| `request/info`          | `response/device_info` |
 | `request/read`          | `response/reading` |
 | `request/read_device`   | `response/reading` |
 | `request/read_cache`    | `response/reading` |
-| `request/write_async`   | `response/write_async` |
-| `request/write_sync`    | `response/write_sync` |
-| `request/transaction`   | `response/transaction` |
+| `request/write_async`   | `response/transaction_info` |
+| `request/write_sync`    | `response/transaction_status` |
+| `request/transaction`   | `response/transaction_status` |
+| `request/transactions`  | `response/transaction_list` |
 
 
 ## Reference
@@ -135,7 +137,7 @@ that all requests can have an error response.
 
 Most errors returned from Synse Server will come back with a JSON payload in order to
 provide additional context for the error. Some errors will not return a JSON payload;
-this class of error is generally due to the service not being ready, available, or
+this class of error is generally due to the application not being ready, available, or
 reachable.
 
 #### *HTTP Codes*
@@ -222,11 +224,10 @@ The fields of the response are described below:
 | WebSocket | **request**  | `"request/status"` |
 |           | **response** | `"response/status"` |
 
-A dependency and side-effect free check to see whether Synse Server is
-reachable and responsive.
+Check whether the server is reachable and responsive.
 
 If the endpoint is reachable (e.g. if Synse Server is up and ready), this
-will return a 200 response with the described JSON response. If the test
+will return a 200 response with the described JSON response, below. If the test
 endpoint is unreachable or otherwise fails, it will return a 500 response.
 
 ??? hint "Example"
@@ -259,7 +260,7 @@ The fields of the response are described below:
 | Field | Description |
 | :---- | :---------- |
 | *status* | "ok" if the endpoint returns successfully. |
-| *timestamp* | The time at which the status was tested. |
+| *timestamp* | An RFC3339 timestamp of when the status was tested. |
 
 ??? note "HTTP"
     **Request**
@@ -298,9 +299,7 @@ The fields of the response are described below:
 
 ##### Error
 
-No JSON - route not reachable/service not ready
-
-* **500** - Catchall processing error
+* **500** - No JSON: route not reachable/service not ready
 
 
 
@@ -346,8 +345,8 @@ The fields of the response are described below:
 
 | Field | Description |
 | :---- | :---------- |
-| *version* | The full version (major.minor.micro) of the Synse Server instance. |
-| *api_version* | The API version (major.minor) that can be used to construct subsequent API requests. |
+| *version* | The full version (*<major.minor.micro\>*) of the Synse Server instance. |
+| *api_version* | The API version (*v<major\>*) that can be used to construct subsequent API requests. |
 
 ??? note "HTTP"
     **Request**
@@ -386,9 +385,7 @@ The fields of the response are described below:
 
 ##### Error
 
-No JSON - route not reachable/service not ready
-
-* **500** - Catchall processing error
+* **500** - No JSON: route not reachable/service not ready
 
 
 
@@ -427,7 +424,7 @@ which Synse Server ultimately runs with.
 
 #### *Response Data*
 
-The response JSON will match the configuration scheme. See: [Config](server.md#configuration).
+The response JSON will match the configuration scheme. See: [Config](user/configuration.md#configuration-options).
 
 ##### Error
 
@@ -443,9 +440,9 @@ The [error response](#errors) can be one of:
 
 | | | |
 | --- | --- | --- |
-| HTTP      | **GET**      | `/v3/plugin/<plugin_id>` |
+| HTTP      | **GET**      | `/v3/plugin/<plugin>` |
 | WebSocket | **request**  | `"request/plugin"` |
-|           | **response** | `"response/plugin"` |
+|           | **response** | `"response/plugin_info"` |
 
 Get detailed information about the specified plugin.
 
@@ -475,7 +472,7 @@ You can get a summary of all currently registered plugins via [Plugins](#plugins
 
 | Parameter | Description |
 | :-------- | :---------- |
-| *plugin_id* | The ID of the plugin to get more information for. Plugin IDs can be enumerated via the `/plugin` endpoint without specifying a URI parameter. |
+| *plugin* | The ID of the plugin to get more information for. Plugin IDs can be enumerated via the `/plugin` endpoint without specifying a URI parameter. |
 
 #### *Response Data*
 
@@ -528,8 +525,8 @@ The fields of the response are described below:
 
 | Field | Description |
 | :---- | :---------- |
-| *active* | This field specifies whether the plugin is active or not. For more see [plugin activity](server.md#plugin-activity) |
-| *id* | An id hash for identifying the plugin, generated from plugin metadata. |
+| *active* | This field specifies whether the plugin is active or not. |
+| *id* | A deterministic ID hash for identifying the plugin. |
 | *tag* | The plugin tag. This is a normalized string made up of its name and maintainer. |
 | *name* | The name of plugin. |
 | *maintainer* | The maintainer of the plugin. |
@@ -537,18 +534,18 @@ The fields of the response are described below:
 | *vcs* | A link to the version control repo for the plugin. |
 | *version* | An object that contains version information about the plugin. |
 | *version.plugin_version* | The plugin version. |
-| *version.sdk_version* | The version of the Synse SDK that the plugin is using. |
+| *version.sdk_version* | The version of the [Synse SDK](../sdk/intro.md) that the plugin is using. |
 | *version.build_date* | The date that the plugin was built. |
 | *version.git_commit* | The git commit at which the plugin was built. |
 | *version.git_tag* | The git tag at which the plugin was built. |
-| *version.arch* | The architecture that the plugin is running on. |
-| *version.os* | The OS that the plugin is running on. |
+| *version.arch* | The architecture that the plugin is built for. |
+| *version.os* | The OS that the plugin is built for. |
 | *network* | An object that describes the network configurations for the plugin. |
 | *network.address* | The address of the plugin for the protocol used. |
 | *network.protocol* | The protocol that is used to communicate with the plugin (unix, tcp). |
 | *health* | An object that describes the overall health of the plugin. |
 | *health.timestamp* | The time at which the health status applies. |
-| *health.status* | The health status of the plugin (ok, degraded, failing, error, unknown) |
+| *health.status* | The health status of the plugin (unknown, ok, failing) |
 | *health.checks* | A collection of health check snapshots for the plugin. |
 
 There may be `0..N` health checks for a Plugin, depending on how it is configured.
@@ -557,9 +554,9 @@ The health check elements here make up a snapshot of the plugin's health at a gi
 | Field | Description |
 | :---- | :---------- |
 | *name* | The name of the health check. |
-| *status* | The status of the health check (ok, failing) |
+| *status* | The status of the health check (unknown, ok, failing) |
 | *message* | A message describing the failure, if in a failing state. |
-| *timestamp* | The timestamp for which the status applies. |
+| *timestamp* | An RFC3339 timestamp for when the status applied. |
 | *type* | The type of health check (e.g. periodic) |
 
 ??? note "HTTP"
@@ -630,7 +627,7 @@ The health check elements here make up a snapshot of the plugin's health at a gi
     ```json
     {
       "id": 0,
-      "event": "response/plugin",
+      "event": "response/plugin_info",
       "data": {
         "name": "emulator plugin",
         "maintainer": "vaporio",
@@ -692,8 +689,8 @@ The [error response](#errors) can be one of:
 | | | |
 | --- | --- | --- |
 | HTTP      | **GET**      | `/v3/plugin` |
-| WebSocket | **request**  | `"request/plugin"` |
-|           | **response** | `"response/plugin"` |
+| WebSocket | **request**  | `"request/plugins"` |
+|           | **response** | `"response/plugin_summary"` |
 
 Get a summary of all plugins currently registered with the server instance.
 
@@ -747,8 +744,8 @@ The fields of the response are described below:
 
 | Field | Description |
 | :---- | :---------- |
-| *active* | This field specifies whether the plugin is active or not. For more see [plugin activity](server.md#plugin-activity) |
-| *id* | An id hash for identifying the plugin, generated from plugin metadata. |
+| *active* | This field specifies whether the plugin is active or not. |
+| *id* | A deterministic ID hash for identifying the plugin. |
 | *tag* | The plugin tag. This is a normalized string made up of its name and maintainer. |
 | *name* | The name of plugin. |
 | *maintainer* | The maintainer of the plugin. |
@@ -787,7 +784,7 @@ The fields of the response are described below:
     ```json
     {
       "id": 0,
-      "event": "request/plugin"
+      "event": "request/plugins"
     }
     ```
     
@@ -795,7 +792,7 @@ The fields of the response are described below:
     ```json
     {
       "id": 0,
-      "event": "response/plugin",
+      "event": "response/plugin_summary",
       "data": [
         {
           "name": "emulator plugin",
@@ -838,7 +835,7 @@ The [error response](#errors) can be one of:
 Get a summary of the health of registered plugins.
 
 This provides an easy way to programmatically determine whether the plugins
-registered with Synse Server are considered healthy by Synse Server.
+registered and are considered healthy by the server.
 
 ??? hint "Example"
     ***shell***
@@ -880,8 +877,8 @@ The fields of the response are described below:
 | *updated* | An RFC3339 timestamp describing the time that the plugin health state was last updated. |
 | *healthy* | A list containing the plugin IDs for those plugins deemed to be healthy. |
 | *unhealthy* | A list containing the plugin IDs for those plugins deemed to be unhealthy. |
-| *active* | The count of active plugins. (see: [plugin activity](server.md#plugin-activity)) |
-| *inactive* | The count of inactive plugins. (see: [plugin activity](server.md#plugin-activity)) |
+| *active* | The count of active plugins. |
+| *inactive* | The count of inactive plugins. |
 
 ??? note "HTTP"
     **Request**
@@ -948,13 +945,13 @@ The [error response](#errors) can be one of:
 | --- | --- | --- |
 | HTTP      | **GET**      | `/v3/scan` |
 | WebSocket | **request**  | `"request/scan"` |
-|           | **response** | `"response/scan"` |
+|           | **response** | `"response/device_summary"` |
 
 List the devices that Synse knows about and can read from/write to via
-the configured plugins.
+the registered plugins.
 
-This endpoint provides an aggregated view of the devices made known to Synse
-Server by each of the registered plugins. This endpoint provides a high-level
+This endpoint provides an aggregated view of the devices made known to the
+server by each of its registered plugins. This endpoint provides a high-level
 view of what exists in the system. Scan info can be filtered to show only those
 devices which match a set of provided tags.
 
@@ -982,8 +979,8 @@ can be used to modify the sort behavior.
 | Key  | Description |
 | :--- | :---------- |
 | ns | The default namespace to use for the specified labels. (default: `default`) |
-| tags | The [tags](tags.md) to filter devices on. If specifying multiple tags, they should be comma-separated. |
-| force | Force a re-scan (do not use the cache). This will take longer than scanning using the cache, since it needs to rebuild the cache. (default: false) |
+| tags | The tags to filter devices on. If specifying multiple tags, they should be comma-separated. |
+| force | Force a re-scan. This will take longer than scanning using the cache, since it needs to rebuild the cache. (default: false) |
 | sort | Specify the fields to sort by. Multiple fields can be specified as a comma separated string, e.g. `"plugin,id"`. The "tags" field can not be used for sorting. (default: "plugin,sort_index,id", where the `sort_index` is an internal sort preference which a plugin can optionally specify.) |
 
 #### *Response Data*
@@ -1019,10 +1016,10 @@ The fields of the response are described below:
 
 | Field | Description |
 | :---- | :---------- |
-| *id* | The globally unique ID for the device. |
+| *id* | The globally unique deterministic ID for the device. |
 | *alias* | A human-readable name for the device. |
 | *info* | A human-readable string providing identifying info about a device. |
-| *type* | The type of the device, as defined by its plugin. |
+| *type* | The type of the device. |
 | *plugin* | The ID of the plugin which the device is managed by. |
 | *tags* | A list of the tags associated with this device. One of the tags will be the `id` tag. |
 
@@ -1073,7 +1070,7 @@ The fields of the response are described below:
     ```json
     {
       "id": 0,
-      "event": "response/scan",
+      "event": "response/device_summary",
       "data": [
         {
           "id": "c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07",
@@ -1126,7 +1123,7 @@ This will list the tags in the specified tag namespace. If no tag namespace
 is specified (via query parameters), the default tag namespace is used.
 
 By default, this endpoint will omit the `id` tags since they match the
-device id enumerated by the [`/scan`](#scan) endpoint. The `id` tags can
+device id enumerated by the [`scan`](#scan) endpoint. The `id` tags can
 be included in the response by setting the `ids` query parameter to `true`.
 
 Multiple tag namespaces can be queried at once by using a comma delimiter
@@ -1232,11 +1229,11 @@ The [error response](#errors) can be one of:
 
 | | | |
 | --- | --- | --- |
-| HTTP      | **GET**      | `/v3/info/<device_id>` |
+| HTTP      | **GET**      | `/v3/info/<device>` |
 | WebSocket | **request**  | `"request/info"` |
-|           | **response** | `"response/info"` |
+|           | **response** | `"response/device_info"` |
 
-Get the full set of metainfo and capabilities for a specified device.
+Get the full set of metadata and capabilities for a specified device.
 
 ??? hint "Example"
     ***shell***
@@ -1258,7 +1255,7 @@ Get the full set of metainfo and capabilities for a specified device.
 
 | Parameter | Description |
 | :-------- | :---------- |
-| *device_id* | The ID of the device to get info for. IDs should be globally unique. |
+| *device* | The globally unique deterministic ID or alias of the device to get info for. |
 
 #### *Response Data*
 
@@ -1270,6 +1267,7 @@ Get the full set of metainfo and capabilities for a specified device.
   "type": "temperature",
   "plugin": "4032ffbe-80db-5aa5-b794-f35c88dff85c",
   "info": "Synse Temperature Sensor 1",
+  "sort_index": 0,
   "metadata": {
     "model":"emul8-temp"
   },
@@ -1288,6 +1286,7 @@ Get the full set of metainfo and capabilities for a specified device.
       "name": "temperature",
       "type": "temperature",
       "precision": 2,
+      "scalingFactor": 0,
       "unit": {
         "name": "celsius",
         "symbol": "C"
@@ -1304,13 +1303,14 @@ The fields of the response are described below:
 | *timestamp* | An RFC3339 timestamp describing the time that the device info was gathered. |
 | *id* | The globally unique ID for the device. |
 | *alias* | A human-readable name for the device. |
-| *type* | The device type, as specified by the plugin. |
+| *type* | The device type. |
 | *plugin* | The ID of the plugin that manages the device. |
 | *info* | A human-readable string providing identifying info about a device. |
+| *sort_index* | The custom sort index specified for the device by the plugin. The default value of 0 indicates no special sorting. |
 | *metadata* | A map of arbitrary values that provide additional data for the device. |
-| *capabilities* | Specifies the actions which the device is able to perform (e.g. read, write). See below for more. |
+| *capabilities* | Specifies the actions which the device is able to perform (e.g. read, write). |
 | *tags* | A list of the tags associated with this device. One of the tags will be the 'id' tag which should match the `id` field. |
-| *output* | A list of the output types that the device supports. |
+| *outputs* | A list of the output types that the device supports. |
 
 ###### Capabilities
 
@@ -1325,11 +1325,11 @@ The fields of the response are described below:
 
 | Field | Description |
 | :---- | :---------- |
-| *name* | The name of the output type. This can be namespaced. |
-| *type* | The type of the output, as defined by the plugin. |
+| *name* | The name of the output type. |
+| *type* | The type of the output. |
 | *precision* | The number of decimal places the value will be rounded to. |
-| *scaling_factor* | A scaling factor which will be applied to the raw reading value. |
-| *units* | Information for the reading's units of measure. |
+| *scalingFactor* | A scaling factor which will be applied to the raw reading value. The default factor of 0 indicates no scaling factor applied. |
+| *unit* | Information for the reading's units of measure. |
 | *unit.name* | The complete name of the unit of measure (e.g. "meters per second"). |
 | *unit.symbol* | A symbolic representation of the unit of measure (e.g. m/s). |
 
@@ -1344,12 +1344,13 @@ The fields of the response are described below:
     {
       "timestamp": "2019-01-01T12:00:00Z",
       "id": "c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07",
-      "alias": "",
       "type": "temperature",
       "plugin": "4032ffbe-80db-5aa5-b794-f35c88dff85c",
-      "info": "Synse Temperature Sensor 1",
+      "info": "Synse Temperature Sensor 4",
+      "alias": "",
+      "sort_index": 0,
       "metadata": {
-        "model":"emul8-temp"
+        "model": "emul8-temp"
       },
       "capabilities": {
         "mode": "rw",
@@ -1366,6 +1367,7 @@ The fields of the response are described below:
           "name": "temperature",
           "type": "temperature",
           "precision": 2,
+          "scalingFactor": 0.0,
           "unit": {
             "name": "celsius",
             "symbol": "C"
@@ -1391,16 +1393,17 @@ The fields of the response are described below:
     ```json
     {
       "id": 0,
-      "event": "response/info",
+      "event": "response/device_info",
       "data": {
         "timestamp": "2019-01-01T12:00:00Z",
         "id": "c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07",
-        "alias": "",
         "type": "temperature",
         "plugin": "4032ffbe-80db-5aa5-b794-f35c88dff85c",
-        "info": "Synse Temperature Sensor 1",
+        "info": "Synse Temperature Sensor 4",
+        "alias": "",
+        "sort_index": 0,
         "metadata": {
-          "model":"emul8-temp"
+          "model": "emul8-temp"
         },
         "capabilities": {
           "mode": "rw",
@@ -1417,6 +1420,7 @@ The fields of the response are described below:
             "name": "temperature",
             "type": "temperature",
             "precision": 2,
+            "scalingFactor": 0.0,
             "unit": {
               "name": "celsius",
               "symbol": "C"
@@ -1459,8 +1463,9 @@ to Synse (until the plugin comes back up), and as such, can not be read from.
 When the plugin becomes available again, the devices from that plugin are available
 to be read from.
 
-For readability, readings are sorted by a combination of originating plugin, any
-plugin-specified sort index on the reading's device, and by device id.
+For readability, readings are sorted by a combination of originating plugin ID, any
+plugin-specified sort index on the reading's device (by default, there is no additional sort
+index), and by device ID.
 
 ??? hint "Example"
     ***shell***
@@ -1482,13 +1487,10 @@ plugin-specified sort index on the reading's device, and by device id.
 
 | Key  | Description |
 | :--- | :---------- |
-| ns | The default namespace to use for the specified labels. (default: `default`) |
-| tags | The [tags](tags.md) to filter devices on. If specifying multiple tags, they should be comma-separated. |
+| ns | The default namespace to use for the tags which do not include a namespace. This will not effect tags with a namespace already specified. (default: `default`) |
+| tags | The [tags](user/tags.md) to filter devices on. If specifying multiple tags, they should be comma-separated. |
 
 #### *Response Data*
-
-> **Note**: In the examples below, the key-value pairs in the `context` field
-> are arbitrary and only serve as an example of possible values.
 
 ```json
 [
@@ -1582,27 +1584,31 @@ plugin-specified sort index on the reading's device, and by device id.
 ]
 ```
 
-The `context` field of a reading is optional and allows the plugin to specify additional
-context for the reading. This can be useful in modeling the data for various kinds of
-plugins/read behavior.
-
-As an example, a plugin could provide additional data for a reading such as which host
-the data originated from, a sample rate, etc (for something like sFlow). Since the context
-can contain arbitrary data, it can also be used to label particular readings making them
-easier to parse upstream. An example of this would be associating multiple lock devices
-with their physical location.
-
 The fields of the response are described below:
 
 | Field | Description |
 | :---- | :---------- |
-| *device* | The ID of the device which the reading originated from. |
-| *device_type* | The type of the device. |
-| *type* | The type of the reading. |
+| *device* | The globally unique ID of the device which the reading(s) originated from. |
+| *device_type* | The type of the device (defined by the plugin). |
+| *type* | The type of the reading. Devices may produce readings of different types (e.g. LED status and LED color). |
 | *value* | The value of the reading. |
 | *timestamp* | An RFC3339 timestamp describing the time at which the reading was taken. |
 | *unit* | The unit of measure for the reading. If there is no unit, this will be `null`. |
 | *context* | A mapping of arbitrary values to provide additional context for the reading. |
+
+The `context` field of a reading allows the plugin to specify additional context related to
+that particular reading. It is optional and can be left empty. The contents of the context
+are arbitrary and unrestricted, so the plugin can include whatever information it needs to.
+
+As an example, the context could contain additional information about the data provenance or
+attributes (e.g. sample rate). It could also be used to give readings a label which could make
+them easier to parse upstream, such as a canonical name, or information about the location
+of the device/reading.
+
+!!! info
+    The [`read`](#read), [`read device`](#read-device), and [`read cache`](#read-cache)
+    endpoints all return reading data in the same scheme, however the `read cache`
+    endpoint returns its data as a streamed response.
 
 ??? note "HTTP"
     **Request**
@@ -1692,13 +1698,12 @@ The [error response](#errors) can be one of:
 
 | | | |
 | --- | --- | --- |
-| HTTP      | **GET**      | `/v3/read/<device_id>` |
+| HTTP      | **GET**      | `/v3/read/<device>` |
 | WebSocket | **request**  | `"request/read_device"` |
 |           | **response** | `"response/reading"` |
 
-Read from the specified device. This endpoint is effectively the same as using the [`/read`](#read)
-endpoint where the label matches the [device id tag](tags.md#auto-generated), e.g.
-`http://HOST:5000/v3/read?tags=id:b33f7ac0`.
+Get the current reading(s) from the specified device. This endpoint is effectively the
+same as using the [`read`](#read) endpoint with a device ID tag.
 
 ??? hint "Example"
     ***shell***
@@ -1718,17 +1723,11 @@ endpoint where the label matches the [device id tag](tags.md#auto-generated), e.
 
 #### *URI Parameters*
 
-| Parameter | Required | Description |
-| :-------- | :------- | :---------- |
-| *device_id* | yes | The ID of the device to read. [Device IDs](ids.md) are globally unique. |
+| Parameter | Description |
+| :-------- | :---------- |
+| *device* | The globally unique ID or alias of the device to read. |
 
 #### *Response Data*
-
-The response schema for the `/read/{device_id}` endpoint is the same as the response schema
-for the [`/read`](#read) endpoint.
-
-> **Note**: In the examples below, the key-value pairs in the `context` field
-> are arbitrary and only serve as an example of possible values.
 
 ```json
 [
@@ -1751,13 +1750,18 @@ The fields of the response are described below:
 
 | Field | Description |
 | :---- | :---------- |
-| *device* | The ID of the device which the reading originated from. |
-| *device_type* | The type of the device. |
-| *type* | The type of the reading. |
+| *device* | The globally unique ID of the device which the reading(s) originated from. |
+| *device_type* | The type of the device (defined by the plugin). |
+| *type* | The type of the reading. Devices may produce readings of different types (e.g. LED status and LED color). |
 | *value* | The value of the reading. |
 | *timestamp* | An RFC3339 timestamp describing the time at which the reading was taken. |
 | *unit* | The unit of measure for the reading. If there is no unit, this will be `null`. |
 | *context* | A mapping of arbitrary values to provide additional context for the reading. |
+
+!!! info
+    The [`read`](#read), [`read device`](#read-device), and [`read cache`](#read-cache)
+    endpoints all return reading data in the same scheme, however the `read cache`
+    endpoint returns its data as a streamed response.
 
 ??? note "HTTP"
     **Request**
@@ -1839,14 +1843,14 @@ The [error response](#errors) can be one of:
 Stream reading data from the registered plugins.
 
 All plugins have the capability of caching their readings locally in order to maintain
-a higher resolution of state beyond the poll frequency which Synse Server may request at.
-This is particularly useful for push-based plugins, where we would lose the pushed
-reading if it were not cached.
+a higher resolution of reading state beyond the poll frequency which Synse Server may
+request at. This is particularly useful for push-based plugins where data may be lost
+if it is pushed more frequently than the poll interval.
 
-At the plugin level, caching read data can be enabled, but is disabled by default. Even if
-disabled, this route will still return data for every device that supports reading on each
-of the configured plugins. When read caching is disabled, this will just return a dump of
-the current state for all readings which is maintained by the plugin.
+Plugin reading caching is disabled by default, but can be [enabled in the plugin
+configuration](../sdk/user/configuration.md). When caching is disabled, this endpoint
+will return a dump of the current reading state held by the plugin. In this case, the
+`start` and `end` bounds are ignored, as there is no historical data to bound.
 
 ??? hint "Example"
     ***shell***
@@ -1873,26 +1877,22 @@ the current state for all readings which is maintained by the plugin.
 
 #### *Response Data*
 
-The response schema for the `/readcache` endpoint is the same as the response schema
-for the [`/read`](#read) endpoint.
+```
+{"device":"01976737-085c-5e4c-94bc-a383d3d130fb","timestamp":"2019-01-01T12:00:00Z","type":"state","device_type":"led","unit":null,"value":"off","context":{}}{"device":"01976737-085c-5e4c-94bc-a383d3d130fb","timestamp":"2019-01-01T12:00:00Z","type":"color","device_type":"led","unit":null,"value":"000000","context":{}}
+```
 
-Unlike the [`/read`](#read) and [`/read/{device_id}`](#read-device) endpoints, the response for this endpoint is
-streamed JSON. One block of the streamed JSON will appear as follows:
-
-> **Note**: In the examples below, the key-value pairs in the `context` field
-> are arbitrary and only serve as an example of possible values.
+Unlike the [`read`](#read) and [`read device`](#read-device) endpoints, the response for this endpoint is
+streamed JSON. One block of the streamed JSON has the same data scheme as a reading from the other
+read endpoints, e.g.
 
 ```json
 {
-  "device": "c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07",
+  "device": "01976737-085c-5e4c-94bc-a383d3d130fb",
   "timestamp": "2019-01-01T12:00:00Z",
-  "type": "temperature",
-  "device_type": "temperature",
-  "unit": {
-    "name": "celsius",
-    "symbol": "C"
-  },
-  "value": 85,
+  "type": "state", 
+  "device_type": "led",
+  "unit" :null,
+  "value": "off",
   "context": {}
 }
 ```
@@ -1901,13 +1901,18 @@ The fields of the response are described below:
 
 | Field | Description |
 | :---- | :---------- |
-| *device* | The ID of the device which the reading originated from. |
-| *device_type* | The type of the device. |
-| *type* | The type of the reading. |
+| *device* | The globally unique ID of the device which the reading(s) originated from. |
+| *device_type* | The type of the device (defined by the plugin). |
+| *type* | The type of the reading. Devices may produce readings of different types (e.g. LED status and LED color). |
 | *value* | The value of the reading. |
 | *timestamp* | An RFC3339 timestamp describing the time at which the reading was taken. |
 | *unit* | The unit of measure for the reading. If there is no unit, this will be `null`. |
 | *context* | A mapping of arbitrary values to provide additional context for the reading. |
+
+!!! info
+    The [`read`](#read), [`read device`](#read-device), and [`read cache`](#read-cache)
+    endpoints all return reading data in the same scheme, however the `read cache`
+    endpoint returns its data as a streamed response.
 
 ??? note "HTTP"
     **Request**
@@ -1916,21 +1921,9 @@ The fields of the response are described below:
     ```
     
     **Response**
-    ```json
-    [
-      {
-        "device": "c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07",
-        "timestamp": "2019-01-01T12:00:00Z",
-        "type": "temperature",
-        "device_type": "temperature",
-        "unit": {
-          "name": "celsius",
-          "symbol": "C"
-        },
-        "value": 85,
-        "context": {}
-      }
-    ]
+    ```
+    {"device":"01976737-085c-5e4c-94bc-a383d3d130fb","timestamp":"2019-01-01T12:00:00Z","type":"state","device_type":"led","unit":null,"value":"off","context":{}}
+    {"device":"01976737-085c-5e4c-94bc-a383d3d130fb","timestamp":"2019-01-01T12:00:00Z","type":"color","device_type":"led","unit":null,"value":"000000","context":{}}
     ```
 
 ??? note "WebSocket"
@@ -1979,25 +1972,37 @@ The [error response](#errors) can be one of:
 
 | | | | |
 | --- | --- | --- | --- |
-| HTTP      | **POST**     | `/v3/write/<device_id>` | `#!json {"action": "<action>", "data": "<data>"}` |
+| HTTP      | **POST**     | `/v3/write/<device>` | `#!json {"action": "<action>", "data": "<data>"}` |
 | WebSocket | **request**  | `"request/write_async"` | |
-|           | **response** | `"response/write_async"` |
+|           | **response** | `"response/transaction_info"` |
 
-Write data to a device, in an asynchronous manner.
+Write data to a device asynchronously.
 
-This endpoint allows writes to be issued to Synse Server, where they will be processed
-asynchronously and their status can be polled at some later time. An alternative is to
-use the [synchronous write](#write-synchronous) endpoint.
+At the plugin level, Synse performs writes asynchronously. This endpoint issues a device
+write to a plugin and returns the transaction information that is associated with the
+write action. The transaction can be checked later for completion with the [`transaction`](#transaction)
+endpoint.
 
-This endpoint will return a transaction ID associated with each write. For simplicity
-and to reduce partial state failure cases, Synse only supports writing to a single device
-per request, however multiple values can be written to the device if desired. When specifying
-multiple write operations for a device, they are processed in the order which they are
-provided in the POSTed JSON body.
+Multiple write operations can be specified in the POSTed JSON payload. When this is done,
+write actions will be processed in the order by which they are specified in the array.
 
-Not all devices support writing. The write capabilities of a device are defined at the plugin
-level and are exposed via the [`/info`](#info) endpoint. If a write is issued to a device which
-does not support writing, an error is returned.
+There are four states a transaction can be in:
+
+- ***PENDING***: The write action is queued up but has not been processed.
+- ***WRITING***: The write action is in the process of being executed.
+- ***DONE***: The write action completed successfully.
+- ***ERROR***: An error occurred at some point during the write.
+
+Both ***DONE*** and ***ERROR*** are terminal states, meaning that once a transaction reaches this
+state, no further processing will be done for the action and no further updates will be made,
+so the returned response will not change.
+
+Not all devices support writing. This is determined per-device at the plugin level. If
+a device that does not support writing is written to, an error is returned. The [`info`](#info)
+endpoint can also be used to check if a device supports writing.
+
+In some cases, it may be desirable to issue writes synchronously. For such cases, see
+the [`synchronous write`](#write-synchronous) endpoint.
 
 ??? hint "Example"
     ***shell***
@@ -2027,9 +2032,9 @@ does not support writing, an error is returned.
 
 #### *URI Parameters*
 
-| Parameter | Required | Description |
-| :-------- | :------- | :---------- |
-| *device_id* | yes | The ID of the device that is being written to. |
+| Parameter | Description |
+| :-------- | :---------- |
+| *device* | The globally unique ID or alias of the device that is being written to. |
 
 #### *POST Body*
 
@@ -2043,18 +2048,23 @@ does not support writing, an error is returned.
 ]
 ```
 
-The fields of the response are described below:
+!!! tip
+    The POSTed body can be either a single payload object, e.g. `#!json {"action": "<action>", "data": "<data>"}`,
+    or an array of payload objects, e.g. `#!json [{"action": "<action>", "data": "<data>"}, {"action": "<action>", "data": "<data>"}]`.
+    An array signifies multiple writes to the same device.
+
+The fields of the payload are described below:
 
 | Field | Required | Description |
 | :---- | :------- | :---------- |
 | *transaction* | no | A user-defined transaction ID for the write. If this conflicts with an existing transaction ID, an error is returned. If this is not specified, a transaction ID will be automatically generated for the write action. |
-| *action* | yes | The action that the device will perform. This is set at the plugin level and exposed in the [`/info`](#info) endpoint. |
+| *action* | yes | The action that the device will perform. This is set at the plugin level and exposed in the [`info`](#info) endpoint. |
 | *data* | sometimes | Any data that an action may require. Not all actions require data. This is plugin-defined. |
 
 
 To batch multiple writes to a device, the additional writes can be appended to the
-POST body JSON list. The writes will be processed in the order which they are provided
-in this list. In the example below, "color" will be processed first, then "state".
+POST body JSON array. The writes will be processed in the order which they are provided
+in this array. In the example below, "color" will be processed first, then "state".
 
 ```json
 [
@@ -2101,8 +2111,8 @@ The fields of the response are described below:
 | Field | Description |
 | :---- | :---------- |
 | *context* | The data written to the device. This is provided as context info to help identify the write action. |
-| *device* | The GUID of the device being written to. |
-| *transaction* | The ID for the device write transaction. This can be passed to the [`/transaction`](#transaction) endpoint to get the status of the write action. |
+| *device* | The globally unique ID of the device being written to. |
+| *id* | The ID of the transaction. This can be passed to the [`transaction`](#transaction) endpoint to get the status of the write action. |
 | *timeout* | The timeout for the write transaction, after which it will be cancelled. This is effectively the maximum wait time for the transaction to resolve. This is defined by the plugin. |
 
 ??? note "HTTP"
@@ -2164,7 +2174,7 @@ The fields of the response are described below:
     ```json
     {
       "id": 0,
-      "event": "response/write_async",
+      "event": "response/transaction_info",
       "data": [
         {
           "id": "2b717ced-58ff-43dc-ab6f-d4c0c6008ebb",
@@ -2207,20 +2217,23 @@ The [error response](#errors) can be one of:
 
 | | | | |
 | --- | --- | --- | --- |
-| HTTP      | **POST**     | `/v3/write/wait/<device_id>` | `#!json {"action": "<action>", "data": "<data>"}` |
+| HTTP      | **POST**     | `/v3/write/wait/<device>` | `#!json {"action": "<action>", "data": "<data>"}` |
 | WebSocket | **request**  | `"request/write_sync"` | |
-|           | **response** | `"response/write_sync"` |
+|           | **response** | `"response/transaction_status"` |
 
 Write data to a device, waiting for the write to complete.
 
-This endpoint is the synchronous version of the [asynchronous write](#write-asynchronous) endpoint.
-In some cases, it may be more convenient to just wait for a response instead of continually
-polling Synse Server to check whether the transaction completed. For these cases, this endpoint
+This endpoint is the synchronous version of the [`asynchronous write`](#write-asynchronous) endpoint.
+In some cases, it may be more convenient to just wait for a response instead of polling
+Synse Server to check whether the transaction completed. For these cases, this endpoint
 can be used.
 
 Note that the length of time it takes for a write to complete depends on the device and its
 plugin, so there is likely to be a variance in response times when waiting. It is up to the
 user to define a sane timeout such that the request does not prematurely terminate.
+
+Since this endpoint will wait until the transaction has completed, the returned transaction
+status should always be one of the two terminal states (DONE, ERROR).
 
 ??? hint "Example"
     ***shell***
@@ -2250,11 +2263,12 @@ user to define a sane timeout such that the request does not prematurely termina
 
 #### *URI Parameters*
 
-| Parameter | Required | Description |
-| :-------- | :------- | :---------- |
-| *device_id* | yes | The ID of the device that is being written to. |
+| Parameter | Description |
+| :-------- | :---------- |
+| *device* | The globally unique ID or alias of the device that is being written to. |
 
 #### *POST Body*
+
 ```json
 [
   {
@@ -2265,19 +2279,23 @@ user to define a sane timeout such that the request does not prematurely termina
 ]
 ```
 
-The fields of the response are described below:
+!!! tip
+    The POSTed body can be either a single payload object, e.g. `#!json {"action": "<action>", "data": "<data>"}`,
+    or an array of payload objects, e.g. `#!json [{"action": "<action>", "data": "<data>"}, {"action": "<action>", "data": "<data>"}]`.
+    An array signifies multiple writes to the same device.
+
+The fields of the payload are described below:
 
 | Field | Required | Description |
 | :---- | :------- | :---------- |
-| *device* | yes | The ID of the device being written to. |
 | *transaction* | no | A user-defined transaction ID for the write. If this conflicts with an existing transaction ID, an error is returned. If this is not specified, a transaction ID will be automatically generated for the write action. |
-| *action* | yes | The action that the device will perform. This is set at the plugin level and exposed in the [`/info`](#info) endpoint. |
+| *action* | yes | The action that the device will perform. This is set at the plugin level and exposed in the [`info`](#info) endpoint. |
 | *data* | sometimes | Any data that an action may require. Not all actions require data. This is plugin-defined. |
 
 
 To batch multiple writes to a device, the additional writes can be appended to the
-POST body JSON list. The writes will be processed in the order which they are provided
-in this list. In the example below, "color" will be processed first, then "state".
+POST body JSON array. The writes will be processed in the order which they are provided
+in this array. In the example below, "color" will be processed first, then "state".
 
 ```json
 [
@@ -2327,13 +2345,12 @@ in this list. In the example below, "color" will be processed first, then "state
 ]
 ```
 
-The response for a synchronous write has the same scheme as the [`/transaction`](#transaction) response,
-albeit in a list. Some of these fields will not matter to the caller of the synchronous write endpoint,
-such as the transaction `id`. 
+The response for a synchronous write has the same scheme as the [`transaction`](#transaction) response,
+albeit in a list. 
 
 It is up to the user to iterate though the response and ensure that each individual write completed
-successfully. While this endpoint will fail in cases where the plugin is not reachable, the data is
-invalid, etc., it will not fail if a write fails to execute properly.
+successfully. While this endpoint will return an error in cases where the plugin is not reachable, the data is
+invalid, etc., it will not return an error if a write fails to execute properly.
 
 ??? note "HTTP"
     **Request**
@@ -2402,7 +2419,7 @@ invalid, etc., it will not fail if a write fails to execute properly.
     ```json
     {
       "id": 0,
-      "event": "response/write_sync",
+      "event": "response/transaction_status",
       "data": [
         {
           "id": "ea80f074-bc80-4fdd-b842-8392514bd19b",
@@ -2453,16 +2470,27 @@ The [error response](#errors) can be one of:
 
 | | | |
 | --- | --- | --- |
-| HTTP      | **GET**      | `/v3/transaction/<transaction_id>` |
+| HTTP      | **GET**      | `/v3/transaction/<transaction>` |
 | WebSocket | **request**  | `"request/transaction"` |
-|           | **response** | `"response/transaction"` |
+|           | **response** | `"response/transaction_info"` |
 
-Check the state and status of a write transaction.
+Check the status of a write transaction.
 
-If no *transaction_id* is given, a sorted list of all cached transaction IDs is returned. The
-length of time that a transaction is cached is configurable (see the Synse Server [configuration](server.md#configuration)).
+If the provided transaction ID does not exist, an error is returned. Note that
+transaction IDs are not stored indefinitely. After a [configurable](user/configuration.md#cache)
+TLL, the transaction will be removed from the system and any subsequent lookups for it will
+result in a Not Found error.
 
-If the provided transaction ID does not exist, an error is returned.
+There are four states a transaction can be in:
+
+- ***PENDING***: The write action is queued up but has not been processed.
+- ***WRITING***: The write action is in the process of being executed.
+- ***DONE***: The write action completed successfully.
+- ***ERROR***: An error occurred at some point during the write.
+
+Both ***DONE*** and ***ERROR*** are terminal states, meaning that once a transaction reaches this
+state, no further processing will be done for the action and no further updates will be made,
+so the returned response will not change.
 
 ??? hint "Example"
     ***shell***
@@ -2482,9 +2510,9 @@ If the provided transaction ID does not exist, an error is returned.
 
 #### *URI Parameters*
 
-| Parameter | Required | Description |
-| :-------- | :------- | :---------- |
-| *transaction_id* | no | The ID of the write transaction to get the status of. Transaction IDs are provided from an [asynchronous write](#write-asynchronous) response. |
+| Parameter | Description |
+| :-------- | :---------- |
+| *transaction* | The ID of the transaction to get the status of. Transaction IDs are provided from a write response. |
 
 
 #### *Response Data*
@@ -2510,13 +2538,13 @@ The fields of the response are described below:
 
 | Field | Description |
 | :---- | :---------- |
-| *id* | The ID of the transaction. This is generated and assigned by the plugin being written to. |
+| *id* | The ID of the transaction. |
 | *timeout* | A string representing the timeout for the write transaction after which it will be cancelled. This is effectively the maximum wait time for the transaction to resolve. |
-| *device* | The GUID of the device being written to. |
+| *device* | The globally unique ID of the device being written to. |
 | *context* | The POSTed write data for the given write transaction. |
-| *status* | The current status of the transaction. (`pending`, `writing`, `done`, `error`) |
+| *status* | The current status of the transaction. (`PENDING`, `WRITING`, `DONE`, `ERROR`) |
 | *created* | The time at which the transaction was created. This timestamp is generated by the plugin. |
-| *updated* | The last time the transaction state *or* status was updated. Once the transaction reaches a `done` status or `error` state, no further updates will occur. |
+| *updated* | The last time the transaction status was updated. Once the transaction reaches a terminal state, no further updates will occur. |
 | *message* | Any context information relating to a transaction's error state. If there is no error, this will be an empty string. |
 
 ??? note "HTTP"
@@ -2584,17 +2612,6 @@ The [error response](#errors) can be one of:
 * **500** - Catchall processing error
 * **404** - Transaction not found
 
-#### *Status*
-
-Transaction can have one of four statuses:
-
-| Status | Description |
-| :----- | :---------- |
-| *pending* | The write was received and queued but has not yet been processed. |
-| *writing* | The write has been taken off the queue and is being processed. |
-| *done* | The write has been processed and completed successfully. (terminal state) |
-| *error* | The write failed for any reason. (terminal state) |
-
 
 
 ---
@@ -2604,15 +2621,13 @@ Transaction can have one of four statuses:
 | | | |
 | --- | --- | --- |
 | HTTP      | **GET**      | `/v3/transaction` |
-| WebSocket | **request**  | `"request/transaction"` |
-|           | **response** | `"response/transaction"` |
+| WebSocket | **request**  | `"request/transactions"` |
+|           | **response** | `"response/transaction_list"` |
 
-Check the state and status of a write transaction.
+Get a list of all tracked transaction IDs.
 
-If no *transaction_id* is given, a sorted list of all cached transaction IDs is returned. The
-length of time that a transaction is cached is configurable (see the Synse Server [configuration](server.md#configuration)).
-
-If the provided transaction ID does not exist, an error is returned.
+All transactions which are currently active (e.g. have not exceeded their [TTL](user/configuration.md#cache))
+will have their IDs returned by this endpoint.
 
 ??? hint "Example"
     ***shell***
@@ -2629,13 +2644,6 @@ If the provided transaction ID does not exist, an error is returned.
     
     print(resp.raw)
     ```
-
-#### *URI Parameters*
-
-| Parameter | Required | Description |
-| :-------- | :------- | :---------- |
-| *transaction_id* | no | The ID of the write transaction to get the status of. Transaction IDs are provided from an [asynchronous write](#write-asynchronous) response. |
-
 
 #### *Response Data*
 
@@ -2665,7 +2673,7 @@ If the provided transaction ID does not exist, an error is returned.
     ```json
     {
       "id": 0,
-      "event": "request/transaction"
+      "event": "request/transactions"
     }
     ```
     
@@ -2673,7 +2681,7 @@ If the provided transaction ID does not exist, an error is returned.
     ```json
     {
       "id": 0,
-      "event": "response/transaction",
+      "event": "response/transaction_list",
       "data": [
         "2b717ced-58ff-43dc-ab6f-d4c0c6008ebb",
         "ea80f074-bc80-4fdd-b842-8392514bd19b"
@@ -2688,15 +2696,6 @@ The [error response](#errors) can be one of:
 * **500** - Catchall processing error
 * **404** - Transaction not found
 
-#### *Status*
-Transaction can have one of four statuses:
-
-| Status | Description |
-| :----- | :---------- |
-| *pending* | The write was received and queued but has not yet been processed. |
-| *writing* | The write has been taken off the queue and is being processed. |
-| *done* | The write has been processed and completed successfully. (terminal state) |
-| *error* | The write failed for any reason. (terminal state) |
 
 
 ---
@@ -2705,16 +2704,21 @@ Transaction can have one of four statuses:
 
 | | | | |
 | --- | --- | --- | --- |
-| HTTP | **GET**  | `/v3/device/<device_id>` | |
-|      | **POST** | `/v3/device/<device_id>` | `#!json {"action": "<action>", "data": "<data>"}` |
+| HTTP | **GET**  | `/v3/device/<device>` | |
+|      | **POST** | `/v3/device/<device>` | `#!json {"action": "<action>", "data": "<data>"}` |
 | WebSocket | -- | not supported | |
 
 Read and write to a device.
 
-This endpoint allows read and write access to a device through a single URL,
-allowing for FQDN devices. A device can be read via `GET` and written to via `POST`.
-The underlying implementations for read and write are the same as the [`/read/{device}`](#read-device)
-and [`/write/wait/{device}`](#write-synchronous) requests, respectively.
+This endpoint allows read and write access to a device through a single endpoint.
+This is added as a convenience and is effectively just a wrapper around the [`read device`](#read-device)
+endpoint and [`synchronous write`](#write-synchronous) endpoint.
+
+!!! info
+    This endpoint only exists in the HTTP API. There is no "device" event in the
+    WebSocket API, as the `read device` and `synchronous write` can be used instead.
+    Similarly, the API clients do not support a "device" event for the same reason.
+    This HTTP endpoint was added as a convenience for interacting with a device.
 
 ??? hint "Example"
     ***shell***
@@ -2729,33 +2733,12 @@ and [`/write/wait/{device}`](#write-synchronous) requests, respectively.
       -d '{"action": "color", "data": "f38ac2"}' \
       http://${server}:5000/v3/device/4032ffbe-80db-5aa5-b794-f35c88dff85c
     ```
-    
-    ***python***
-    ```python
-    from synse import client
-    
-    api_client = client.HTTPClientV3('localhost')
-    
-    # read from the device
-    resp = api_client.read('4032ffbe-80db-5aa5-b794-f35c88dff85c')
-    print(resp.raw)
-    
-    # write to the device
-    resp = api_client.write_async(
-      '4032ffbe-80db-5aa5-b794-f35c88dff85c',
-      {
-        'action': 'color',
-        'data': 'f38ac2',
-      },
-    )
-    print(resp.raw)
-    ```
 
 #### *URI Parameters*
 
 | Parameter | Description |
 | :-------- | :---------- |
-| *device_id* | The ID of the device that is being read from/written to. |
+| *device* | The globally unique ID or alias of the device that is being read from/written to. |
 
 #### *POST Body*
 ```json
@@ -2768,23 +2751,19 @@ and [`/write/wait/{device}`](#write-synchronous) requests, respectively.
 ]
 ```
 
-The fields of the response are described below:
+The fields of the payload are described below:
 
 | Field | Required | Description |
 | :---- | :------- | :---------- |
-| *device* | yes | The ID of the device being written to. |
 | *transaction* | no | A user-defined transaction ID for the write. If this conflicts with an existing transaction ID, an error is returned. If this is not specified, a transaction ID will be automatically generated for the write action. |
-| *action* | yes | The action that the device will perform. This is set at the plugin level and exposed in the [`/info`](#info) endpoint. |
+| *action* | yes | The action that the device will perform. This is set at the plugin level and exposed in the [`info`](#info) endpoint. |
 | *data* | sometimes | Any data that an action may require. Not all actions require data. This is plugin-defined. |
-
 
 #### *Response Data*
 
 **`GET`**
-(See: [`/read`](#read-device))
+(See: [`read device`](#read-device))
 
-> **Note**: In the examples below, the key-value pairs in the `context` field
-> are arbitrary and only serve as an example of possible values.
 
 ```json
 [
@@ -2807,9 +2786,9 @@ The fields of the response are described below:
 
 | Field | Description |
 | :---- | :---------- |
-| *device* | The ID of the device which the reading originated from. |
-| *device_type* | The type of the device. |
-| *type* | The type of the reading. |
+| *device* | The globally unique ID of the device which the reading(s) originated from. |
+| *device_type* | The type of the device (defined by the plugin). |
+| *type* | The type of the reading. Devices may produce readings of different types (e.g. LED status and LED color). |
 | *value* | The value of the reading. |
 | *timestamp* | An RFC3339 timestamp describing the time at which the reading was taken. |
 | *unit* | The unit of measure for the reading. If there is no unit, this will be `null`. |
@@ -2840,11 +2819,11 @@ The fields of the response are described below:
     ```
 
 ??? note "WebSocket"
-    Not supported - [read device](#read-device) is equivalent
+    Not supported - [`read device`](#read-device) is equivalent
 
 
 **`POST`**
-(See: [`/write`](#write-synchronous))
+(See: [`synchronous write`](#write-synchronous))
 
 ```json
 [
@@ -2869,13 +2848,13 @@ The fields of the response are described below:
 
 | Field | Description |
 | :---- | :---------- |
-| *id* | The ID of the transaction. This is generated and assigned by the plugin being written to. |
+| *id* | The ID of the transaction. |
 | *timeout* | A string representing the timeout for the write transaction after which it will be cancelled. This is effectively the maximum wait time for the transaction to resolve. |
-| *device* | The GUID of the device being written to. |
+| *device* | The globally unique ID of the device being written to. |
 | *context* | The POSTed write data for the given write transaction. |
-| *status* | The current status of the transaction. (`pending`, `writing`, `done`, `error`) |
+| *status* | The current status of the transaction. (`PENDING`, `WRITING`, `DONE`, `ERROR`) |
 | *created* | The time at which the transaction was created. This timestamp is generated by the plugin. |
-| *updated* | The last time the transaction state *or* status was updated. Once the transaction reaches a `done` status or `error` state, no further updates will occur. |
+| *updated* | The last time the transaction status was updated. Once the transaction reaches a terminal state, no further updates will occur. |
 | *message* | Any context information relating to a transaction's error state. If there is no error, this will be an empty string. |
 
 ??? note "HTTP"
@@ -2920,7 +2899,7 @@ The fields of the response are described below:
     ```
 
 ??? note "WebSocket"
-    Not supported - [write sync](#write-synchronous) is equivalent
+    Not supported - [`synchronous write`](#write-synchronous) is equivalent
 
 ##### Error
 
