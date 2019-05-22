@@ -7,7 +7,7 @@ This page describes some of the more advanced features of the SDK for plugin dev
 ## Command Line Arguments
 
 The SDK has some built-in command line arguments for plugins. These can be seen by running
-the plugin with the ``--help`` flag.
+the plugin with the `--help` flag.
 
 ```
 $ ./plugin --help
@@ -35,7 +35,7 @@ func init() {
 }
 ```
 
-This flag will be parsed on plugin ``Run()``, so it can only be used after the plugin
+This flag will be parsed on plugin `Run()`, so it can only be used after the plugin
 has been run.
 
 ## Pre Run Actions
@@ -46,7 +46,7 @@ can be used for plugin-wide setup, should a plugin require it. For example, this
 be used to perform some kind of authentication, verifying that some backend exists and is
 reachable, or to do additional config validation, etc.
 
-Pre Run Actions should fulfil the ``pluginAction`` type and should be registered with the
+Pre Run Actions should fulfil the `pluginAction` type and should be registered with the
 plugin before it is run. An (abridged) example:
 
 ```go
@@ -65,7 +65,7 @@ func main() {
 }
 ```
 
-For more, see the `Device Actions Example Plugin <https://github.com/vapor-ware/synse-sdk/tree/master/examples/device_actions>`_.
+For more, see the [Device Actions Example Plugin](https://github.com/vapor-ware/synse-sdk/tree/master/examples/device_actions).
 
 ## Post Run Actions
 
@@ -94,7 +94,7 @@ func main() {
 ```
 
 
-For more, see the `Device Actions Example Plugin <https://github.com/vapor-ware/synse-sdk/tree/master/examples/device_actions>`_.
+For more, see the [Device Actions Example Plugin](https://github.com/vapor-ware/synse-sdk/tree/master/examples/device_actions).
 
 ## Device Setup Actions
 
@@ -103,7 +103,7 @@ or write to them. As an example, this could be performing some type of authentic
 or setting some bit in a register. The action itself is plugin (and protocol) specific
 and does not matter to the SDK.
 
-Device Setup Actions should fulfil the ``deviceAction`` type and should be registered with
+Device Setup Actions should fulfil the `deviceAction` type and should be registered with
 the plugin before it is run.
 
 When a device setup action is registered, it should be registered with a filter. This filter
@@ -129,7 +129,7 @@ func main() {
 }
 ```
 
-For more, see the `Device Actions Example Plugin <https://github.com/vapor-ware/synse-sdk/tree/master/examples/device_actions>`_.
+For more, see the [Device Actions Example Plugin](https://github.com/vapor-ware/synse-sdk/tree/master/examples/device_actions).
 
 ## Plugin Options
 
@@ -148,7 +148,7 @@ useful. If we wanted to only take a subset of the device config, we could define
 identifier override function, but in order to register it with the plugin, we'd need to use a Plugin
 Option.
 
-Plugin Options are passed to the plugin when it is initialized via ``sdk.NewPlugin``.
+Plugin Options are passed to the plugin when it is initialized via `sdk.NewPlugin`.
 
 ```go
 // ProtocolIdentifier gets the unique identifiers out of the plugin-specific
@@ -165,7 +165,7 @@ func main() {
 ```
 
 An example of this can be found in the
-`Device Actions Example Plugin <https://github.com/vapor-ware/synse-sdk/tree/master/examples/device_actions>`_.
+[Device Actions Example Plugin](https://github.com/vapor-ware/synse-sdk/tree/master/examples/device_actions).
 
 ## Dynamic Registration
 
@@ -188,7 +188,7 @@ With device enumeration, you can just create a function that will query the BMC 
 devices and then use that response to generate the devices (or the device configs) at runtime.
 
 An extremely simple example of this can be found in the
-`Dynamic Registration Example Plugin <https://github.com/vapor-ware/synse-sdk/tree/master/examples/dynamic_registration>`_.
+[Dynamic Registration Example Plugin](https://github.com/vapor-ware/synse-sdk/tree/master/examples/dynamic_registration).
 
 ## Configuration Policies
 
@@ -208,8 +208,8 @@ The config policies allow that behavior to be enforced, and cause the plugin to 
 any of the policies are violated.
 
 Below is a table that lists all of the current config policies. There can only be one (or none)
-policy chosen from each column below at any given time, e.g. you cannot have ``PluginConfigFileOptional``
-and ``PluginConfigFileRequired`` specified at the same time.
+policy chosen from each column below at any given time, e.g. you cannot have `PluginConfigFileOptional`
+and `PluginConfigFileRequired` specified at the same time.
 
 ==========================   ==========================   =============================   =========================
 Plugin (File)                Device Config (File)         Device Config (Dynamic)         Output Type Config (File)
@@ -236,7 +236,7 @@ func main() {
 ```
 
 An example of this can be found in the
-`Dynamic Registration Example Plugin <https://github.com/vapor-ware/synse-sdk/tree/master/examples/dynamic_registration>`_.
+[Dynamic Registration Example Plugin](https://github.com/vapor-ware/synse-sdk/tree/master/examples/dynamic_registration).
 
 ## Health Checks
 
@@ -244,7 +244,7 @@ The SDK supports plugin health checks. The health of the plugin derived from the
 surfaced via the Synse gRPC API, and can be seen via the Synse Server HTTP API.
 
 A health check is just a function that returns an error. When run, if the function returns
-``nil``, the check passed. If an error is returned, the check has failed. Health checks can
+`nil`, the check passed. If an error is returned, the check has failed. Health checks can
 be registered and run in different ways, but the SDK only natively supports *periodic* checks
 currently.
 
@@ -281,5 +281,5 @@ Plugins can be written with C backends. In general, this means that the read/wri
 handlers or some related logic is written in C. This feature is not specific to the
 SDK, but is a feature of Go itself.
 
-For more information on this, see the `CGo Documentation <https://golang.org/cmd/cgo/>`_
-and the `C Plugin <https://github.com/vapor-ware/synse-sdk/tree/master/examples/c_plugin>`_ example.
+For more information on this, see the [CGo Documentation](https://golang.org/cmd/cgo/)
+and the [C Plugin](https://github.com/vapor-ware/synse-sdk/tree/master/examples/c_plugin) example.

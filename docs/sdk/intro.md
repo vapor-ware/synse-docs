@@ -2,6 +2,10 @@
 hero: Introduction 
 ---
 
+# Synse SDK
+
+> *[github.com/vapor-ware/synse-sdk](https://github.com/vapor-ware/synse-sdk)*
+
 The Synse SDK is the official SDK (written in Golang) for writing Synse plugins. Synse plugins
 expose devices to the Synse platform and manage read/write access to those devices. The SDK
 handles much of the functionality needed for plugins, including:

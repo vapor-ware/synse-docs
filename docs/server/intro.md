@@ -4,6 +4,8 @@ hero: Introduction
 
 # Synse Server
 
+> *[github.com/vapor-ware/synse-server](https://github.com/vapor-ware/synse-server)*
+
 Synse Server provides a simple HTTP API to monitor and control physical and virtual devices.
 It exposes the devices managed by its registered plugins through a uniform API. This makes
 it easy to read from and write to devices across any number of backends through a simple

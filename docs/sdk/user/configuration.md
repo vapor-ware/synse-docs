@@ -18,7 +18,7 @@ Plugins are configured from a YAML file that defines how the plugin should opera
 Most plugin configurations have sane default values, so it may not even be necessary
 to specify your own plugin configuration.
 
-The plugin config file must be named ``config.{yml|yaml}``.
+The plugin config file must be named `config.{yml|yaml}`.
 
 
 ### Config Policies
@@ -41,9 +41,9 @@ $HOME/.synse/plugin
 /etc/synse/plugin
 ```
 
-Where ``$PWD`` (or ``.``) is the directory in which the plugin binary is being run from.
+Where `$PWD` (or `.`) is the directory in which the plugin binary is being run from.
 
-A non-default location can be used by setting the ``PLUGIN_CONFIG`` environment variable
+A non-default location can be used by setting the `PLUGIN_CONFIG` environment variable
 to either the directory containing the config file, or to the config file itself.
 
 ```
@@ -289,7 +289,7 @@ The default locations for the device configuration(s) (in order of evaluation) a
 /etc/synse/plugin/config/device
 ```
 
-A non-default location can be used by setting the ``PLUGIN_DEVICE_CONFIG`` environment variable
+A non-default location can be used by setting the `PLUGIN_DEVICE_CONFIG` environment variable
 to either the directory containing the config file, or to the config file itself.
 
 ```
@@ -573,7 +573,7 @@ The default locations for the output type configuration(s) (in order of evaluati
 /etc/synse/plugin/config/type
 ```
 
-A non-default location can be used by setting the ``PLUGIN_TYPE_CONFIG`` environment variable
+A non-default location can be used by setting the `PLUGIN_TYPE_CONFIG` environment variable
 to either the directory containing the config file, or to the config file itself.
 
 ```

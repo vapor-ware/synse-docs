@@ -19,13 +19,13 @@ Synse Server, and communication with the devices it manages.
 ![](../../assets/img/arch.svg)
 
 When an HTTP API request comes in to Synse Server, e.g. a *read* request, that request
-will have some routing information associated with it (``<rack>/<board>/<device>``).
+will have some routing information associated with it (`<rack>/<board>/<device>`).
 This routing information is used by Synse Server to lookup the device and figure out
 which plugin owns it.
 
 Once Synse Server knows where the request is going, it sends over all relevant info
-to the plugin via the `Synse gRPC API <https://github.com/vapor-ware/synse-server-grpc>`_.
-The capabilities of this API are summarized below in the :ref:`grpcApi` section. The
+to the plugin via the [Synse gRPC API](https://github.com/vapor-ware/synse-server-grpc).
+The capabilities of this API are summarized below in the [gRPC API](#grpc-api) section. The
 plugin receives the gRPC request and processes it appropriately, returning the corresponding
 response back to Synse Server.
 
@@ -56,7 +56,7 @@ built in to the SDK.
 
 ## gRPC API
 
-The `Synse gRPC API <https://github.com/vapor-ware/synse-server-grpc>`_ lets plugins communicate
+The [Synse gRPC API](https://github.com/vapor-ware/synse-server-grpc) lets plugins communicate
 with Synse Server, and vice versa. Below is a summary of the API methods
 
 :Test:
@@ -119,7 +119,7 @@ may not need to update readings as quickly -- read every 30s).
 
 ## Devices
 
-Within the SDK, a `Device <https://godoc.org/github.com/vapor-ware/synse-sdk/sdk#Device>`_
+Within the SDK, a [Device](https://godoc.org/github.com/vapor-ware/synse-sdk/sdk#Device)
 represents the physical or virtual thing that the plugin is interfacing with.
 
 The Device model holds the metadata, config information, and a reference to
@@ -128,12 +128,12 @@ its DeviceHandler, which defines how it will be read from/written to.
 
 ## Readings
 
-A `Reading <https://godoc.org/github.com/vapor-ware/synse-sdk/sdk#Reading>`_
+A [Reading](https://godoc.org/github.com/vapor-ware/synse-sdk/sdk#Reading)
 describes a single data point read from a device. It consists of the
 reading type, the reading value, and the time at which the reading was
 taken.
 
 When generating new readings within a Device's read handler, the timestamp should
 follow the RFC3339Nano format, which is the standard time format for plugins and
-Synse Server. Built-in helpers, such as ``NewReading`` or ``Output.MakeReading``,
+Synse Server. Built-in helpers, such as `NewReading` or `Output.MakeReading`,
 will provide a properly formatted timestamp.
