@@ -61,7 +61,9 @@ nav:
     - User Guide:
       - Basic: sdk/user/basic.md
       - Architecture: sdk/user/architecture.md
-      - Configuration: sdk/user/configuration.md
+      - Configuration:
+        - Plugin Configuration: sdk/user/configuration.plugin.md
+        - Device Configuration: sdk/user/configuration.device.md
       - Advanced: sdk/user/advanced.md
       - Tutorial: sdk/user/tutorial.md
     - Developer Guide:

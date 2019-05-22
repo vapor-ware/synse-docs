@@ -104,7 +104,7 @@ tag annotation conflicts with a reserved annotation name, an error will be retur
 
 ### User Defined
 
-User-defined tags may be specified for a device in the device's [configuration](../../sdk/user/configuration.md)
+User-defined tags may be specified for a device in the device's [configuration](../../sdk/user/configuration.device.md)
 itself. For example:
 
 ```yaml

@@ -6,6 +6,21 @@ This page describes some of basic features of the SDK and provides an example
 of a simple plugin. See the [Advanced Usage](advanced.md) page for an overview of some of
 the more advanced features of the plugin SDK.
 
+## Configuration
+FIXME
+
+This page describes the configuration options and methodologies for plugins which
+are built with the Synse SDK. There are two types of configuration that a plugin
+can take:
+
+1. [**Plugin Configuration**](configuration.plugin.md): This is the configuration for the plugin itself,
+   defining how it should behave at runtime.
+2. [**Device Configuration**](configuration.device.md): This is the configuration which tells the plugin
+   about the devices that it manages. 
+
+
+
+
 ## Creating a Plugin
 
 Creating a new plugin is as simple as:

@@ -1848,7 +1848,7 @@ request at. This is particularly useful for push-based plugins where data may be
 if it is pushed more frequently than the poll interval.
 
 Plugin reading caching is disabled by default, but can be [enabled in the plugin
-configuration](../sdk/user/configuration.md). When caching is disabled, this endpoint
+configuration](../sdk/user/configuration.plugin.md). When caching is disabled, this endpoint
 will return a dump of the current reading state held by the plugin. In this case, the
 `start` and `end` bounds are ignored, as there is no historical data to bound.
 
