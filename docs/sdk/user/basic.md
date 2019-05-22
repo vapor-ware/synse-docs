@@ -2,31 +2,28 @@
 hero: Basic Usage
 ---
 
-# Basic Usage
-
 This page describes some of basic features of the SDK and provides an example
 of a simple plugin. See the :ref:`advancedUsage` page for an overview of some of
 the more advanced features of the plugin SDK.
-
 
 ## Creating a Plugin
 
 Creating a new plugin is as simple as:
 
-.. code-block:: go
+```go
+import (
+    "log"
+    "github.com/vapor-ware/synse-sdk/sdk"
+)
 
-    import (
-        "log"
-        "github.com/vapor-ware/synse-sdk/sdk"
-    )
+func main() {
+    plugin := sdk.NewPlugin()
 
-    func main() {
-        plugin := sdk.NewPlugin()
-
-        if err := plugin.Run(); err != nil {
-            log.Fatal(err)
-        }
+    if err := plugin.Run(); err != nil {
+        log.Fatal(err)
     }
+}
+```
 
 This creates a new Plugin instance, but doesn't do much more than that. It is always
 advised to use ``sdk.NewPlugin`` to create your plugin instance. The plugin should
@@ -50,24 +47,23 @@ to dashes (``-``).
 
 The plugin metadata should be set via the ``SetPluginMeta`` function, e.g.
 
-.. code-block:: go
+```go
+const (
+    pluginName       = "example"
+    pluginMaintainer = "vaporio"
+    pluginDesc       = "example plugin description"
+    pluginVcs        = "github.com/foo/bar"
+)
 
-    const (
-        pluginName       = "example"
-        pluginMaintainer = "vaporio"
-        pluginDesc       = "example plugin description"
-        pluginVcs        = "github.com/foo/bar"
+func main() {
+    sdk.SetPluginMeta(
+        pluginName,
+        pluginMaintainer,
+        pluginDesc,
+        pluginVcs,
     )
-
-    func main() {
-        sdk.SetPluginMeta(
-            pluginName,
-            pluginMaintainer,
-            pluginDesc,
-            pluginVcs,
-        )
-    }
-
+}
+```
 
 ## Registering Output Types
 
@@ -78,55 +74,55 @@ for how to read from a temperature sensor, but that will ultimately resolve to s
 value. To make sense of that value, we want to associate to an output type to give it
 context.
 
-.. code-block:: go
-
-    var Temperature = sdk.OutputType{
-        Name: "temperature",
-        Precision: 3,
-        Unit: sdk.Unit{
-            Name: "celsius",
-            Symbol: "C",
-        },
-    }
+```go
+var Temperature = sdk.OutputType{
+    Name: "temperature",
+    Precision: 3,
+    Unit: sdk.Unit{
+        Name: "celsius",
+        Symbol: "C",
+    },
+}
+```
 
 With this context, we know that the reading value corresponds to a temperature reading
 with unit "celsius", and it will be rounded to a precision of 3 decimal places. The name
 of the output type identifies the type, so it should be unique. It is convention to namespace
 output types. This allows for multiple similar types to be specified, e.g.
 
-.. code-block:: go
+```go
+var Temperature1 = sdk.OutputType{
+    Name: "modelX.temperature",
+    Precision: 3,
+    Unit: sdk.Unit{
+        Name: "celsius",
+        Symbol: "C",
+    },
+}
 
-    var Temperature1 = sdk.OutputType{
-        Name: "modelX.temperature",
-        Precision: 3,
-        Unit: sdk.Unit{
-            Name: "celsius",
-            Symbol: "C",
-        },
-    }
-
-    var Temperature2 = sdk.OutputType{
-        Name: "modelY.temperature",
-        Precision: 2,
-        Unit: sdk.Unit{
-            Name: "Kelvin",
-            Symbol: "K",
-        },
-    }
+var Temperature2 = sdk.OutputType{
+    Name: "modelY.temperature",
+    Precision: 2,
+    Unit: sdk.Unit{
+        Name: "Kelvin",
+        Symbol: "K",
+    },
+}
+```
 
 The namespacing is arbitrary, so it is up to the plugin author to decide what makes the
 most sense. With OutputTypes defined, they can be registered with the plugin simply:
 
-.. code-block:: go
+```go
+func main() {
+    plugin := sdk.NewPlugin()
 
-    func main() {
-        plugin := sdk.NewPlugin()
-
-        err := plugin.RegisterOutputTypes(
-            &Temperature1,
-            &Temperature2,
-        )
-    }
+    err := plugin.RegisterOutputTypes(
+        &Temperature1,
+        &Temperature2,
+    )
+}
+```
 
 OutputTypes can also be defined via config file, in which case, they will not need to
 be explicitly registered with the plugin, as seen in the example above. They will be
@@ -151,9 +147,10 @@ some device readings, for example, if a give device/protocol requires all regist
 read through to get a single reading (as can be the case for I2C), it can be easier to just
 do that bulk read once instead of re-doing it for every device on that bus.
 
-.. note:: If both a "read" function and "bulk read" function are specified for a single
-   device handler, the bulk read will be ignored and the SDK will only use the read function.
-   If bulk read function is desired, make sure that no individual read function is specified.
+!!! note
+    If both a "read" function and "bulk read" function are specified for a single
+    device handler, the bulk read will be ignored and the SDK will only use the read function.
+    If bulk read function is desired, make sure that no individual read function is specified.
 
 If no function is specified for any of these, the SDK takes that to mean that the handler
 does not support that functionality. That is to say, a device handler with only a read
@@ -161,14 +158,14 @@ function defined implies that those devices cannot be written to.
 
 Defining a handler is as simple as giving it a name, and the appropriate functions:
 
-.. code-block:: go
-
-    var TemperatureHandler = sdk.DeviceHandler{
-        Name: "temperature",
-        Read: func(device *sdk.Device) ([]*sdk.Reading, error) {
-            ...
-        },
-    }
+```go
+var TemperatureHandler = sdk.DeviceHandler{
+    Name: "temperature",
+    Read: func(device *sdk.Device) ([]*sdk.Reading, error) {
+        ...
+    },
+}
+```
 
 See the `GoDoc <https://godoc.org/github.com/vapor-ware/synse-sdk/sdk>`_ for more details on
 how handlers should be defined.
@@ -178,15 +175,15 @@ If necessary, handler names should be namespaced, but the namespacing is arbitra
 to the plugin to decide. With DeviceHandlers defined, they can be registered with the plugin
 simply:
 
-.. code-block:: go
+```go
+func main() {
+    plugin := sdk.NewPlugin()
 
-    func main() {
-        plugin := sdk.NewPlugin()
-
-        plugin.RegisterDeviceHandlers(
-            &TemperatureHandler,
-        )
-    }
+    plugin.RegisterDeviceHandlers(
+        &TemperatureHandler,
+    )
+}
+```
 
 
 ## Creating New Readings
@@ -202,20 +199,19 @@ the name of the output type. If the output type does not exist for the device, t
 the plugin to panic (in this particular pattern), which is typically desirable, since it is
 indicative of a mis-configuration in the device configs.
 
-.. code-block:: go
+```go
+var someHandler = sdk.DeviceHandler{
+    Name: "example.reader",
+    Read: func(device *sdk.Device) ([]*sdk.Reading, error) {
+        // plugin-specific read logic
+        ...
 
-    var someHandler = sdk.DeviceHandler{
-        Name: "example.reader",
-        Read: func(device *sdk.Device) ([]*sdk.Reading, error) {
-            // plugin-specific read logic
-            ...
-
-            return []*sdk.Reading{
-                device.GetOutput("example.temperature").MakeReading(value),
-            }, nil
-        },
-    }
-
+        return []*sdk.Reading{
+            device.GetOutput("example.temperature").MakeReading(value),
+        }, nil
+    },
+}
+```
 
 ## A Complete Example
 

@@ -1,4 +1,3 @@
-# Testing
 
 The Synse Plugin SDK strives to follow the `Golang testing <https://golang.org/pkg/testing/>`_
 best practices. Tests for each file are found in the same directory following the pattern
@@ -21,23 +20,23 @@ ensure bug-free code, it can still be a useful indicator.
 
 Tests can be run with ``go test``, e.g.
 
-.. code-block:: console
-
-    $ go test ./sdk/...
+```
+$ go test ./sdk/...
+```
 
 For convenience, there is a make target to do this
 
-.. code-block:: console
-
-    $ make test
+```
+$ make test
+```
 
 While the above make target will report coverage at a high level, it can be useful to
 see a detailed coverage report that shows which lines were hit and which were missed.
 For that, you can use the make target
 
-.. code-block:: console
-
-    make cover
+```
+make cover
+```
 
 This will run tests and collect and join coverage reports for all packages/sub-packages
 and output them as an HTML page.

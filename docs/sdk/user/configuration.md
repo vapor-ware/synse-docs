@@ -2,15 +2,13 @@
 hero: Configuration 
 ---
 
-# Plugin Configuration
-
 This page describes the different kinds of configuration a plugin has, and gives
 examples for each. There are three basic kinds of configuration:
 
-- *Plugin Configuration*: Configuration for how the plugin should behave.
-- *Device Configuration*: Configuration for the device instances that the plugin
+- **Plugin Configuration**: Configuration for how the plugin should behave.
+- **Device Configuration**: Configuration for the device instances that the plugin
   should interface with and manage.
-- *Output Type Configuration*: Configuration for the supported reading outputs
+- **Output Type Configuration**: Configuration for the supported reading outputs
   for the supported devices.
 
 
@@ -36,21 +34,21 @@ The following config policies relate to plugin configuration.
 
 The default locations for the plugin configuration (in order of evaluation) are:
 
-.. code-block:: none
 
-    $PWD
-    $HOME/.synse/plugin
-    /etc/synse/plugin
+```
+$PWD
+$HOME/.synse/plugin
+/etc/synse/plugin
+```
 
 Where ``$PWD`` (or ``.``) is the directory in which the plugin binary is being run from.
 
 A non-default location can be used by setting the ``PLUGIN_CONFIG`` environment variable
 to either the directory containing the config file, or to the config file itself.
 
-.. code-block:: none
-
-    PLUGIN_CONFIG=/tmp/plugin/config.yml
-
+```
+PLUGIN_CONFIG=/tmp/plugin/config.yml
+```
 
 ### Configuration Options
 
@@ -240,20 +238,19 @@ to either the directory containing the config file, or to the config file itself
 
 Below is an example of a plugin configuration.
 
-.. code-block:: yaml
-
-    version: 1.0
-    debug: true
-    network:
-      type: tcp
-      address: ":5001"
-    settings:
-      mode: parallel
-      read:
-        interval: 1s
-      write:
-        interval: 2s
-
+```yaml
+version: 1.0
+debug: true
+network:
+  type: tcp
+  address: ":5001"
+settings:
+  mode: parallel
+  read:
+    interval: 1s
+  write:
+    interval: 2s
+```
 
 
 ## Device Configuration
@@ -287,18 +284,17 @@ For dynamic configuration:
 
 The default locations for the device configuration(s) (in order of evaluation) are:
 
-.. code-block:: none
-
-    ./config/device
-    /etc/synse/plugin/config/device
+```
+./config/device
+/etc/synse/plugin/config/device
+```
 
 A non-default location can be used by setting the ``PLUGIN_DEVICE_CONFIG`` environment variable
 to either the directory containing the config file, or to the config file itself.
 
-.. code-block:: none
-
-    PLUGIN_DEVICE_CONFIG=/tmp/device/config.yml
-
+```
+PLUGIN_DEVICE_CONFIG=/tmp/device/config.yml
+```
 
 ### Configuration Options
 
@@ -517,36 +513,35 @@ to either the directory containing the config file, or to the config file itself
 
 Below is an example of a device configuration.
 
-.. code-block:: yaml
-
-    version: 1.0
-    locations:
-      - name: r1vec
-        rack:
-          name: rack-1
-        board:
-          name: vec
-    devices:
-      - name: temperature
-        metadata:
-          model: example-temp
-          manufacturer: vaporio
-        outputs:
-          - type: temperature
-        instances:
-          - info: Example Temperature Sensor 1
-            location: r1vec
-            data:
-              id: 1
-          - info: Example Temperature Sensor 2
-            location: r1vec
-            data:
-              id: 2
-          - info: Example Temperature Sensor 3
-            location: r1vec
-            data:
-              id: 3
-
+```yaml
+version: 1.0
+locations:
+  - name: r1vec
+    rack:
+      name: rack-1
+    board:
+      name: vec
+devices:
+  - name: temperature
+    metadata:
+      model: example-temp
+      manufacturer: vaporio
+    outputs:
+      - type: temperature
+    instances:
+      - info: Example Temperature Sensor 1
+        location: r1vec
+        data:
+          id: 1
+      - info: Example Temperature Sensor 2
+        location: r1vec
+        data:
+          id: 2
+      - info: Example Temperature Sensor 3
+        location: r1vec
+        data:
+          id: 3
+```
 
 
 ## Output Type Configuration
@@ -573,18 +568,17 @@ The following config policies relate to output type configuration.
 
 The default locations for the output type configuration(s) (in order of evaluation) are:
 
-.. code-block:: none
-
-    ./config/type
-    /etc/synse/plugin/config/type
+```
+./config/type
+/etc/synse/plugin/config/type
+```
 
 A non-default location can be used by setting the ``PLUGIN_TYPE_CONFIG`` environment variable
 to either the directory containing the config file, or to the config file itself.
 
-.. code-block:: none
-
-    PLUGIN_DEVICE_CONFIG=/tmp/type/config.yml
-
+```
+PLUGIN_DEVICE_CONFIG=/tmp/type/config.yml
+```
 
 ### Configuration Options
 
