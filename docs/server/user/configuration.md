@@ -2,7 +2,7 @@
 hero: Configuration 
 ---
 
-This page describes all of the configuration options and methodologies for Synse Server.
+This page describes the configuration options and methodologies for Synse Server.
 It has a sane set of default configurations allowing it to run "out of the box",
 however minimal configuration is required to register any plugins with it.
 
