@@ -3,7 +3,7 @@ hero: Basic Usage
 ---
 
 This page describes some of basic features of the SDK and provides an example
-of a simple plugin. See the :ref:`advancedUsage` page for an overview of some of
+of a simple plugin. See the [Advanced Usage](advanced.md) page for an overview of some of
 the more advanced features of the plugin SDK.
 
 ## Creating a Plugin
@@ -26,8 +26,8 @@ func main() {
 ```
 
 This creates a new Plugin instance, but doesn't do much more than that. It is always
-advised to use ``sdk.NewPlugin`` to create your plugin instance. The plugin should
-always be run via ``plugin.Run()``.
+advised to use `sdk.NewPlugin` to create your plugin instance. The plugin should
+always be run via `plugin.Run()`.
 
 ## Setting Plugin Metadata
 
@@ -40,12 +40,12 @@ name. The current set of plugin metadata includes:
 - vcs link
 - tag
 
-The Plugin tag is automatically generated from the ``name`` and ``maintainer`` info,
-following the template ``{maintainer}/{name}``, where both the maintainer and name fields
-are lower-cased, dashes (``-``) are converted to underscored (``_``), and spaces converted
-to dashes (``-``).
+The Plugin tag is automatically generated from the `name` and `maintainer` info,
+following the template `{maintainer}/{name}`, where both the maintainer and name fields
+are lower-cased, dashes (`-`) are converted to underscored (`_`), and spaces converted
+to dashes (`-`).
 
-The plugin metadata should be set via the ``SetPluginMeta`` function, e.g.
+The plugin metadata should be set via the `SetPluginMeta` function, e.g.
 
 ```go
 const (
@@ -167,7 +167,7 @@ var TemperatureHandler = sdk.DeviceHandler{
 }
 ```
 
-See the `GoDoc <https://godoc.org/github.com/vapor-ware/synse-sdk/sdk>`_ for more details on
+See the [GoDoc](https://godoc.org/github.com/vapor-ware/synse-sdk/sdk) for more details on
 how handlers should be defined.
 
 Like DeviceOutputs, a DeviceHandler name identifies that handler, so it should be unique.
@@ -194,7 +194,7 @@ it is important to note that the Synse platform has standardized on RFC3339 time
 formatting, which the built-in constructors do for you.
 
 One of the easiest ways to create a new reading is with the following pattern. Below,
-we have some ``value``, which is whatever reading we got. The input to ``GetOutput`` is
+we have some `value`, which is whatever reading we got. The input to `GetOutput` is
 the name of the output type. If the output type does not exist for the device, this will cause
 the plugin to panic (in this particular pattern), which is typically desirable, since it is
 indicative of a mis-configuration in the device configs.
@@ -216,7 +216,7 @@ var someHandler = sdk.DeviceHandler{
 ## A Complete Example
 
 A complete example of a simple plugin that exercises all of these pieces can be found in the
-SDK repo's `examples/simple_plugin <https://github.com/vapor-ware/synse-sdk/tree/master/examples/simple_plugin>`_
+SDK repo's [examples/simple_plugin](https://github.com/vapor-ware/synse-sdk/tree/master/examples/simple_plugin)
 directory.
 
-For a slightly more complex example, see the `Emulator Plugin <https://github.com/vapor-ware/synse-emulator-plugin>`_.
+For a slightly more complex example, see the [Emulator Plugin](https://github.com/vapor-ware/synse-emulator-plugin).
