@@ -19,6 +19,9 @@ they are specified):
 - `./config/`
 - `/etc/synse/plugin/config/`
 
+Once a matching YAML file is found, it will attempt to load it as a plugin configuration
+and will not continue searching in any remaining paths.
+
 As plugins are intended to be run in a container, a custom configuration would
 need to be mounted in to one of the locations above, e.g.
 
@@ -30,7 +33,7 @@ docker run \
 
 ### Overriding Config Location
 
-The plugin configuration can be specified off of the default search path. In
+The plugin configuration may be specified off of the default search paths. In
 this case, the plugin will need to be told where the config file is. This can
 be done with the `PLUGIN_CONFIG` environment variable. For example, if the
 configuration file were in `/tmp/cfg`:
@@ -105,6 +108,8 @@ restrictions on the values and any defaults.
 version: 3
 ```
 
+-----
+
 ### Debug
 
 | | |
@@ -118,6 +123,8 @@ version: 3
 ```YAML tab=
 debug: true
 ```
+
+-----
 
 ### ID
 
@@ -187,6 +194,8 @@ id:
   - bar
 ```
 
+-----
+
 ### Metrics
 
 Setting for exposing application metrics.
@@ -207,6 +216,8 @@ Group key: `metrics`
 metrics:
   enabled: true
 ```
+
+-----
 
 ### Settings
 
@@ -495,6 +506,8 @@ cache:
   ttl: 3m
 ```
 
+-----
+
 ### Network
 
 Settings for a plugin's networking behavior.
@@ -594,6 +607,8 @@ network:
     skipVerify: true
 ```
 
+-----
+
 ### Dynamic Registration
 
 Settings for dynamic device registration,
@@ -615,6 +630,8 @@ dynamicRegistration:
   - foo: 1
     bar: "baz"
 ```
+
+-----
 
 ### Health
 
