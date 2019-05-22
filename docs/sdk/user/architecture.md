@@ -2,8 +2,6 @@
 hero: Architecture 
 ---
 
-# Architecture
-
 This page describes the SDK architecture at a high level and provides a summary of
 its different components and inner workings.
 
@@ -18,7 +16,7 @@ Synse Server, and communication with the devices it manages.
 
 ### Plugin Interaction with Synse Server
 
-.. image:: ../_static/synse-server-simple-arch.svg
+![](../../assets/img/arch.svg)
 
 When an HTTP API request comes in to Synse Server, e.g. a *read* request, that request
 will have some routing information associated with it (``<rack>/<board>/<device>``).
@@ -35,7 +33,7 @@ A plugin can be configured to use either TCP or Unix socket for the gRPC transpo
 
 ### Plugin Interaction with Devices
 
-.. image: ../_static/plugin-arch.svg
+![](../../assets/img/plugin-arch.svg)
 
 When a plugin is run, it will start its "data manager". The data manager will execute reads
 and writes for devices continuously (on a configurable interval). The read and write behavior

@@ -2,8 +2,6 @@
 hero: Advanced Usage 
 ---
 
-# Advanced Usage
-
 This page describes some of the more advanced features of the SDK for plugin development.
 
 ## Command Line Arguments
@@ -11,32 +9,31 @@ This page describes some of the more advanced features of the SDK for plugin dev
 The SDK has some built-in command line arguments for plugins. These can be seen by running
 the plugin with the ``--help`` flag.
 
-.. code-block:: none
-
-    $ ./plugin --help
-    Usage of ./plugin:
-      -debug
-            run the plugin with debug logging
-      -dry-run
-            perform a dry run to verify the plugin is functional
-      -version
-            print plugin version information
-
+```
+$ ./plugin --help
+Usage of ./plugin:
+  -debug
+        run the plugin with debug logging
+  -dry-run
+        perform a dry run to verify the plugin is functional
+  -version
+        print plugin version information
+```
 
 A plugin can add its own command line args if it needs to as well. This can be done simply
 by defining the flags that the plugin needs, e.g.
 
-.. code-block:: go
+```go
+import (
+    "flag"
+)
 
-    import (
-        "flag"
-    )
+var customFlag bool
 
-    var customFlag bool
-
-    func init() {
-        flag.BoolVar(&customFlag, "custom", false, "some custom functionality")
-    }
+func init() {
+    flag.BoolVar(&customFlag, "custom", false, "some custom functionality")
+}
+```
 
 This flag will be parsed on plugin ``Run()``, so it can only be used after the plugin
 has been run.
@@ -52,22 +49,21 @@ reachable, or to do additional config validation, etc.
 Pre Run Actions should fulfil the ``pluginAction`` type and should be registered with the
 plugin before it is run. An (abridged) example:
 
-.. code-block:: go
+```go
+// preRunAction defines a function that will run before the
+// plugin starts its main run logic.
+func preRunAction(p *sdk.Plugin) error {
+    return backend.VerifyRunning()  // do some action
+}
 
-    // preRunAction defines a function that will run before the
-    // plugin starts its main run logic.
-    func preRunAction(p *sdk.Plugin) error {
-        return backend.VerifyRunning()  // do some action
-    }
+func main() {
+    plugin  := sdk.NewPlugin()
 
-    func main() {
-        plugin  := sdk.NewPlugin()
-
-        plugin.RegisterPreRunActions(
-            preRunAction,
-        )
-    }
-
+    plugin.RegisterPreRunActions(
+        preRunAction,
+    )
+}
+```
 
 For more, see the `Device Actions Example Plugin <https://github.com/vapor-ware/synse-sdk/tree/master/examples/device_actions>`_.
 
@@ -81,21 +77,21 @@ connections, etc.
 Post Run Actions should fulfil the ``pluginAction`` type and should be registered with the
 plugin before it is run. An (abridged) example:
 
-.. code-block:: go
+```go
+// postRunAction defines a function that will run after the plugin
+// has gracefully terminated.
+func postRunAction(p *sdk.Plugin) error {
+    return db.closeConnection() // do some action
+}
 
-    // postRunAction defines a function that will run after the plugin
-    // has gracefully terminated.
-    func postRunAction(p *sdk.Plugin) error {
-        return db.closeConnection() // do some action
-    }
+func main() {
+    plugin := sdk.NewPlugin()
 
-    func main() {
-        plugin := sdk.NewPlugin()
-
-        plugin.RegisterPostRunActions(
-            postRunAction,
-        )
-    }
+    plugin.RegisterPostRunActions(
+        postRunAction,
+    )
+}
+```
 
 
 For more, see the `Device Actions Example Plugin <https://github.com/vapor-ware/synse-sdk/tree/master/examples/device_actions>`_.
@@ -113,26 +109,25 @@ the plugin before it is run.
 When a device setup action is registered, it should be registered with a filter. This filter
 is used to identify which devices the action should apply to. An (abridged) example:
 
-.. code-block:: go
+```go
+// deviceSetupAction defines a function we will use as a
+// device setup action.
+func deviceSetupAction(p *sdk.Plugin, d *sdk.Device) error {
+    return utils.Validate(d) // do some action
+}
 
-    // deviceSetupAction defines a function we will use as a
-    // device setup action.
-    func deviceSetupAction(p *sdk.Plugin, d *sdk.Device) error {
-        return utils.Validate(d) // do some action
-    }
+func main() {
+    // Create a new Plugin
+    plugin := sdk.NewPlugin()
 
-    func main() {
-        // Create a new Plugin
-        plugin := sdk.NewPlugin()
-
-        // Register the action with all devices that have
-        // the type "airflow".
-        plugin.RegisterDeviceSetupActions(
-            "type=airflow",
-            deviceSetupAction,
-        )
-    }
-
+    // Register the action with all devices that have
+    // the type "airflow".
+    plugin.RegisterDeviceSetupActions(
+        "type=airflow",
+        deviceSetupAction,
+    )
+}
+```
 
 For more, see the `Device Actions Example Plugin <https://github.com/vapor-ware/synse-sdk/tree/master/examples/device_actions>`_.
 
@@ -155,19 +150,19 @@ Option.
 
 Plugin Options are passed to the plugin when it is initialized via ``sdk.NewPlugin``.
 
-.. code-block:: go
+```go
+// ProtocolIdentifier gets the unique identifiers out of the plugin-specific
+// configuration to be used in UID generation.
+func ProtocolIdentifier(data map[string]interface{}) string {
+    return fmt.Sprint(data["id"])
+}
 
-    // ProtocolIdentifier gets the unique identifiers out of the plugin-specific
-    // configuration to be used in UID generation.
-    func ProtocolIdentifier(data map[string]interface{}) string {
-    	return fmt.Sprint(data["id"])
-    }
-
-    func main() {
-        plugin := sdk.NewPlugin(
-            sdk.CustomDeviceIdentifier(ProtocolIdentifier),
-        )
-    }
+func main() {
+    plugin := sdk.NewPlugin(
+        sdk.CustomDeviceIdentifier(ProtocolIdentifier),
+    )
+}
+```
 
 An example of this can be found in the
 `Device Actions Example Plugin <https://github.com/vapor-ware/synse-sdk/tree/master/examples/device_actions>`_.
@@ -226,20 +221,19 @@ PluginConfigFileProhibited   DeviceConfigFileProhibited   DeviceConfigDynamicPro
 
 Setting config policies for the plugin is simple:
 
-.. code-block:: go
+```go
+import (
+    "github.com/vapor-ware/synse-sdk/sdk"
+    "github.com/vapor-ware/synse-sdk/sdk/policies"
+)
 
-    import (
-        "github.com/vapor-ware/synse-sdk/sdk"
-        "github.com/vapor-ware/synse-sdk/sdk/policies"
-    )
+func main() {
+    plugin := sdk.NewPlugin()
 
-    func main() {
-        plugin := sdk.NewPlugin()
-
-        policies.Add(policies.DeviceConfigFileOptional)
-        policies.Add(policies.TypeConfigFileOptional)
-    }
-
+    policies.Add(policies.DeviceConfigFileOptional)
+    policies.Add(policies.TypeConfigFileOptional)
+}
+```
 
 An example of this can be found in the
 `Dynamic Registration Example Plugin <https://github.com/vapor-ware/synse-sdk/tree/master/examples/dynamic_registration>`_.
@@ -257,29 +251,29 @@ currently.
 Writing and registering a health check is simple. As an example, we could define a health check
 that will periodically hit a URL to see if it is reachable:
 
-.. code-block:: go
+```
+import (
+    "github.com/vapor-ware/synse-sdk/sdk"
+    "github.com/vapor-ware/synse-sdk/sdk/health"
+)
 
-    import (
-        "github.com/vapor-ware/synse-sdk/sdk"
-        "github.com/vapor-ware/synse-sdk/sdk/health"
-    )
-
-    func checkURL() error {
-        resp, err := http.Get(someURL)
-        if err != nil {
-            return err
-        }
-        if !resp.Ok {
-            return fmt.Errorf("Got non-200 response from URL")
-        }
-        return nil
+func checkURL() error {
+    resp, err := http.Get(someURL)
+    if err != nil {
+        return err
     }
-
-    func main() {
-        plugin := sdk.NewPlugin()
-
-        health.RegisterPeriodicCheck("example health check", 30*time.Second, checkURL)
+    if !resp.Ok {
+        return fmt.Errorf("Got non-200 response from URL")
     }
+    return nil
+}
+
+func main() {
+    plugin := sdk.NewPlugin()
+
+    health.RegisterPeriodicCheck("example health check", 30*time.Second, checkURL)
+}
+```
 
 ## C Backend
 
