@@ -59,8 +59,9 @@ nav:
   - Synse SDK:
     - Introduction: sdk/intro.md
     - User Guide:
-      - Basic: sdk/user/basic.md
+      - Quickstart: sdk/user/quickstart.md
       - Architecture: sdk/user/architecture.md
+      - Concepts: sdk/user/concepts.md
       - Configuration:
         - Plugin Configuration: sdk/user/configuration.plugin.md
         - Device Configuration: sdk/user/configuration.device.md
