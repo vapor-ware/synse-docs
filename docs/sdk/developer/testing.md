@@ -1,5 +1,8 @@
+---
+hero: Testing 
+---
 
-The Synse Plugin SDK strives to follow the [Golang testing](https://golang.org/pkg/testing/)
+The Synse SDK strives to follow the [Golang testing](https://golang.org/pkg/testing/)
 best practices. Tests for each file are found in the same directory following the pattern
 `FILENAME_test.go`, so given a file named `plugin.go`, the test file would be `plugin_test.go`.
 
@@ -12,9 +15,7 @@ them easier to read and maintain. When writing new tests, use the existing ones 
 
 Whenever additions or changes are made to the code base, there should be tests that cover
 them. Many unit tests already exists, so some changes may not require tests to be added.
-To help ensure that the SDK is well-tested, we upload coverage reports to
-[CodeCov](https://codecov.io/gh/vapor-ware/synse-sdk). While good code coverage does not
-ensure bug-free code, it can still be a useful indicator.
+While good code coverage does not ensure bug-free code, it can still be a useful indicator.
 
 ## Running Tests
 

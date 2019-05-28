@@ -26,8 +26,8 @@ It is recommended to use the following development tools:
 ## Workflow
 
 To aid in the developer workflow, Makefile targets are provided for common development
-tasks. To see what targets are provided, see the project ``Makefile``, or run ``make help``
-out of the project repo root.
+tasks. To see what targets are provided, see the project `Makefile`, or run `make help`
+from the project repo root.
 
 ```console
 $ make help
