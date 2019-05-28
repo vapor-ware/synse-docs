@@ -65,11 +65,35 @@ name are normalized. The normalization steps are:
 
 ## Plugin ID
 
-TODO
+Synse requires plugins to have a unique ID. At a high level, this is to ensure the uniqueness
+of [device ids](#deterministic-device-ids), especially when multiple instances of a plugin may
+be running with similar configurations against the same Synse Server instance. Since Synse Server
+uses the plugin ID to route requests appropriately, they must be unique. 
+
+A plugin ID can use multiple different sources as components to generate a unique deterministic
+ID, but ultimately it is up to the plugin configurer to ensure that the sources are configured
+correctly to prevent ID collisions. How plugin ID components aree configured depends on how
+the plugin is deployed. See the [plugin configuration](configuration.plugin.md#configuration-options)
+for details on the config options.  
 
 ## Deterministic Device IDs
 
-TODO
+Since devices are referenced by IDs, it is important that those IDs sever as the sole identity
+for the device and that it will not change, even if the plugin is restarted. To do this,
+the SDK has a notion of deterministic unique device IDs where the primary assumption is that
+in order for a plugin to know how to communicate with a single device, it needs to know something
+unique about that device, whether it be a register, file, address, or port. Using this unique bit
+of configuration, along with some other data points, the SDK can generate a deterministic hash
+to represent the device.
+
+There may be multiple instances of a plugin running all with similar configuration. To combat the
+device ID collision this would cause upstream in Synse Server (which aggregates all devices from
+all registered plugins), the device ID uses the [plugin ID](#plugin-id) as its base, so all devices
+are unique to their plugin.
+
+By default, the plugin will use all the fields in a device's `data` configuration. To override this
+behavior, a plugin can specify its own custom device identifier. An example of this can be found
+in the SDK's [example multi-device plugin](https://github.com/vapor-ware/synse-sdk/tree/master/examples/multi_device_plugin).
 
 
 ## Device Tags
