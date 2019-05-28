@@ -4,6 +4,16 @@ hero: Quickstart
 
 ## Getting
 
+There are a number of open-sourced plugins built using the SDK which are listed on the
+[plugins](../../plugins.md) page. The plugin binary can be installed from its corresponding
+GitHub release. Docker images are available for all plugins as well.
+
+To get the SDK for plugin development, simply
+
+```
+go get github.com/vapor-ware/synse-sdk/sdk
+```
+
 ## Configuring
 
 A plugin built with the SDK can take two different types of configuration: 

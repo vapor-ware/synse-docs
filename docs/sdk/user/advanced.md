@@ -469,3 +469,10 @@ SDK, but is a feature of Go itself.
 
 For more information on this, see the [CGo Documentation](https://golang.org/cmd/cgo/)
 and the [example C plugin](https://github.com/vapor-ware/synse-sdk/tree/master/examples/c_plugin).
+
+
+## Application Metrics
+
+A plugin can be configured to expose application metrics via its [plugin configuration](configuration.plugin.md#configuration-options).
+When enabled, [Prometheus](https://prometheus.io/) metrics are exposed on port `2112` for
+the application at the `/metrics` endpoint.
