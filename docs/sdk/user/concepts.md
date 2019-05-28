@@ -65,6 +65,12 @@ name are normalized. The normalization steps are:
 
 ## Plugin ID
 
+TODO
+
+## Deterministic Device IDs
+
+TODO
+
 
 ## Device Tags
 
