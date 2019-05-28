@@ -1,5 +1,5 @@
 ---
-hero: Concepts
+hero: Basic Concepts
 ---
 
 This page provides details on some of the core components and concepts in the SDK. Understanding
