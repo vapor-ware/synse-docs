@@ -1,47 +1,31 @@
+---
+hero: Setup 
+---
 
-This section goes into detail on how to get set up to develop the SDK as well
-as various development workflow steps that we use here at Vapor IO.
+## Getting
 
-## Getting Started
+To begin developing the Synse SDK, you will first need your own copy of the source code.
+Fork the [GitHub repo](https://github.com/vapor-ware/synse-sdk) and clone it down
+to your local workspace.
 
-When first getting started with developing the SDK, you will first need to have [Go](https://golang.org/doc/install)
-(version 1.9+) installed. To check which version you have, e.g.,
+## Requirements
 
-```console
-$ go version
-go version go1.9.1 darwin/amd64
-```
+It is recommended to use the following development tools:
 
-Then, you will need to get the SDK source either by checking out the repo via git,
-
-```
-$ git clone https://github.com/vapor-ware/synse-sdk.git
-$ cd synse-sdk
-```
-
-Or via `go get`
-
-```
-$ go get -u github.com/vapor-ware/synse-sdk/sdk
-$ cd $GOPATH/src/github.com/vapor-ware/synse-sdk
-```
-
-Finally, you will need to get the dependencies. We use `dep` for dependency
-vendoring. A makefile target is included to both get `dep` if you don't already
-have it and to update the vendored packages specified in `Gopkg.lock`.
-
-```
-$ make dep
-```
-
-Now, you should be ready to start developing on the SDK.
-
+- Go 1.11+: The SDK was developed using Go 1.11.
+- [`dep`](https://github.com/golang/dep): Dependency management tooling.
+- [`docker`](https://www.docker.com): Build and run Synse plugins in a containerized
+  environment.
+- [`docker-compose`](https://docs.docker.com/compose/install): Define and run deployments
+  for development and testing.
+- [`make`](https://www.gnu.org/software/make): Run predefined targets that simplify
+  various development actions and workflows.
 
 ## Workflow
 
-To aid in the developer workflow, Makefile targets are provided for common development
+To aid in developer workflow, Makefile targets are provided for common development
 tasks. To see what targets are provided, see the project `Makefile`, or run `make help`
-out of the project repo root.
+from the project repo root.
 
 ```console
 $ make help
@@ -64,22 +48,6 @@ test            Run all tests
 version         Print the version of the SDK
 ```
 
-In general when developing, tests should be run (e.g. `make test`) and the could should
-be formatted (`make fmt`) and linted (`make lint`). This ensures that the code works
-and is consistent and readable. Tests should also be added or updated as appropriate
-(see: [testing](testing.md)).
-
-## CI
-
-All commits and pull requests to the Synse Plugin SDK trigger a build on our Jenkins CI server.
-The CI configuration can be found in the repo's `.jenkins` file. In summary,
-a build triggered by a commit will:
-
-- Install dependencies
-- Run linting
-- Check formatting
-- Run tests with coverage reporting (and upload results to CodeCov)
-- Build the example plugins in the `examples` directory
-
-When a tag is pushed to the repo, CI checks that the tag version matches the SDK version
-specified in the repo, then generates a changelog and drafts a new release for that version.
+It is recommended to run tests, formatting, and linting locally prior to pushing/opening
+a pull request. These steps, including building the examples, are also run in CI.
+CI failures will prevent pull requests from being merged.
