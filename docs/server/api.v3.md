@@ -2700,6 +2700,38 @@ The [error response](#errors) can be one of:
 
 ---
 
+### Devices
+
+| | | |
+| --- | --- | --- |
+| HTTP      | **GET**      | `/v3/device` |
+| WebSocket | **request**  | `"request/scan"` |
+|           | **response** | `"response/device_summary"` |
+
+
+This endpoint is an alias for the [scan](#scan) endpoint, added for API consistency
+and convenience. See the *scan* documentation for details.
+
+??? hint "Example"
+    ***shell***
+    ```shell
+    curl http://${server}:5000/v3/device
+    ```
+    
+    ***python***
+    ```python
+    from synse import client
+    
+    api_client = client.HTTPClientV3('localhost')
+    resp = api_client.scan()
+    
+    print(resp.raw)
+    ```
+
+---
+
+
+
 ### Device
 
 | | | | |
