@@ -201,15 +201,18 @@ var virtualMemoryHandler = sdk.DeviceHandler{
 		if err != nil {
 			return nil, err
 		}
-		
-		total := outputBytes.MakeReading(vMemStat.Total)
-		total.Info = "total"
-		
-		free := outputBytes.MakeReading(vMemStat.Total)
-		free.Info = "free"
-		
-		pctUsed := outputBytes.MakeReading(vMemStat.Total)
-		pctUsed.Info = "percent memory used"
+
+		total := outputBytes.MakeReading(vMemStat.Total).WithContext(map[string]string{
+			"info": "total",
+		})
+
+		free := outputBytes.MakeReading(vMemStat.Total).WithContext(map[string]string{
+			"info": "free",
+		})
+
+		pctUsed := outputBytes.MakeReading(vMemStat.Total).WithContext(map[string]string{
+			"info": "percent memory used",
+		})
 
 		return []*output.Reading{
 			total,
@@ -220,9 +223,11 @@ var virtualMemoryHandler = sdk.DeviceHandler{
 }
 ```
 
-Notice that for each reading, `Info` is set to provide additional information on what the
-reading is for. Without this, we would get two bytes outputs without knowing which is a measure
-of the free memory vs. the total memory.
+Notice that for each reading, a context was added with "info" key describing what the
+reading value corresponds to. The data in the context is arbitrary, so additional info
+does not necessarily have to live under "info". Adding context is useful in cases like
+this where a single device has two outputs of the same type (bytes) which need to be
+differentiated.
 
 ## 6. Create the plugin
 
