@@ -16,7 +16,7 @@ Within this document:
 - `localhost:5000`, `#!shell ${server}`, and other references to the hostname/IP and port
   of the Synse Server instance are all functionally equivalent and serve only as a placeholder
   which should be replaced with instance's IP/port.
-- The examples provided for each item use the [Synse Python Client](../client-python/intro.md)
+- The examples provided for each item use the [Synse Python Client](https://github.com/vapor-ware/synse-client-python)
   for the Python examples.
 - All specified URI parameters are required.
 - All specified query parameters are optional.
@@ -996,7 +996,8 @@ can be used to modify the sort behavior.
     "tags": [
       "system/id:c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07",
       "system/type:temperature"
-    ]
+    ],
+    "metadata": {}
   },
   {
     "id": "f041883c-cf87-55d7-a978-3d3103836412",
@@ -1007,7 +1008,8 @@ can be used to modify the sort behavior.
     "tags": [
       "system/id:f041883c-cf87-55d7-a978-3d3103836412",
       "system/type:led"
-    ]
+    ],
+    "metadata": {}
   }
 ]
 ```
@@ -1022,6 +1024,7 @@ The fields of the response are described below:
 | *type* | The type of the device. |
 | *plugin* | The ID of the plugin which the device is managed by. |
 | *tags* | A list of the tags associated with this device. One of the tags will be the `id` tag. |
+| *metadata* | Any metadata or contextual information configured with the device. The data stored here are arbitrary keys and values. |
 
 ??? note "HTTP"
     **Request**
@@ -1041,7 +1044,8 @@ The fields of the response are described below:
         "tags": [
           "system/id:c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07",
           "system/type:temperature"
-        ]
+        ],
+        "metadata": {}
       },
       {
         "id": "f041883c-cf87-55d7-a978-3d3103836412",
@@ -1052,7 +1056,8 @@ The fields of the response are described below:
         "tags": [
           "system/id:f041883c-cf87-55d7-a978-3d3103836412",
           "system/type:led"
-        ]
+        ],
+        "metadata": {}
       }
     ]
     ```
@@ -1081,7 +1086,8 @@ The fields of the response are described below:
           "tags": [
             "system/id:c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07",
             "system/type:temperature"
-          ]
+          ],
+          "metadata": {}
         },
         {
           "id": "f041883c-cf87-55d7-a978-3d3103836412",
@@ -1092,7 +1098,8 @@ The fields of the response are described below:
           "tags": [
             "system/id:f041883c-cf87-55d7-a978-3d3103836412",
             "system/type:led"
-          ]
+          ],
+          "metadata": {}
         }
       ]
     }
@@ -1965,6 +1972,99 @@ The [error response](#errors) can be one of:
 * **400** - Invalid query parameters
 
 
+---
+
+### Stream Readings
+
+| | | |
+| --- | --- | --- |
+| WebSocket | **request**  | `"request/read_stream"` |
+|           | **response** | `"response/reading"`    |
+
+Stream readings from Synse.
+
+!!! info
+    This functionality is currently **only available via the WebSocket API**. Streamed
+    reading functionality will be added to the HTTP API in the future when HTTP/2
+    is fully supported by the backend web framework.
+
+This request streams readings from Synse Server as readings are updated by the underlying
+plugins. This is effectively a "live stream" of data. Reading data will continue to be streamed
+over the WebSocket connection until either the connection is closed, or the `stop` parameter
+is sent with a value of `true`.
+
+Data can be streamed for all devices across all plugins, or the devices to stream readings from
+may be filtered by device ID or tag groups.
+
+#### *Query Parameters*
+
+| Key  | Description |
+| :--- | :---------- |
+| ids | A list of device IDs which can be used to constrain the devices for which readings should be streamed. If no IDs are specified, no filtering by ID is done. |
+| tag_groups | A collection of tag groups to constrain the devices for which readings should be streamed. The tags within a group are subtractive (e.g. a device must match all tags in the group to match the filter), but each tag group specified is additive (e.g. readings will be streamed for the union of all specified groups). If no tag groups are specified, no filtering by tags is done. |
+| stop | A boolean value indicating whether or not to stop the reading stream. By default, this is False. |
+
+#### *Response Data*
+
+```json
+[
+  {
+    "device": "c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07",
+    "timestamp": "2019-01-01T12:00:00Z",
+    "type": "temperature",
+    "device_type": "temperature",
+    "unit": {
+      "name": "celsius",
+      "symbol": "C"
+    },
+    "value": 85,
+    "context": {}
+  }
+]
+```
+
+The fields of the response are described below:
+
+| Field | Description |
+| :---- | :---------- |
+| *device* | The globally unique ID of the device which the reading(s) originated from. |
+| *device_type* | The type of the device (defined by the plugin). |
+| *type* | The type of the reading. Devices may produce readings of different types (e.g. LED status and LED color). |
+| *value* | The value of the reading. |
+| *timestamp* | An RFC3339 timestamp describing the time at which the reading was taken. |
+| *unit* | The unit of measure for the reading. If there is no unit, this will be `null`. |
+| *context* | A mapping of arbitrary values to provide additional context for the reading. |
+
+??? note "WebSocket"
+    **Request**
+    ```json
+    {
+      "id": 0,
+      "event": "request/read_cache"
+    }
+    ```
+
+    **Response**
+    ```json
+    {
+      "id": 0,
+      "event": "response/reading",
+      "data": [
+        {
+          "device": "c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07",
+          "timestamp": "2019-01-01T12:00:00Z",
+          "type": "temperature",
+          "device_type": "temperature",
+          "unit": {
+            "name": "celsius",
+            "symbol": "C"
+          },
+          "value": 85,
+          "context": {}
+        }
+      ]
+    }
+    ```
 
 ---
 
