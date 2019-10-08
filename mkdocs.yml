@@ -72,10 +72,6 @@ nav:
       - Testing: sdk/developer/testing.md
   - Synse CLI:
     - Introduction: cli/intro.md
-  - Client (Python):
-    - Introduction: client-python/intro.md
-  - Client (Go):
-    - Introduction: client-go/intro.md
 
 
 # Extensions

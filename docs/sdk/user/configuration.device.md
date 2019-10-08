@@ -144,18 +144,18 @@ devices:
 - type: temperature
 ```
 
-#### Metadata
+#### Context
 
 | | |
 | ------ | ------ |
-| ***description*** | Meta-information pertaining to the device(s). There is no restriction on what information can be put here. It is optional, so does not need to be specified, but is useful for tracking well-known static data about a device, such as a part number or manufacturer. |
+| ***description*** | Any additional context information which should be associated with a device instance's reading(s). If specified here, all prototype instances will inherit the context, unless inheritance is disabled. |
 | ***type*** | map[string]string |
-| ***key*** | `metadata` |
+| ***key*** | `context` |
 
 ```YAML tab=
 version: 3
 devices:
-- metadata:
+- context:
     manufacturer: vapor
     part_number: 123
 ```
@@ -234,7 +234,8 @@ devices:
 ```YAML tab=
 version: 3
 devices:
-- instances:
+-
+  instances:
   - <device instance>
 ```
 
@@ -251,9 +252,10 @@ devices:
 | ***key*** | `type` |
 
 ```YAML tab=
-version:
+version: 3
 devices:
-- instances:
+-
+  instances:
   - type: temperature
 ```
 
@@ -266,10 +268,29 @@ devices:
 | ***key*** | `info` |
 
 ```YAML tab=
-version:
+version: 3
 devices:
-- instances:
+-
+  instances:
   - info: Top of rack front temperature sensor
+```
+
+#### Context
+
+| | |
+| ------ | ------ |
+| ***description*** | Any additional context information which should be associated with a device instance's reading(s). Any values specified here will be applied to the reading context automatically by the SDK. |
+| ***type*** | map[string]string |
+| ***key*** | `context` |
+
+```YAML tab=
+version: 3
+devices:
+-
+  instances:
+    context:
+      model: abc123
+      position: rear
 ```
 
 #### Tags
@@ -281,9 +302,10 @@ devices:
 | ***key*** | `tags` |
 
 ```YAML tab=
-version:
+version: 3
 devices:
-- instances:
+-
+  instances:
   - tags:
     - synse/tag1
     - synse/tag2
@@ -298,9 +320,10 @@ devices:
 | ***key*** | `data` |
 
 ```YAML tab=
-version:
+version: 3
 devices:
-- instances:
+-
+  instances:
   - data:
       address: /dev/ttyUSB0
       baud: 9600
@@ -316,9 +339,10 @@ devices:
 | ***key*** | `output` |
 
 ```YAML tab=
-version:
+version: 3
 devices:
-- instances:
+-
+  instances:
   - output: temperature
 ```
 
@@ -332,9 +356,10 @@ devices:
 | ***default*** | `0` |
 
 ```YAML tab=
-version:
+version: 3
 devices:
-- instances:
+-
+  instances:
   - sortIndex: 2
 ```
 
@@ -347,9 +372,10 @@ devices:
 | ***key*** | `handler` |
 
 ```YAML tab=
-version:
+version: 3
 devices:
-- instances:
+-
+  instances:
   - handler: temperature
 ```
 
@@ -366,9 +392,10 @@ An [alias]() which can be used to reference the device in place of the generated
 | ***key*** | `name` |
 
 ```YAML tab=
-version:
+version: 3
 devices:
-- instances:
+-
+  instances:
   - alias:
       name: front-temperature
 ```
@@ -382,9 +409,10 @@ devices:
 | ***key*** | `template` |
 
 ```YAML tab=
-version:
+version: 3
 devices:
-- instances:
+-
+  instances:
   - template: "{ .Device.Type }-{ meta port }"
 ```
 
@@ -397,9 +425,10 @@ devices:
 | ***key*** | `scalingFactor` |
 
 ```YAML tab=
-version:
+version: 3
 devices:
-- instances:
+-
+  instances:
   - scalingFactor: -1e-3
 ```
 
@@ -412,9 +441,10 @@ devices:
 | ***key*** | `apply` |
 
 ```YAML tab=
-version:
+version: 3
 devices:
-- instances:
+-
+  instances:
   - type: temperature
     apply:
     - "FtoC" 
@@ -431,9 +461,10 @@ devices:
 | ***supported*** | [duration](https://golang.org/pkg/time/#example_Duration) strings |
 
 ```YAML tab=
-version:
+version: 3
 devices:
-- instances:
+-
+  instances:
   - writeTimeout: 20s
 ```
 
@@ -448,9 +479,10 @@ devices:
 | ***supported*** | `true`, `false` |
 
 ```YAML tab=
-version:
+version: 3
 devices:
-- instances:
+-
+  instances:
   - disableInheritance: true
 ```
 

@@ -283,8 +283,8 @@ Additionally, the SDK provides some simple template functions:
 
 | Function | Description | Example |
 | :------- | :---------- | :------ |
-| `env` | Get a value from the environment. | `{{env "PLUGIN_HOSTNAME"}}` |
-| `meta` | Get a value from the device's configured metadata. | `{{meta "manufacturer"}}` |
+| `env` | Get a value from the environment. | `{{ env "PLUGIN_HOSTNAME" }}` |
+| `ctx` | Get a value from the device's configured context. | `{{ ctx "manufacturer" }}` |
 
 ## Outputs
 
