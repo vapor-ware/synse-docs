@@ -72,6 +72,8 @@ nav:
       - Testing: sdk/developer/testing.md
   - Synse CLI:
     - Introduction: cli/intro.md
+    - Installing: cli/installing.md
+    - Usage: cli/usage.md
 
 
 # Extensions
