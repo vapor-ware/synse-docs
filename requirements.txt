@@ -4,17 +4,12 @@
 #
 #    pip-compile --output-file=requirements.txt requirements.in
 #
-backrefs==4.2             # via wcmatch
-beautifulsoup4==4.8.1     # via pyspelling
-bracex==1.3               # via wcmatch
 click==7.0                # via mkdocs
-html5lib==1.0.1           # via pyspelling
 htmlmin==0.1.12           # via mkdocs-minify-plugin
 jinja2==2.10.3            # via mkdocs
 jsmin==2.2.2              # via mkdocs-minify-plugin
 livereload==2.6.1         # via mkdocs
-lxml==4.4.1               # via pyspelling
-markdown==3.1.1           # via mkdocs, pymdown-extensions, pyspelling
+markdown==3.1.1           # via mkdocs, pymdown-extensions
 markupsafe==1.1.1         # via jinja2
 mkdocs-material==4.4.3
 mkdocs-minify-plugin==0.2.1  # via mkdocs-material
@@ -22,10 +17,6 @@ mkdocs==1.0.4
 pep562==1.0               # via pymdown-extensions
 pygments==2.4.2
 pymdown-extensions==6.1
-pyspelling==2.5
-pyyaml==5.1.2             # via mkdocs, pyspelling
-six==1.12.0               # via html5lib, livereload
-soupsieve==1.9.4          # via beautifulsoup4, pyspelling
+pyyaml==5.1.2             # via mkdocs
+six==1.12.0               # via livereload
 tornado==6.0.3            # via livereload, mkdocs
-wcmatch==4.3.1            # via pyspelling
-webencodings==0.5.1       # via html5lib
