@@ -125,6 +125,7 @@ that all requests can have an error response.
 | `request/read`          | `response/reading` |
 | `request/read_device`   | `response/reading` |
 | `request/read_cache`    | `response/reading` |
+| `request/read_stream`   | `response/reading` |
 | `request/write_async`   | `response/transaction_info` |
 | `request/write_sync`    | `response/transaction_status` |
 | `request/transaction`   | `response/transaction_status` |
@@ -2572,7 +2573,7 @@ The [error response](#errors) can be one of:
 | --- | --- | --- |
 | HTTP      | **GET**      | `/v3/transaction/<transaction>` |
 | WebSocket | **request**  | `"request/transaction"` |
-|           | **response** | `"response/transaction_info"` |
+|           | **response** | `"response/transaction_status"` |
 
 Check the status of a write transaction.
 
@@ -2687,7 +2688,7 @@ The fields of the response are described below:
     ```json
     {
       "id": 0,
-      "event": "response/transaction",
+      "event": "response/transaction_status",
       "data": {
         "id": "2b717ced-58ff-43dc-ab6f-d4c0c6008ebb",
         "created": "2019-01-01T12:00:00Z",
