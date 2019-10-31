@@ -2,8 +2,8 @@
 hero: Monitoring 
 ---
 
-Synse Server does not currently provide a built-in monitoring solution for the
-data that it exposes. It can provide basic application-level metrics via a
+Synse Server does not provide any kind of monitoring solution for the
+data that it exposes. It does provide basic application-level metrics via a
 [Prometheus](https://prometheus.io) exporter.
 
 ## Configuring

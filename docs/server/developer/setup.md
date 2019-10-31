@@ -31,20 +31,16 @@ from the project repo root.
 
 ```console
 $ make help
-api-doc          Open the locally generated HTML API reference
 clean            Clean up build and test artifacts
-cover            Run unit tests and open their resulting HTML coverage report
+cover            Run unit tests and open the resulting HTML coverage report
 deps             Update the frozen pip dependencies (requirements.txt)
-docker           Build the docker image locally
-docs             Build project documentation locally
-fmt              Automatic source code formatting (isort)
+docker           Build the docker image
+fmt              Automatic source code formatting (isort, autopep8)
 github-tag       Create and push a tag with the current version
 help             Print Make usage information
 i18n             Update the translations catalog
-lint             Run linting checks on the project source code (isort, flake8)
-run              Run Synse Server with emulator locally (localhost:5000)
-test             Run all tests
-test-unit        Run the unit tests
+lint             Run linting checks on the project source code (isort, flake8, twine)
+test             Run the unit tests
 version          Print the version of Synse Server
 ```
 

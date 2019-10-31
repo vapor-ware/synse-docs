@@ -1,12 +1,13 @@
 
-*New in: Synse v3*
+!!! note
+    *Added in: 3.0.0*
 
 Synse uses *tags* to group and identify devices in the system. Tags can be arbitrary and
 are defined at the plugin level. Synse also generates system level tags for devices to
 provide a baked-in grouping.
 
 At a minimum, all devices will have an `id` tag. Every `id` tag should only ever reference
-a single device.
+a single device for a given plugin.
 
 ## Definitions
 
@@ -39,6 +40,9 @@ can have 1..N members.
 
 > **Exception**: The *only* label group which will not have 1..N members is the reserved `id`
 tag. This tag will have exactly 1 member.
+
+If a tag consists of only a label, it will automatically be put into the `default` namespace,
+so `foo` and `default/foo` are effectively equivalent.
 
 ### Annotation
 
@@ -99,7 +103,7 @@ Auto-generated tags are tags which are associated with a device automatically, w
 any need for user configuration. These tags are currently limited to `id` and `type`.
 
 All auto-generated tags will include an annotation component. The annotation will be [well-known
-and reserved](#reserved-annotations) from use in [user-defined tags](#user-defined). If a user-defined
+and reserved](#annotation) from use in [user-defined tags](#user-defined). If a user-defined
 tag annotation conflicts with a reserved annotation name, an error will be returned.
 
 ### User Defined
