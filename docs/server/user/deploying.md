@@ -47,7 +47,7 @@ version: 3
 debug: true
 network:
   type: tcp
-  address: ":5001"
+  address: ':5001'
   tls:
     skipVerify: true
     key: /tmp/ssl/emulator-plugin.key
@@ -67,7 +67,7 @@ environment:
 ```
 
 All that is left is mounting the certificates into the containers appropriately.
-Altogether, the compose file will look like:
+Together, the compose file will look like:
 
 ```yaml
 #
@@ -85,23 +85,23 @@ services:
     container_name: synse-server
     image: vaporio/synse-server
     ports:
-    - "5000:5000"
-    environment:
-      SYNSE_LOGGING: debug
-      SYNSE_PLUGIN_TCP: emulator:5001
-      SYNSE_GRPC_TLS_CERT: /tmp/ssl/emulator-plugin.crt
+    - '5000:5000'
     volumes:
     - ./certs/emulator-plugin.crt:/tmp/ssl/emulator-plugin.crt
     links:
     - emulator
+    environment:
+      SYNSE_LOGGING: debug
+      SYNSE_PLUGIN_TCP: emulator:5001
+      SYNSE_GRPC_TLS_CERT: /tmp/ssl/emulator-plugin.crt
 
   # TCP-based Emulator Plugin
   emulator:
     container_name: emulator
     image: vaporio/emulator-plugin
     expose:
-    - "5001"
-    command: ["--debug"]
+    - '5001'
+    command: ['--debug']
     volumes:
       # mount in the custom plugin config
       - ./emulator-config.yaml:/tmp/config/config.yml

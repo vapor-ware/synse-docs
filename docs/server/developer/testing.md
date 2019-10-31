@@ -7,9 +7,10 @@ hero: Testing
 Whenever additions or changes are made to the code base, tests should be added (or updated)
 to verify that the changes behave as expected.
 
-Test cases for Synse Server can be found in the project's `tests` directory. The structure of
-the test directory mirrors that of the package directory. Tests for a given file (e.g. `synse_server/foo/bar.py`)
-should have the same name, prefixed with "test" (e.g. `tests/foo/test_bar.py`).
+Test cases for Synse Server can be found in the project's `tests` directory. Unit tests are found
+within the `unit` subdirectory. Within `tests/unit`, the test directory mirrors that of the package
+directory. Tests for a given file (e.g. `synse_server/foo/bar.py`) should have the same name, prefixed
+with "test" (e.g. `tests/unit/foo/test_bar.py`).
 
 Tests are written using the [pytest](https://docs.pytest.org/en/latest/) framework. Test
 dependencies are defined in the project's `tox.ini` configuration.
@@ -28,8 +29,5 @@ tox tests/unit
 make test
 ```
 
-Test output will be displayed in the console. Test artifacts will also be generated
-and kept in a `results/` directory. These artifacts include:
-
-- `results/coverage`: The coverage report for the last test run.
-- `results/pytest`: The pytest results as an HTML page.
+Test output will be displayed in the console. Test artifacts will also be generated,
+including an HTML test coverage report.

@@ -6,6 +6,9 @@ hero: Releases
     Starting with Synse v3, all Synse compatible Synse components will share the same
     major version number. 
 
+!!! warning
+    With the v3 release of Synse, previous versions of Synse will no longer be supported.
+
 Synse components use [semantic versioning](https://semver.org/) for their releases.
 Releases are driven by a CI workflow that is kicked off from a GitHub tag. See the releases
 page on a project's GitHub repository for release notes and any build artifacts for that
@@ -22,6 +25,12 @@ versions. Typically, this would mean major changes to the API, the request schem
 the response scheme. A new major release should only be done if there are breaking
 API changes; it should not occur for standard bug fixes, feature additions, dependency
 updates, etc.
+
+!!! note
+    Because the Synse ecosystem has many components, a general rule is that all components
+    with the same major version should be compatible. That is to say a plugin using SDK
+    version 3.2.5 should be compatible with Synse Server 3.1.1, however it will not be
+    compatible with Synse Server 2.1.2.
 
 ## Minor Version
 

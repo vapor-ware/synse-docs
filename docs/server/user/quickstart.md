@@ -117,16 +117,16 @@ services:
   synse-server:
     image: vaporio/synse-server
     ports:
-    - "5000:5000"
+    - '5000:5000'
     links:
     - emulator
     environment:
       SYNSE_LOGGING: debug
-      SYNSE_PLUGIN_TCP: "emulator:5001"
+      SYNSE_PLUGIN_TCP: 'emulator:5001'
   
   emulator:
     image: vaporio/emulator-plugin
-    command: ["--debug"]
+    command: ['--debug']
     expose:
     - 5001
 ```
