@@ -6,30 +6,59 @@ hero: Home
 
 <p align="center"><img src="assets/img/logo.png" width="200px" /></p>
 
-**Synse** is a simple, scalable platform to enable detailed monitoring and control of
-data center equipment, or more generally *physical and virtual devices*. The platform
-is designed for remote lights-out management and automation.
+**Synse** is a simple, scalable platform which enabled detailed monitoring and control
+of *physical and virtual devices*. These devices could be data center equipment,
+IoT devices, building management systems, or devices on the edge. The platform is
+designed to support remote lights-out management and automation.
 
-There are two main components to the Synse platform, the [server](server/intro.md) and
-the [plugins](plugins.md). 
+There are two core components to the Synse platform, the [API server](server/intro.md) and
+[device plugins](plugins.md).
+
+_What Synse Provides_:
+
+- A uniform HTTP API to interface with devices across any protocol
+- The ability to read from and write to devices
+- Deterministic IDs for devices configured in a Synse deployment
+
+
+_What Synse Does Not Provide_:
+
+- Persistence of device readings / write actions
+- Access control to plugins/devices
+- Analytics, inference, or general processing of device data
+
+
+<p align="center"><img src="assets/img/high-level-arch.svg" width="500px" /></p>
 
 ## Components
 
 ### Plugins
 
-Plugins interface directly with devices and expose the device to the rest of the platform.
-They enable data collection from the devices, such as collecting temperature, humidity,
-power consumption, or LED status. In addition, plugins allow data to be written to the
-devices which support it. This can range from simply blinking an LED indicator, to remotely
-managing an HVAC system.
+Plugins are the direct interface to devices, exposing them to the rest of the platform.
+
+Briefly, a plugin is generally associated with a communication protocol, such as IPMI,
+SNMP, HTTP, I²C, etc. If the plugin is generalized, it should only be a matter of configuring
+it correctly to get readings for your devices (e.g., specifying the correct I²C registers).
+
+Plugins may also be target-specific. For example, it may not be suitable to use a generalized
+HTTP plugin to access a custom REST API, so you may create a plugin that is specific to that
+API. Doing so would reduce the configuration burden, as many API-specific details could be
+codified into the custom plugin itself.
+
+Regardless of how simple, complex, general, or specific, the job of a plugin is to communicate
+with a device, enabling the collection of the reading data it provides, such as temperature,
+humidity, power consumption, LED status, lock state, etc. Additionally, if a device can be
+written to, plugins provide a means to issue write requests to those devices. This can range
+from simply blinking an LED indicator, to remotely managing a building's HVAC system.
 
 ### Server
 
-The server component provides a simple HTTP and WebSocket API which makes it easy to interact
-with the devices the plugins expose. It tracks the devices available to the system and routes
-incoming requests to the appropriate plugin for a specified device. The simple unified API
-which the server provides means that you can interface with a temperature sensor over RS-485,
-an LED over I²C, and server power over IPMI in the same way via HTTP.
+The server ("Sysne Server") provides a simple HTTP and WebSocket API which makes it easy to interact
+with the devices exposed by plugins. It routes incoming requests to the appropriate plugin
+for the specified device, so the user does not need to worry about where the device is or
+what protocol it speaks. The API provides uniform access over HTTP (or WebSocket), meaning that
+you can interact with a temperature sensor over RS-485 the same way you would a BMC over IPMI --
+and you could do it all with _curl_.
 
 ## The Synse Ecosystem
 
@@ -46,6 +75,6 @@ which make up the *Synse ecosystem*:
     interact with the server (via the HTTP API) and plugins (via the gRPC API) directly from
     your console.
 * [vapor-ware/synse-client-python](https://github.com/vapor-ware/synse-client-python): A Python
-    client for the Synse Server API.
+    client for programmatic access to the Synse Server API.
 * [vapor-ware/synse-client-go](https://github.com/vapor-ware/synse-client-go): A Golang client
-    for the Synse Server API.
+    for programmatic access to the Synse Server API.

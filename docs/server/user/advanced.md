@@ -22,9 +22,9 @@ services:
   synse-server:
     image: vaporio/synse-server
     ports:
-    - "5000:5000"
+    - '5000:5000'
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/test"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:5000/test']
       interval: 1m
       timeout: 5s
       retries: 3
@@ -80,22 +80,17 @@ Currently, the only supported mode of plugin discovery is through [Kubernetes se
 In short, this means that for a plugin deployment with a Service specified,
 labels can be set on that Service to identify it as a plugin. 
 
-This is useful because [Pod](https://kubernetes.io/docs/concepts/workloads/pods/pod/) may
-be restarted or scheduled on a different Node and tying the plugin's identity to the resource
+This is useful because a [Pod](https://kubernetes.io/docs/concepts/workloads/pods/pod/) may
+be restarted or scheduled on a different Node; tying the plugin's identity to the resource
 rather than an address means it can move around on the network and still be accessible to
 the server without a need to update the configuration.
 
-Below is a basic example Kubernetes configuration which will create a Service and
+Below is a basic example configuration which will create a Service and
 Deployment for Synse Server and the emulator plugin. Synse Server is configured to discover the
 plugin using endpoint labels, specifically the `app=synse` and `component=plugin` labels.
 
 In the example below, Synse Server is configured for plugin discovery via environment variables,
-but it could also be done with a mounted ConfigMap specifying the [doscovery config options](configuration.md#discover).
-
-```
-SYNSE_PLUGIN_DISCOVER_KUBERNETES_ENDPOINTS_LABELS_APP=synse
-SYNSE_PLUGIN_DISCOVER_KUBERNETES_ENDPOINTS_LABELS_COMPONENT=plugin
-```
+but it could also be done with a mounted ConfigMap specifying the [discovery config options](configuration.md#discover).
 
 ```yaml
 apiVersion: v1

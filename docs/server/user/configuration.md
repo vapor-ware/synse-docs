@@ -30,7 +30,7 @@ Synse Server instance by placing the config in one of the search paths, e.g.
 ```
 docker run -d \
     -p 5000:5000 \
-    -v $PWD/custom_config.yml:/etc/synse/server/config.yml \
+    -v $PWD/custom-config.yml:/etc/synse/server/config.yml \
     vaporio/synse-server
 ```
 
@@ -38,7 +38,7 @@ Assuming the configuration is correct and Synse Server could successfully load i
 you can verify that the config was picked up either by looking at the server logs,
 or by hitting the [`/config`](../api.v3.md#config) endpoint.
 
-The above can also be done simply in a compose file:
+The above can also be done in a compose file:
 
 ```yaml
 version: '3'
@@ -46,9 +46,9 @@ services:
   synse-server:
     image: vaporio/synse-server
     ports:
-    - "5000:5000"
+    - '5000:5000'
     volumes:
-    - ./custom_config.yml:/etc/synse/server/config.yml
+    - ./custom-config.yml:/etc/synse/server/config.yml
 ```
 
 ### Specifying Environment Variables
@@ -68,7 +68,7 @@ docker run -d \
     vaporio/synse-server
 ```
 
-The above can also be done simply in a compose file:
+The above can also be done in a compose file:
 
 ```yaml
 version: '3'
@@ -76,7 +76,7 @@ services:
   synse-server:
     image: vaporio/synse-server
     ports:
-    - "5000:5000"
+    - '5000:5000'
     environment:
     - SYNSE_LOGGING=debug
     - SYNSE_CACHE_TRANSACTION_TTL=500
@@ -98,8 +98,8 @@ via environment variable.
 | ***type*** | string |
 | ***key*** | `logging` |
 | ***env variable*** | `SYNSE_LOGGING` |
-| ***default*** | `info` |
-| ***supported*** | `debug`, `info`, `warning`, `error` |
+| ***default*** | `debug` |
+| ***supported*** | `debug`, `info`, `warning`, `error`, `critical` |
 
 ```YAML tab=
 logging: info
@@ -196,9 +196,7 @@ SYNSE_PLUGIN_UNIX="/tmp/example.sock"
 
 !!! note
     When registering a plugin via unix socket, Synse Server needs access to that socket. If the
-    server is running in a docker container, this means the socket must be mounted in. For convenience,
-    Synse Server creates the `/tmp/synse` directory on the container which can be used as a mount
-    location for sockets, e.g.
+    server is running in a docker container, this means the socket must be mounted in, e.g.
     
     ```
     docker run \
@@ -251,12 +249,12 @@ plugin:
       endpoints:
         labels:
           app: synse
-          component: plugin
+          foo: bar
 ```
 
 ```Environment tab=
 SYNSE_PLUGIN_DISCOVER_KUBERNETES_ENDPOINTS_LABELS_APP=synse
-SYNSE_PLUGIN_DISCOVER_KUBERNETES_ENDPOINTS_LABELS_COMPONENT=plugin
+SYNSE_PLUGIN_DISCOVER_KUBERNETES_ENDPOINTS_LABELS_FOO=bar
 ```
 
 -----
@@ -265,7 +263,7 @@ SYNSE_PLUGIN_DISCOVER_KUBERNETES_ENDPOINTS_LABELS_COMPONENT=plugin
 
 Configuration options for Synse Server caches. There are two caches in the server:
 
-- **device**: A lookup cache for devices and their associated tags.
+- **device**: A lookup cache for devices and their associated plugin and tags.
 - **transaction**: A lookup cache for write transactions and their associated devices.
 
 #### Device
@@ -327,7 +325,7 @@ grpc:
 
 #### TLS
 
-TLS configurations for the internal server --> plugin gRPC client.
+TLS configurations for the internal gRPC client used to communicate with plugins.
 
 ***Cert***
 
@@ -424,32 +422,26 @@ SYNSE_METRICS_ENABLED=true
 
 ## Examples
 
-
-
-
-
-
-Examples
---------
-
-## Default Configuration
+### Default Configuration
 
 Below is what the default configuration for Synse Server looks like as YAML.
 
 ```yaml
 locale: en_US
-pretty_json: false
-logging: info
+pretty_json: true
+logging: debug
 cache:
-  meta:
-    ttl: 20
+  device:
+    rebuild_every: 180
   transaction:
     ttl: 300
 grpc:
   timeout: 3
+metrics:
+  enabled: false
 ```
 
-## Complete Configuration
+### Complete Configuration
 
 Below is a valid (if contrived) and complete example configuration file.
 
@@ -470,9 +462,9 @@ plugin:
           app: synse
           component: plugin
 cache:
-  meta:
+  device:
     # time to live in seconds
-    ttl: 20
+    rebuild_every: 200
   transaction:
     # time to live in seconds
     ttl: 300
