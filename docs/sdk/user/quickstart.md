@@ -31,7 +31,7 @@ An example of a simple plugin that showcases the basics of how to implement a pl
 the [examples/simple_plugin](https://github.com/vapor-ware/synse-sdk/tree/master/examples/simple_plugin)
 directory.
 
-The [examples](https://github.com/vapor-ware/synse-sdk/tree/master/examples) contains other
+The [examples](https://github.com/vapor-ware/synse-sdk/tree/master/examples) directory contains other
 examples, showcasing different features and different levels of plugin complexity. The
 [emulator plugin](https://github.com/vapor-ware/synse-emulator-plugin) is another good
 reference for plugin implementation and setup.

@@ -2,8 +2,7 @@
 hero: Plugin Configuration 
 ---
 
-The plugin configuration defines how a plugin should behave at runtime. It specifies
-the options ranging from logging level, performance tuning, and transport security.
+The plugin configuration defines how a plugin should behave at runtime.
 
 Plugin configuration is defined in a YAML file. Most configuration options
 have sane default values. For simple plugins, these default values may suffice
@@ -49,23 +48,23 @@ The `PLUGIN_CONFIG` environment variable can be used to specify either the
 full path to the file (e.g. `/tmp/cfg/config.yaml`), or the path to the
 directory containing the config file (e.g. `/tmp/cfg`).
 
-This can also be done simply in a compose file:
+This may also be done in a compose file:
 
 ```yaml
 version: '3'
 services:
   plugin:
     image: plugin-image
-    environment:
-      PLUGIN_CONFIG: /tmp/cfg/config.yml
     volumes:
     - ./custom-cfg.yaml:/tmp/cfg/config.yaml
+    environment:
+      PLUGIN_CONFIG: /tmp/cfg/config.yml
 ```
 
 ## Config Policies
 
 A plugin can define a configuration policy for its plugin configuration. There are two
-policy types that can be set:
+policy types which can be set:
 
 | Policy | Description |
 | :----- | :---------- |

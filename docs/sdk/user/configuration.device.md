@@ -49,7 +49,7 @@ docker run \
 The `PLUGIN_DEVICE_CONFIG` environment variable may also specify a single file
 to use as the device configuration, if all device configs are defined in one file.
 
-This can also be done simply in a compose file:
+This may also be done in a compose file:
 
 ```yaml
 version: '3'
@@ -65,7 +65,7 @@ services:
 ## Config Policies
 
 A plugin can define a configuration policy for its device configuration(s). There are two
-policy types that can be set:
+policy types which can be set:
 
 | Policy | Description |
 | :----- | :---------- |
@@ -164,7 +164,7 @@ devices:
 
 | | |
 | ------ | ------ |
-| ***description*** | The set of tags to apply to each of the devices which are instances of this device prototype. It is not required to define supplemental tags. |
+| ***description*** | The set of [tags](../../server/user/tags.md) to apply to each of the prototype's device instances. It is not required to define supplemental tags. |
 | ***type*** | list[string] |
 | ***key*** | `tags` |
 
@@ -180,7 +180,7 @@ devices:
 
 | | |
 | ------ | ------ |
-| ***description*** | Data that can be applied to each of the devices which are instances of this device prototype. Device data is plugin specific and generally provides the information needed for the plugin to interface with the device, e.g. an address, port, path, etc. If specified, this data will be merged with any instance data, where the instance data will override any conflicting keys. |
+| ***description*** | Data to be applied to each of the prototype's device instances. Device data is plugin-specific and generally provides the information needed for the plugin to interface with the device, e.g. an address, port, path, etc. If specified, this data will be merged with any instance data, where the instance data will override any conflicting keys. |
 | ***type*** | map[string]Any |
 | ***key*** | `data` |
 
@@ -197,7 +197,7 @@ devices:
 
 | | |
 | ------ | ------ |
-| ***description*** | The name of the [device handler]() which should be used for devices which are instances of the device prototype. The device handler is defined by the plugin. If the specified handler does not exist, an error will be raised. If specified, this value will be applied to all device instances unless inheritance is disabled or the instance specifies its own handler explicitly. |
+| ***description*** | The name of the [device handler]() which should be used for the prototype's device instances. The device handler is defined by the plugin. If the specified handler does not exist, an error will be raised. If specified, this value will be applied to all device instances unless inheritance is disabled or the instance specifies its own handler explicitly. |
 | ***type*** | string |
 | ***key*** | `handler` |
 
@@ -211,7 +211,7 @@ devices:
 
 | | |
 | ------ | ------ |
-| ***description*** | A custom write timeout for all devices which are instances of the device prototype. This is the time within which a write transaction will remain valid. If a write is still processing after the timeout period, it is cancelled. If this is not specified, a default value of 30s is used. |
+| ***description*** | A custom write timeout for all of the prototype's device instances. This is the time within which a write transaction will remain valid. If a write is still processing after the timeout period, it is cancelled. |
 | ***type*** | duration |
 | ***key*** | `writeTimeout` |
 | ***default*** | `30s` |
@@ -227,7 +227,7 @@ devices:
 
 | | |
 | ------ | ------ |
-| ***description*** | The collection of [device instances](#device-instance) that belong to the device prototype. These instances will inherit any specified prototype config unless inheritance is disabled, or the instance provides an overriding value. |
+| ***description*** | The collection of [device instances](#device-instance) which belong to the device prototype. These instances will inherit any specified prototype config unless inheritance is disabled, or the instance provides an overriding value. |
 | ***type*** | list[[device instance](#device-instance)] |
 | ***key*** | `instances` |
 
@@ -297,7 +297,7 @@ devices:
 
 | | |
 | ------ | ------ |
-| ***description*** | The set of tags to apply to each of the devices which are instances of this device prototype. It is not required to define supplemental tags. A device instance can inherit (and merge) *tags* from its device prototype. |
+| ***description*** | The set of [tags](../../server/user/tags.md) to apply to the device instance. It is not required to define supplemental tags. A device instance can inherit (and merge) *tags* from its device prototype. |
 | ***type*** | list[string] |
 | ***key*** | `tags` |
 
@@ -367,7 +367,7 @@ devices:
 
 | | |
 | ------ | ------ |
-| ***description*** | The name of the [device handler]() which should be used for the devices instance. The device handler is defined by the plugin. If the specified handler does not exist, an error will be raised. A device instance can inherit the *handler* from its device prototype. |
+| ***description*** | The name of the [device handler](concepts.md#device-handlers) which should be used for the device instance. The device handler is defined by the plugin. If the specified handler does not exist, an error will be raised. A device instance can inherit the *handler* from its device prototype. |
 | ***type*** | string |
 | ***key*** | `handler` |
 
@@ -381,7 +381,7 @@ devices:
 
 #### Alias
 
-An [alias]() which can be used to reference the device in place of the generated device ID. The alias should be human-readable. It can either be a pre-defined string, or a go template which will be rendered by the SDK.
+An [alias](concepts.md#device-aliases) which can be used to reference the device in place of the generated device ID. The alias should be human-readable. It can either be a pre-defined string, or a Go template which will be rendered by the SDK.
 
 ***Name***
 
@@ -404,7 +404,7 @@ devices:
 
 | | |
 | ------ | ------ |
-| ***description*** | A [Go template](https://golang.org/pkg/text/template/) string which will be rendered into the alias for the device. The template takes in an [`AliasContext`]() for rendering, which includes a reference to the plugin metadata and device data. |
+| ***description*** | A [Go template](https://golang.org/pkg/text/template/) string which will be rendered into the alias for the device. The template takes in an [`AliasContext`](concepts.md#templated-alias) for rendering, which includes a reference to the plugin metadata and device data. |
 | ***type*** | string |
 | ***key*** | `template` |
 
@@ -413,7 +413,7 @@ version: 3
 devices:
 -
   instances:
-  - template: "{ .Device.Type }-{ meta port }"
+  - template: "{{ .Device.Type }}-{{ ctx port }}"
 ```
 
 #### Scaling Factor
@@ -436,7 +436,7 @@ devices:
 
 | | |
 | ------ | ------ |
-| ***description*** | An optional list of [functions]() which will be applied to the device's reading values, in the order that they are defined. There are some built-in functions which the SDK provides; a plugin can also register their own functions. |
+| ***description*** | An optional list of [functions](advanced.md#applying-functions-to-device-readings) which will be applied to the device's reading values, in the order that they are defined. There are some built-in functions which the SDK provides; a plugin can also register its own functions. |
 | ***type*** | list[string] |
 | ***key*** | `apply` |
 
@@ -454,7 +454,7 @@ devices:
 
 | | |
 | ------ | ------ |
-| ***description*** | A custom write timeout for the device instance. This is the time within which a write transaction will remain valid. If a write is still processing after the timeout period, it is cancelled. If this is not specified, a default value of 30s is used. A device instance can inherit the *writeTimeout* from its device prototype. |
+| ***description*** | A custom write timeout for the device instance. This is the time within which a write transaction will remain valid. If a write is still processing after the timeout period, it is cancelled. A device instance can inherit the *writeTimeout* from its device prototype. |
 | ***type*** | duration |
 | ***key*** | `writeTimeout` |
 | ***default*** | `30s` |
@@ -495,7 +495,7 @@ version: 3
 devices:
 
 - type: temperature
-  metadata:
+  context:
     manufacturer: vapor
   data:
     timeout: 5
@@ -510,7 +510,7 @@ devices:
       address: /dev/ttyUSB1
       
 - type: pressure
-  metadata:
+  context:
     manufacturer: vapor
   data:
     timeout: 5

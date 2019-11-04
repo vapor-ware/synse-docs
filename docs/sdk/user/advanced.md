@@ -7,7 +7,7 @@ This page describes some of the more advanced features and concepts of the Synse
 ## Applying Functions to Device Readings
 
 There may be instances, particularly when dealing with a general-purpose type plugin, you may
-want to perform some additional actions a device's raw reading, such as converting a value to
+want to perform some additional actions on a device's raw reading, such as converting a value to
 a particular unit. In such cases, the [device's configuration](configuration.device.md#apply)
 may specify the functions to apply. 
 
@@ -17,7 +17,7 @@ package. As an example, the function "FtoC" converts a value from degrees Fahren
 The SDK allows you to register custom functions which are made available to devices managed
 by the plugin. See below for an example. It is important to note that functions are referenced
 by their name, so all function names must be unique. If a function name conflicts with an existing
-name (whether custom or built-in), the SDK will raise an error.
+name (whether custom or built-in), the SDK will return an error.
 
 ### Example
 
@@ -134,7 +134,7 @@ has been run.
 
 *Pre-run actions* are functions which the plugin will execute before starting its
 main run logic. These actions can be used for plugin-wide setup, should a plugin require
-it. There is no limit to what a pre-run action could do, but some possibilities include
+it. There is no limit to what a pre-run action could do; some possibilities include
 performing authentication, verifying a backend exists, or additional validation of
 configuration(s).
 
@@ -193,8 +193,8 @@ For a more complete example, see the [device actions example plugin](https://git
 
 *Post-run actions* are functions which the plugin will execute after it is shut down gracefully.
 A plugin gracefully terminates when it catches a SIGTERM or SIGINT signal. These actions can be
-used for plugin-wide shut down or cleanup. There is no limit to what a post-run action can do,
-but some examples include cleaning up the filesystem or gracefully terminating a connection.
+used for plugin-wide shut down or cleanup. There is no limit to what a post-run action can do;
+some examples include cleaning up the filesystem or gracefully terminating a connection.
 
 Actions must be specified via the SDK's `PluginAction` type, which requires a name and
 the function to run. The names for actions are used for identifying the action. While
@@ -203,7 +203,7 @@ unique names to different plugin actions so they are clearly discernible in the 
 
 ### Example
 
-Below is a simple example of a pre-run action being registered with a plugin instance.
+Below is a simple example of a post-run action being registered with a plugin instance.
 
 *main.go*
 
@@ -266,15 +266,15 @@ the logs.
 The device filter is required and is in the form of a `#!go map[string]string`. The keys correspond
 to fields of a Device instance. Currently, the supported filter keys are:
 
-* type
+* "type"
 
 The device setup actions will apply to the devices whose field values match the filter values.
-Multiple device setup actions can target the same device(s). In this case, they are applied
+Multiple device setup actions can target the same device(s). Note that they are applied
 to the device in the order by which they were registered with the plugin.
 
 ### Example
 
-Below is a simple example of defining a device setup action and its filter, and registering
+Below is a simple example of defining a device setup action and registering
 it with a plugin instance.
 
 *main.go*
@@ -373,11 +373,11 @@ For a more complete example, see the [device actions example plugin](https://git
 
 Typically, devices are registered with a plugin through configuration files available to
 the plugin at startup. This will not work for plugins which do not necessarily know what
-devices are available immediately. A good example of this is IPMI, where the plugin would
-know the address to a BMC, but would not necessarily know which devices that BMC supports.
+devices are available immediately. A good example of this is IPMI -- the plugin would
+know the address of a BMC, but would not necessarily know which devices that BMC supports.
 
 In such cases, *dynamic registration* can be used. Dynamic registration is when devices are
-either registered directly at runtime, without the typical device config YAML(s). There are
+registered directly at runtime, without the typical device config YAML(s). There are
 two types of dynamic registration:
 
 - registration of device config(s) *(e.g. it creates configurations for a device)*
@@ -400,7 +400,7 @@ A simple example of this can be found in the [dynamic registration example plugi
 
 The SDK provides a notion of health for a plugin via *health checks*. The overall health
 status of the plugin is exposed by a health file, making it easy to integrate into
-container management health checks, e.g. for docker-compose or Kubernetes.
+container management health checks, e.g. for Docker Compose or Kubernetes.
 
 By default, the health file is `/etc/synse/plugin/healthy`. Plugin health status (healthy,
 unhealthy) is designated by the presence/absence of this file, where is presence indicates
@@ -412,7 +412,7 @@ some built-in health checks which are enabled by default (and can be disabled in
 [plugin configuration](configuration.plugin.md#configuration-options)). These health
 checks periodically check whether the read/write buffers are full or close to full.
 
-Custom health checks can be registered with the plugin. This allows a plugin to use
+Custom health checks may be registered with the plugin. This allows a plugin to use
 any metric it deems fit as a measure of health. Currently, the only type of health
 check which is supported is the *periodic* check, which runs periodically on a timer.
 

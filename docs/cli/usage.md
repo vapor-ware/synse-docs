@@ -67,7 +67,7 @@ synse context add plugin local-pluin localhost:5001
 
 This will add the contexts to the CLI, but will not automatically set them
 as the current active context. To do so, you may either invoke the above `add`
-command with the `--set` flag, or you can use the `set` command
+commands with the `--set` flag, or you can use the `set` command
 
 ```
 synse context set local-synse

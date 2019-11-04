@@ -12,8 +12,7 @@ to your local workspace.
 
 It is recommended to use the following development tools:
 
-- Go 1.11+: The SDK was developed using Go 1.11.
-- [`dep`](https://github.com/golang/dep): Dependency management tooling.
+- Go 1.13+: The SDK was developed using Go 1.13.
 - [`docker`](https://www.docker.com): Build and run Synse plugins in a containerized
   environment.
 - [`docker-compose`](https://docs.docker.com/compose/install): Define and run deployments
@@ -29,21 +28,15 @@ from the project repo root.
 
 ```console
 $ make help
-build           Build the SDK locally
-check-examples  Check that the examples run without failing.
-ci              Run CI checks locally (build, test, lint)
+check-examples  Check that the example pluginss run without failing
 clean           Remove temporary files
 cover           Run tests and open the coverage report
-dep             Ensure and prune dependencies
-dep-update      Ensure, update, and prune dependencies
-docs            Build the docs locally
-examples        Build the examples
+examples        Build the example plugins
 fmt             Run goimports on all go files
 github-tag      Create and push a tag with the current version
-godoc           Run godoc to get a local version of docs on port 8080
+godoc           Server godocs locally on port 8080
 help            Print usage information
 lint            Lint project source files
-setup           Install the build and development dependencies
 test            Run all tests
 version         Print the version of the SDK
 ```
