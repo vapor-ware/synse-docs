@@ -141,7 +141,8 @@ A device prototype defines the high-level information which applies to a class o
 ```YAML tab=
 version: 3
 devices:
-- type: temperature
+-
+  type: temperature
 ```
 
 #### Context
@@ -155,7 +156,8 @@ devices:
 ```YAML tab=
 version: 3
 devices:
-- context:
+-
+  context:
     manufacturer: vapor
     part_number: 123
 ```
@@ -171,7 +173,8 @@ devices:
 ```YAML tab=
 version: 3
 devices:
-- tags:
+-
+  tags:
   - synse/tag1
   - synse/tag2
 ```
@@ -187,7 +190,8 @@ devices:
 ```YAML tab=
 version: 3
 devices:
-- data:
+-
+  data:
     address: localhost:5432
     port: 3000
     timeout: 10
@@ -204,7 +208,8 @@ devices:
 ```YAML tab=
 version: 3
 devices:
-- handler: temperature
+-
+  handler: temperature
 ```
 
 #### Write Timeout
@@ -220,7 +225,37 @@ devices:
 ```YAML tab=
 version: 3
 devices:
-- writeTimeout: 20s
+-
+  writeTimeout: 20s
+```
+
+#### Transforms
+
+| | |
+| ------ | ------ |
+| ***description*** | An optional value which specifies an ordered list of transformations to all of the prototype's device instances. Generally, this only needs to be used for generalized plugins where the plugin handler does not do any scaling/conversion/etc. |
+| ***type*** | list |
+| ***key*** | `transforms` |
+
+The `transforms` list can specify **one** of the following keys per list item; if multiple keys are specified in the
+same list entry, an error will be returned. Note that the order in which transforms are defined are the order in which
+they are applied.
+
+| Key | Type | Description |
+| ------ | ------ | ------ |
+| `scale` | string | A scaling transformation for the device's reading(s). The scaling factor defined here is multiplied with the device reading. This allows it to be scaled up (multiplication, e.g. `* 2`), or scaled down (division, e.g. `/ 2` == `* 0.5`). This value is specified as a string, but should resolve to a numeric. By default, it will have a value of 1 (e.g. no-op). Negative values and fractional values are supported. This can be the value itself, e.g. "0.01", or a mathematical representation of the value, e.g. "1e-2". |
+| `apply` | string | A function to be applied to the device's reading(s). The function to apply could be anything, e.g. a unit conversion. The SDK defines [built-in functions](advanced.md#applying-functions-to-device-readings) in the 'funcs' package. A plugin may also register custom functions. Functions are referenced here by name. |
+
+> **Note**: If a device instance also defines `transforms` and inheritance is enabled, the two lists will be
+> joined with their order preserved and the items in the prototype definition coming first.
+
+```YAML tab=
+version: 3
+devices:
+-
+  transforms:
+  - scale: "0.1"
+  - apply: "FtoC"
 ```
 
 #### Instances
@@ -288,7 +323,7 @@ version: 3
 devices:
 -
   instances:
-    context:
+  - context:
       model: abc123
       position: rear
 ```
@@ -404,7 +439,7 @@ devices:
 
 | | |
 | ------ | ------ |
-| ***description*** | A [Go template](https://golang.org/pkg/text/template/) string which will be rendered into the alias for the device. The template takes in an [`AliasContext`](concepts.md#templated-alias) for rendering, which includes a reference to the plugin metadata and device data. |
+| ***description*** | A [Go template](https://golang.org/pkg/text/template/) string which will be rendered into the alias for the device. The template takes in an [`AliasContext`](concepts.md#templated-alias) for rendering, which includes a reference to the plugin context and device data. |
 | ***type*** | string |
 | ***key*** | `template` |
 
@@ -413,41 +448,38 @@ version: 3
 devices:
 -
   instances:
-  - template: "{{ .Device.Type }}-{{ ctx port }}"
+  - alias:
+      template: "{{ .Device.Type }}-{{ ctx port }}"
 ```
 
-#### Scaling Factor
+#### Transforms
 
 | | |
 | ------ | ------ |
-| ***description*** | An optional value which specifies a scaling transformation (e.g. a multiplier) to be applied to the device's reading(s). Generally, this only needs to be used for generalized plugins where the plugin handler does not do any scaling. This value should resolve to be numeric. By default, it will have a value of 1 (e.g., no scaling). Negative values and fractional values are supported as well. This can be the value itself (e.g. "0.01") or a mathematical representation of the value (e.g. "1e-2"). |
-| ***type*** | string |
-| ***key*** | `scalingFactor` |
+| ***description*** | An optional value which specifies an ordered list of transformations to be applied to a device's reading(s). Generally, this only needs to be used for generalized plugins where the plugin handler does not do any scaling/conversion/etc. |
+| ***type*** | list |
+| ***key*** | `transforms` |
+
+The `transforms` list can specify **one** of the following keys per list item; if multiple keys are specified in the
+same list entry, an error will be returned. Note that the order in which transforms are defined are the order in which
+they are applied.
+
+| Key | Type | Description |
+| ------ | ------ | ------ |
+| `scale` | string | A scaling transformation for the device's reading(s). The scaling factor defined here is multiplied with the device reading. This allows it to be scaled up (multiplication, e.g. `* 2`), or scaled down (division, e.g. `/ 2` == `* 0.5`). This value is specified as a string, but should resolve to a numeric. By default, it will have a value of 1 (e.g. no-op). Negative values and fractional values are supported. This can be the value itself, e.g. "0.01", or a mathematical representation of the value, e.g. "1e-2". |
+| `apply` | string | A function to be applied to the device's reading(s). The function to apply could be anything, e.g. a unit conversion. The SDK defines [built-in functions](advanced.md#applying-functions-to-device-readings) in the 'funcs' package. A plugin may also register custom functions. Functions are referenced here by name. |
+
+> **Note**: If a device prototype also defines `transforms` and inheritance is enabled, the two lists will be
+> joined with their order preserved and the items in the prototype definition coming first.
 
 ```YAML tab=
 version: 3
 devices:
 -
   instances:
-  - scalingFactor: -1e-3
-```
-
-#### Apply
-
-| | |
-| ------ | ------ |
-| ***description*** | An optional list of [functions](advanced.md#applying-functions-to-device-readings) which will be applied to the device's reading values, in the order that they are defined. There are some built-in functions which the SDK provides; a plugin can also register its own functions. |
-| ***type*** | list[string] |
-| ***key*** | `apply` |
-
-```YAML tab=
-version: 3
-devices:
--
-  instances:
-  - type: temperature
-    apply:
-    - "FtoC" 
+  - transforms:
+    - scale: "0.1"
+    - apply: "FtoC"
 ```
 
 #### Write Timeout
@@ -501,11 +533,13 @@ devices:
     timeout: 5
   instances:
   - info: Temperature Sensor 1
-    alias: temperature-1
+    alias:
+      name: temperature-1
     data:
       address: /dev/ttyUSB0
   - info: Temperature Sensor 2
-    alias: temperature-2
+    alias:
+      name: temperature-2
     data:
       address: /dev/ttyUSB1
       
@@ -516,7 +550,8 @@ devices:
     timeout: 5
   instances:
   - info: Pressure Sensor 1
-    alias: pressure-1
+    alias:
+      name: pressure-1
     data:
       address: /dev/ttyUSB2
   - info: Pressure Sensor 2
@@ -530,7 +565,8 @@ devices:
     baud: 9600
   instances:
   - info: LED 1
-    alias: led-1
+    alias:
+      name: led-1
     data:
       address: /dev/ttyUSB4
 ```
