@@ -153,6 +153,9 @@ devices:
 | ***type*** | map[string]string |
 | ***key*** | `context` |
 
+Values in the context may also include templates. Currently, the templates only support the `env` function to
+get a value from environment.
+
 ```YAML tab=
 version: 3
 devices:
@@ -160,6 +163,7 @@ devices:
   context:
     manufacturer: vapor
     part_number: 123
+    host: {{ env "NODE_NAME" }}
 ```
 
 #### Tags
@@ -170,6 +174,9 @@ devices:
 | ***type*** | list[string] |
 | ***key*** | `tags` |
 
+Tags definitions may also include templates. Currently, the tag templates only support the `env` function
+to get a value from environment.
+
 ```YAML tab=
 version: 3
 devices:
@@ -177,6 +184,7 @@ devices:
   tags:
   - synse/tag1
   - synse/tag2
+  - rack/{{ env "NODE_NAME" }}
 ```
 
 #### Data
@@ -318,6 +326,9 @@ devices:
 | ***type*** | map[string]string |
 | ***key*** | `context` |
 
+Values in the context may also include templates. Currently, the templates only support the `env` function to
+get a value from environment.
+
 ```YAML tab=
 version: 3
 devices:
@@ -326,6 +337,7 @@ devices:
   - context:
       model: abc123
       position: rear
+      rack: {{ env "NODE_NAME" }}
 ```
 
 #### Tags
@@ -336,6 +348,9 @@ devices:
 | ***type*** | list[string] |
 | ***key*** | `tags` |
 
+Tags definitions may also include templates. Currently, the tag templates only support the `env` function
+to get a value from environment.
+
 ```YAML tab=
 version: 3
 devices:
@@ -344,6 +359,7 @@ devices:
   - tags:
     - synse/tag1
     - synse/tag2
+    - rack/{{ env "NODE_NAME" }}
 ```
 
 #### Data
