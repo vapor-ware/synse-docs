@@ -188,6 +188,23 @@ spec:
           containerPort: 5001
 ```
 
+## Plugin Refresh
+
+Occasionally, a plugin may go offline. This could be due to the plugin restarting after getting
+into bad state, an ephemeral network issue, or a deployment manager (e.g. Kubernetes) updating/migrating
+the plugin.
+
+In such cases, attempts to communicate with the plugin will fail, and Synse Server will mark it as
+"inactive". This flag is used internally to skip over the plugin when performing subsequent gRPC calls
+in order to reduce the time overhead of waiting for the gRPC request to time out.
+
+Periodically, Synse Server refreshes its plugins. That means it will look at plugin sources (whether
+that is config or dynamic discovery) and attempt to re-establish communication with all of them. This
+allows it to discover any new plugins and to check up on inactive plugins. If those inactive plugins respond,
+they are marked as active.
+
+A plugin refresh may also be initiated manually via the [`/plugin?refresh=true`](../api.v3.md#plugins) request.
+
 ## Secure Communication
 
 The server APIs can be secured by providing a [certificate and key](configuration.md#ssl). While
