@@ -271,7 +271,7 @@ devices:
 - type: example-device
   instances:
   - info: example device instance 1
-    metadata:
+    context:
       partNumber: abc123
     alias:
       template: 'device-{{ .Device.Type }}-{{ ctx "partNumber" }}-1'
