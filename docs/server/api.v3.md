@@ -718,6 +718,12 @@ Get a summary of all plugins currently registered with the server instance.
     Depending on the plugin and any setup actions, this may take longer for some
     plugins than others.
 
+#### *Query Parameters*
+
+| Key  | Description |
+| :--- | :---------- |
+| refresh | Set to `true` to force a refresh of plugins. Plugins are refreshed in the background periodically, this allows it to be done on demand. (default: false) |
+
 #### *Response Data*
 
 ```json
