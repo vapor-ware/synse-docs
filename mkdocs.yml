@@ -67,6 +67,7 @@ nav:
         - Device Configuration: sdk/user/configuration.device.md
       - Advanced: sdk/user/advanced.md
       - Tutorial: sdk/user/tutorial.md
+      - 'Q & A': sdk/user/questions.md
     - Developer Guide:
       - Setup: sdk/developer/setup.md
       - Testing: sdk/developer/testing.md
