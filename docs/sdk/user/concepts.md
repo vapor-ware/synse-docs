@@ -117,7 +117,9 @@ tags:
 ```
 
 Currently, tag templates only support the `env` function, which allows you to get a value from
-environment.
+environment. Note that these templates are not parsed on config load. Instead, they are parsed
+a little later on device build. This allows the SDK to first unify multiple potential sources of
+configuration (e.g. from file, environment, or command line). 
 
 The SDK will auto-generate some tags, such an an ID tag and a Type tag. Additional tags can be
 specified for a device in its [configuration](configuration.device.md#configuration-options).

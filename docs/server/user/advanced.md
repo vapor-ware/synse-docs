@@ -205,6 +205,24 @@ they are marked as active.
 
 A plugin refresh may also be initiated manually via the [`/plugin?refresh=true`](../api.v3.md#plugins) request.
 
+## Plugin State: Active vs Inactive
+
+As mentioned in the section above, Synse Server may internally mark a plugin as "active" or "inactive". This
+determination is done based on whether Synse Server was able to communicate with the plugin. An error in
+issuing requests to plugins will lead them to be marked as "inactive". Note that error responses from the
+plugin do not put it in an error state (e.g. device not found), however errors like connection issues, timeouts,
+etc. will put them into an "inactive" state.
+
+The notion of "active" vs "inactive" is really just an internal optimization to allow Synse Server to respond
+to requests in a more timely manner. As an example, if there were two plugins configured and one became
+unreachable, reading all devices would mean issuing a request to both plugins, collecting the readings, and
+returning them to the user. Without denoting the plugin as "inactive", the request would take longer as it
+would block until the gRPC request to the unreachable plugin timed out or failed to connect.
+
+With the notion of "active" vs "inactive", once a plugin fails a request once, it will be marked inactive
+so future requests do not need to block on it, resulting in a more timely response. Eventually, the plugin
+state is [refreshed](#plugin-refresh) and the plugin may become active again. 
+
 ## Secure Communication
 
 The server APIs can be secured by providing a [certificate and key](configuration.md#ssl). While
