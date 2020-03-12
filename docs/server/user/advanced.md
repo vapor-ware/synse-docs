@@ -203,11 +203,15 @@ that is config or dynamic discovery) and attempt to re-establish communication w
 allows it to discover any new plugins and to check up on inactive plugins. If those inactive plugins respond,
 they are marked as active.
 
+If a plugin which was previously found via discovery or other means now does not show up, the plugin is
+marked as "disabled" internally. It will still show up as inactive to the user. The "disabled" flag is
+used to gate additional requests to the plugin until it is re-discovered on a subsequent refresh.
+
 A plugin refresh may also be initiated manually via the [`/plugin?refresh=true`](../api.v3.md#plugins) request.
 
 ## Plugin State: Active vs Inactive
 
-As mentioned in the section above, Synse Server may internally mark a plugin as "active" or "inactive". This
+As mentioned in the section above, Synse Server internally marks plugins as "active" or "inactive". This
 determination is done based on whether Synse Server was able to communicate with the plugin. An error in
 issuing requests to plugins will lead them to be marked as "inactive". Note that error responses from the
 plugin do not put it in an error state (e.g. device not found), however errors like connection issues, timeouts,
@@ -220,8 +224,15 @@ returning them to the user. Without denoting the plugin as "inactive", the reque
 would block until the gRPC request to the unreachable plugin timed out or failed to connect.
 
 With the notion of "active" vs "inactive", once a plugin fails a request once, it will be marked inactive
-so future requests do not need to block on it, resulting in a more timely response. Eventually, the plugin
-state is [refreshed](#plugin-refresh) and the plugin may become active again. 
+so future requests do not need to block on it, resulting in a more timely response. When put into an inactive
+state, the plugin will attempt to reconnect to the plugin in a background task, exponentially backing off.
+Once Synse Server can reconnect with the plugin and get a response from it, the plugin is put back into
+an "active" state.
+
+[Plugin refresh](#plugin-refresh) is related to this notion of active/inactive, but the two concepts are
+different. Plugin refresh describes the process of searching for and registering new plugins, where as
+the "active/inactive" plugin state describes whether Synse Server was able to connect to that registered
+plugin.
 
 ## Secure Communication
 
