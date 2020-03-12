@@ -1503,6 +1503,7 @@ index), and by device ID.
 | :--- | :---------- |
 | ns | The default namespace to use for the tags which do not include a namespace. This will not effect tags with a namespace already specified. (default: `default`) |
 | tags | The [tags](user/tags.md) to filter devices on. If specifying multiple tags, they should be comma-separated. |
+| plugin | The ID of the plugin to get device readings from. If not specified, all plugins are considered valid for reading. |
 
 #### *Response Data*
 
