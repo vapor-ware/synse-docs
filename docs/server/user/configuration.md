@@ -128,27 +128,6 @@ pretty_json: true
 
 -----
 
-### Locale
-
-| | |
-| ------ | ------ |
-| ***description*** | Set the locale for logging messages and error output. |
-| ***type*** | string |
-| ***key*** | `locale` |
-| ***env variable*** | `LANGUAGE` |
-| ***default*** | `en_US` |
-| ***supported*** | `en_US` |
-
-```YAML tab=
-locale: en_US
-```
-
-```Environment tab=
-LANGUAGE=en_US
-```
-
------
-
 ### Plugin
 
 Configuration options for registering plugins with the server instance.
@@ -282,6 +261,24 @@ Configuration options for Synse Server caches. There are two caches in the serve
 cache:
   device:
     rebuild_every: 180  # three minutes
+```
+
+#### Plugin
+
+***Refresh Every***
+
+| | |
+| ------ | ------ |
+| ***description*** | The time interval, in seconds, to refresh the set of plugins (e.g. via discovery). |
+| ***type*** | int |
+| ***key*** | `cache.device.refresh_every` |
+| ***env variable*** | -- |
+| ***default*** | 120 |
+
+```YAML tab=
+cache:
+  plugin:
+    refresh_every: 120  # two minutes
 ```
 
 #### Transaction
