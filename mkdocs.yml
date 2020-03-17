@@ -62,6 +62,7 @@ nav:
       - Quickstart: sdk/user/quickstart.md
       - Architecture: sdk/user/architecture.md
       - Concepts: sdk/user/concepts.md
+      - Outputs: sdk/user/outputs.md
       - Configuration:
         - Plugin Configuration: sdk/user/configuration.plugin.md
         - Device Configuration: sdk/user/configuration.device.md
