@@ -1,5 +1,5 @@
 ---
-hero: Output Types
+hero: Reading Outputs
 ---
 
 The Synse plugin SDK provides a number of built-in reading output types with sane values

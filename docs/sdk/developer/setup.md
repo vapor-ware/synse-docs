@@ -28,7 +28,7 @@ from the project repo root.
 
 ```console
 $ make help
-check-examples  Check that the example pluginss run without failing
+check-examples  Check that the example plugins run without failing
 clean           Remove temporary files
 cover           Run tests and open the coverage report
 examples        Build the example plugins

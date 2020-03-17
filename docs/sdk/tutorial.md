@@ -6,16 +6,18 @@ This page goes through a tutorial to create a simple plugin which will provide r
 for a single "memory" device. For more examples, see the SDK's `examples` directory or
 the Synse [emulator plugin](https://github.com/vapor-ware/synse-emulator-plugin).
 
-For this tutorial, we will get the memory data using [github.com/shirou/gopsutil](https://github.com/shirou/gopsutil),
+In this tutorial, we will get system memory data using [github.com/shirou/gopsutil](https://github.com/shirou/gopsutil),
 which you can get with 
 
 ```
 go get github.com/shirou/gopsutil
 ```
 
+------
+
 ## 1. Planning
 
-Prior to writing code for the plugin, it is a good idea to figure out what the plugin
+Prior to writing any code for a plugin, it is a good idea to figure out what the plugin
 will do, what data it will provide, and what devices it will have. This will provide
 concrete definitions and constraints when implementing the plugin.
 
@@ -70,7 +72,7 @@ when it is implemented.
 ### 3a. Plugin configuration
 
 The plugin configuration defines how the plugin itself will behave. For a reference
-on configuration options, see the [plugin configuration](configuration.plugin.md) documentation.
+on configuration options, see the [plugin configuration](configuration/plugin.md) documentation.
 
 From the *goals* listed earlier, we know that we will want the plugin to update its readings
 every 5 seconds. Additionally, we need to choose whether the plugin will run in serial mode
@@ -99,8 +101,8 @@ just set `#!yaml debug: true`.
 
 ### 3b. Device configuration
 
-The device configuration defines the devices that the plugin will manage and collect
-data from. For a reference on configuration options, see the [device configuration](configuration.device.md) documentation.
+The device configuration defines the devices which the plugin will manage and collect
+data from. For a reference on configuration options, see the [device configuration](configuration/device.md) documentation.
 
 From the [planning section](#1-planning), we know that we will want a "memory"-type device, of which
 we will have a single instance which provides multiple readings. All devices need to be associated with
@@ -121,21 +123,21 @@ devices:
       id: 1
 ```
 
-Above, we device the "memory" device which uses the "virtual-memory" handler. There is one
-instance, which we two things:
+Above, we define the "memory" device which uses the "virtual-memory" handler. There is one
+instance, which defines two fields in this example:
 
-- **info**: A human readable string that helps us identify the device
+- **info**: A human readable string which helps us identify the device.
 - **data**: Data associated with the device. Generally this would give the plugin
   info on how to connect to the device, such as the port number, address, etc. Since this
   example plugin is so simple, there is no need for that -- the memory usage is just for
   the system the plugin is running on. We still need to specify something for the data
-  because of Synse [deterministic device IDs](concepts.md#deterministic-device-ids). Providing
-  unique data here allows us to generate a unique deterministic ID hash for the device.
+  because of Synse's [deterministic device IDs](concepts/concepts.md#deterministic-device-ids). Providing
+  unique data here allows Synse to generate a unique deterministic ID hash for the device.
 
 ## 4. Define reading outputs
 
-The SDK provides some built-in [outputs](concepts.md#outputs), but as per the [planning](#1-planning)
-section, this plugin will require some custom outputs:
+The SDK provides some built-in [outputs](concepts/outputs.md), but as per the [planning](#1-planning)
+section, this plugin will require some custom outputs for
 
 - total memory
 - free memory
@@ -155,23 +157,23 @@ var (
 	outputBytes = output.Output{
 		Name: "bytes",
 		Unit: &output.Unit{
-			Name: "bytes",
+			Name:   "bytes",
 			Symbol: "B",
 		},
 	}
 
 	outputPercent = output.Output{
-		Name: "percent",
+		Name:      "percent",
 		Precision: 2,
 		Unit: &output.Unit{
-			Name: "percent",
+			Name:   "percent",
 			Symbol: "%",
 		},
 	}
 )
 ```
 
-These outputs will be registered with the plugin in a [later step]().
+These outputs will be registered with the plugin in a later step.
 
 ## 5. Define the device handler
 
@@ -231,7 +233,7 @@ differentiated.
 
 ## 6. Create the plugin
 
-With all the configuration defined, the custom outputs defined, and the plugin's device handler
+With all the configurations defined, the custom outputs defined, and the plugin's device handler
 defined, its time to create the plugin itself and register everything with it.
 
 The plugin should be created within the `#!go main()` function and will require some metadata
@@ -381,7 +383,7 @@ INFO[0000] [server] serving                              addr=":5001" mode=tcp
 INFO[0000] [scheduler] writing will not be scheduled (no write handlers registered) 
 ```
 
-You can use the [Synse CLI](../../cli/intro.md) to interact with the plugin directly, or continue
+You can use the [Synse CLI](../cli/intro.md) to interact with the plugin directly, or continue
 on to run it alongside Synse Server and interact with it through the Synse API. You can terminate
 the plugin with `^C`.
 
@@ -406,7 +408,7 @@ that architecture:
 $ GOOS=linux GOARCH=amd64 go build -o plugin
 ```
 
-Then, the Docker image can be build -- we'll tag the image as `vaporio/tutorial-plugin`.
+Then, the Docker image can be built -- we'll tag the image as `vaporio/tutorial-plugin`.
 
 ```
 docker build -t vaporio/tutorial-plugin .
@@ -415,7 +417,7 @@ docker build -t vaporio/tutorial-plugin .
 We now have a docker image for the plugin, but it needs some additional configuration
 to run, namely mounting the plugin and device configuration we defined into the container.
 We can create a compose file to mount in the configuration and connect it to a Synse Server
-instance. See the [Synse Server documentation](../../server/intro.md) for details on how
+instance. See the [Synse Server documentation](../server/intro.md) for details on how
 the server container is configured.
 
 ```yaml
@@ -458,7 +460,7 @@ CONTAINER ID        IMAGE                     COMMAND                  CREATED  
 d110ab9e1ac7        vaporio/tutorial-plugin   "./plugin"               32 seconds ago      Up 31 seconds       5001/tcp                 tutorial-plugin
 ```
 
-You can now interact with the plugin via the [Synse Server API](../../server/api.v3.md), e.g.
+You can now interact with the plugin via the [Synse Server API](../server/api.v3.md), e.g.
 
 ```console
 $ curl localhost:5000/v3/read

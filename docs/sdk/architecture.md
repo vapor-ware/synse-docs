@@ -9,21 +9,21 @@ may lie.
 
 ## Overview
 
-The SDK provides an API to make it easier to develop new plugins, abstracting away a lot
-of the internal state handling, common functionality, and communication layers from the
+The SDK provides a means to make it easy to develop new plugins, abstracting away much
+of the internal state handling, communication layers, and common functionality from the
 plugin author. Ideally, this means that a plugin author spends more time on the
 plugin-specific logic and less time integrating it into the Synse platform.
 
 At a high level, there are two levels of communication in a plugin:
 
-- communication with [Synse Server](../../server/intro.md)
-- communication with the devices the plugin manages
+- communication with [Synse Server](../server/intro.md)
+- communication with the devices which the plugin interfaces with
 
 ### Plugin Interaction with Synse Server
 
-![](../../assets/img/arch.svg)
+![](../assets/img/arch.svg)
 
-When Synse Server receives an API request, e.g. a [read](../../server/api.v3.md#read) request,
+When Synse Server receives an API request, e.g. a [read](../server/api.v3.md#read) request,
 Synse Server will determine which plugin manages the targeted device(s) and issue a
 corresponding request to those plugins via the [Synse gRPC API](https://github.com/vapor-ware/synse-server-grpc).
 
@@ -37,7 +37,7 @@ When retrieving static information, it will simply look up the pertinent informa
 from the appropriate SDK component and return it. This includes things like the plugin
 metadata, configured devices, plugin version, etc.
 
-The read and write behavior is more complicated and describe in more detail in the
+The read and write behavior is more complicated and is described in more detail in the
 next section.
 
 The gRPC layer between Synse Server and a plugin can use either TCP or Unix socket
@@ -48,27 +48,26 @@ to set up and use.
 
 When a plugin starts up, it will load its device configuration and will begin reading from
 those devices continually (on a configurable interval). For every read, it will update internal
-state, tracking this "latest current reading". When a read request comes in from Synse Server,
-the device is not read directly, but the "latest current reading" state is instead returned.
-With a high enough read interval, the discrepancy between the latest cached reading and the
-actual current reading should be negligible for most applications.
+state, tracking the "latest current reading". When a read request comes in from Synse Server via
+the gRPC API, the device is not read directly; instead, the "latest current reading" state is
+returned. With a fast enough read interval, the discrepancy between the latest cached reading and
+the actual current reading should be negligible for most applications.
 
-This allows read and write operations to happen constantly and consistently in the background
+This design allows read and write operations to happen constantly and consistently in the background
 without having incoming requests dictate the resolution of device readings.
 
 Similarly, when a write request comes in from Synse Server, it is not processed immediately.
-Instead, it is put on the "write queue" and is processed in the background on an interval.
+It is put onto a "write queue" and is processed in the background on an interval. As such,
+writes to a plugin are asynchronous and all have an associated transaction ID.
+
+![](../assets/img/plugin-arch.svg)
 
 The frequency of reads and writes, along with other read/write behavior, is configurable
-from the [plugin configuration](configuration.plugin.md#configuration-options).
-
-The diagram below depicts this read/write data flow at a high level.
-
-![](../../assets/img/plugin-arch.svg)
+from the [plugin configuration](configuration/plugin.md#configuration-options).
 
 ## Components
 
-The SDK has a number of components, each with their own domain of responsibility. Below
+The SDK has a number of internal components, each with their own domain of responsibility. Below
 is a table which describes what each of the internal components does.
 
 | Component | Description |
