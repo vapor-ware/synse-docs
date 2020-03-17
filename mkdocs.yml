@@ -58,17 +58,15 @@ nav:
       - Localization: server/developer/localization.md
   - Synse SDK:
     - Introduction: sdk/intro.md
-    - User Guide:
-      - Quickstart: sdk/user/quickstart.md
-      - Architecture: sdk/user/architecture.md
-      - Concepts: sdk/user/concepts.md
-      - Outputs: sdk/user/outputs.md
-      - Configuration:
-        - Plugin Configuration: sdk/user/configuration.plugin.md
-        - Device Configuration: sdk/user/configuration.device.md
-      - Advanced: sdk/user/advanced.md
-      - Tutorial: sdk/user/tutorial.md
-      - 'Q & A': sdk/user/questions.md
+    - Architecture: sdk/architecture.md
+    - Quickstart: sdk/quickstart.md
+    - Configuration:
+      - Plugin: sdk/configuration/plugin.md
+      - Device: sdk/configuration/device.md
+    - Concepts:
+      - Device Outputs: sdk/concepts/outputs.md
+    - Tutorial: sdk/tutorial.md
+    - FAQ: sdk/questions.md
     - Developer Guide:
       - Setup: sdk/developer/setup.md
       - Testing: sdk/developer/testing.md

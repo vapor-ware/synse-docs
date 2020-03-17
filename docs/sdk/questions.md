@@ -6,7 +6,9 @@ This page lists some questions that have come up about the SDK and provides some
 those questions. If you have and questions that you think would be a good fit to add here,
 open an issue or pull request.
 
-## Q: Why do plugin logs show that a "handler has no devices to read"?
+------
+
+## Why do plugin logs show that a "handler has no devices to read"?
 
 An example of what this might look like:
 
