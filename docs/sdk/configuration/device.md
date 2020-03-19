@@ -209,7 +209,7 @@ devices:
 
 | | |
 | ------ | ------ |
-| ***description*** | The name of the [device handler]() which should be used for the prototype's device instances. The device handler is defined by the plugin. If the specified handler does not exist, an error will be raised. If specified, this value will be applied to all device instances unless inheritance is disabled or the instance specifies its own handler explicitly. |
+| ***description*** | The name of the [device handler](../concepts/device_handlers.md) which should be used for the prototype's device instances. The device handler is defined by the plugin. If the specified handler does not exist, an error will be raised. If specified, this value will be applied to all device instances unless inheritance is disabled or the instance specifies its own handler explicitly. |
 | ***type*** | string |
 | ***key*** | `handler` |
 
@@ -252,7 +252,7 @@ they are applied.
 | Key | Type | Description |
 | ------ | ------ | ------ |
 | `scale` | string | A scaling transformation for the device's reading(s). The scaling factor defined here is multiplied with the device reading. This allows it to be scaled up (multiplication, e.g. `* 2`), or scaled down (division, e.g. `/ 2` == `* 0.5`). This value is specified as a string, but should resolve to a numeric. By default, it will have a value of 1 (e.g. no-op). Negative values and fractional values are supported. This can be the value itself, e.g. "0.01", or a mathematical representation of the value, e.g. "1e-2". |
-| `apply` | string | A function to be applied to the device's reading(s). The function to apply could be anything, e.g. a unit conversion. The SDK defines [built-in functions](advanced.md#applying-functions-to-device-readings) in the 'funcs' package. A plugin may also register custom functions. Functions are referenced here by name. |
+| `apply` | string | A function to be applied to the device's reading(s). The function to apply could be anything, e.g. a unit conversion. The SDK defines [built-in functions](../concepts/plugin_functions.md) in the 'funcs' package. A plugin may also register custom functions. Functions are referenced here by name. |
 
 > **Note**: If a device instance also defines `transforms` and inheritance is enabled, the two lists will be
 > joined with their order preserved and the items in the prototype definition coming first.
@@ -418,7 +418,7 @@ devices:
 
 | | |
 | ------ | ------ |
-| ***description*** | The name of the [device handler](concepts.md#device-handlers) which should be used for the device instance. The device handler is defined by the plugin. If the specified handler does not exist, an error will be raised. A device instance can inherit the *handler* from its device prototype. |
+| ***description*** | The name of the [device handler](../concepts/device_handlers.md) which should be used for the device instance. The device handler is defined by the plugin. If the specified handler does not exist, an error will be raised. A device instance can inherit the *handler* from its device prototype. |
 | ***type*** | string |
 | ***key*** | `handler` |
 
@@ -432,7 +432,7 @@ devices:
 
 #### Alias
 
-An [alias](concepts.md#device-aliases) which can be used to reference the device in place of the generated device ID. The alias should be human-readable. It can either be a pre-defined string, or a Go template which will be rendered by the SDK.
+An [alias](../concepts/device_aliases.md) which can be used to reference the device in place of the generated device ID. The alias should be human-readable. It can either be a pre-defined string, or a Go template which will be rendered by the SDK.
 
 ***Name***
 
@@ -455,7 +455,7 @@ devices:
 
 | | |
 | ------ | ------ |
-| ***description*** | A [Go template](https://golang.org/pkg/text/template/) string which will be rendered into the alias for the device. The template takes in an [`AliasContext`](concepts.md#templated-alias) for rendering, which includes a reference to the plugin context and device data. |
+| ***description*** | A [Go template](https://golang.org/pkg/text/template/) string which will be rendered into the alias for the device. The template takes in an [`AliasContext`](../concepts/device_aliases.md#templated-alias) for rendering, which includes a reference to the plugin context and device data. |
 | ***type*** | string |
 | ***key*** | `template` |
 
@@ -483,7 +483,7 @@ they are applied.
 | Key | Type | Description |
 | ------ | ------ | ------ |
 | `scale` | string | A scaling transformation for the device's reading(s). The scaling factor defined here is multiplied with the device reading. This allows it to be scaled up (multiplication, e.g. `* 2`), or scaled down (division, e.g. `/ 2` == `* 0.5`). This value is specified as a string, but should resolve to a numeric. By default, it will have a value of 1 (e.g. no-op). Negative values and fractional values are supported. This can be the value itself, e.g. "0.01", or a mathematical representation of the value, e.g. "1e-2". |
-| `apply` | string | A function to be applied to the device's reading(s). The function to apply could be anything, e.g. a unit conversion. The SDK defines [built-in functions](advanced.md#applying-functions-to-device-readings) in the 'funcs' package. A plugin may also register custom functions. Functions are referenced here by name. |
+| `apply` | string | A function to be applied to the device's reading(s). The function to apply could be anything, e.g. a unit conversion. The SDK defines [built-in functions](../concepts/plugin_functions.md) in the 'funcs' package. A plugin may also register custom functions. Functions are referenced here by name. |
 
 > **Note**: If a device prototype also defines `transforms` and inheritance is enabled, the two lists will be
 > joined with their order preserved and the items in the prototype definition coming first.
