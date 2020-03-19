@@ -22,7 +22,7 @@ section. Here, that example is extended to use some more advanced features.
     manage and configure.
 
 The [emulator plugin](https://github.com/vapor-ware/synse-emulator-plugin) will be
-[configured](../../sdk/user/configuration.plugin.md) for TCP with a secure communication
+[configured](../../sdk/configuration/plugin.md) for TCP with a secure communication
 channel using TLS certs. For this example, x509 self-signed certs [were generated](https://www.digitalocean.com/community/tutorials/openssl-essentials-working-with-ssl-certificates-private-keys-and-csrs)
 with the signing subject: `"/C=US/ST=Texas/L=Austin/O=Vapor/CN=emulator"`. Afterwards,
 we are left with:

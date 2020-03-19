@@ -17,7 +17,7 @@ time="2020-02-26T21:55:52.846Z" level=debug msg="[scheduler] handler has no devi
 ``` 
 
 This log message originates from the SDK when performing bulk reads for a
-[device handler](concepts.md#device-handlers). Because of how this feature is implemented,
+[device handler](concepts/device_handlers.md). Because of how this feature is implemented,
 the SDK must gather all devices for the handlers which implement an bulk read function in
 order to perform the bulk read. If there are no devices, this message gets logged. It does
 not mean that the plugin is not performing reads - it just means that there are no configured

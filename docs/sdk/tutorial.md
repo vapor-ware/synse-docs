@@ -131,12 +131,12 @@ instance, which defines two fields in this example:
   info on how to connect to the device, such as the port number, address, etc. Since this
   example plugin is so simple, there is no need for that -- the memory usage is just for
   the system the plugin is running on. We still need to specify something for the data
-  because of Synse's [deterministic device IDs](concepts/concepts.md#deterministic-device-ids). Providing
+  because of Synse's [deterministic device IDs](concepts/device_ids.md). Providing
   unique data here allows Synse to generate a unique deterministic ID hash for the device.
 
 ## 4. Define reading outputs
 
-The SDK provides some built-in [outputs](concepts/outputs.md), but as per the [planning](#1-planning)
+The SDK provides some built-in [outputs](concepts/reading_outputs.md), but as per the [planning](#1-planning)
 section, this plugin will require some custom outputs for
 
 - total memory
