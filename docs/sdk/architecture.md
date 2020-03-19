@@ -73,7 +73,7 @@ is a table which describes what each of the internal components does.
 | Component | Description |
 | :-------- | :---------- |
 | device manager | Loads, maintains, and manages the device instance metadata for the plugin. This is used for device routing and lookups, device info requests, and serves as the source of truth for the devices the plugin should know about. |
-| health manager | Loads and runs [health checks](advanced.md#plugin-health) which it aggregates and exposes to provide an overall plugin health status. |
+| health manager | Loads and runs [health checks](concepts/plugin_health.md) which it aggregates and exposes to provide an overall plugin health status. |
 | scheduler | Runs the read/write logic, continuously collecting readings from devices and executing writes off of the write queue. |
 | server | The gRPC server which receives requests from Synse Server and generates appropriate responses from the data provided by other components. |
 | state manager | Maintains all the internal device state, such as the current readings, windowed reading cache, and write transactions. |

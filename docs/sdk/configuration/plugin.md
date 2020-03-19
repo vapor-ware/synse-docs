@@ -46,7 +46,8 @@ docker run \
 
 The `PLUGIN_CONFIG` environment variable can be used to specify either the
 full path to the file (e.g. `/tmp/cfg/config.yaml`), or the path to the
-directory containing the config file (e.g. `/tmp/cfg`).
+directory containing the config file, with the assumption that the file is
+named `config.y{a}ml` (e.g. `/tmp/cfg`).
 
 This may also be done in a compose file:
 
@@ -63,8 +64,9 @@ services:
 
 ## Config Policies
 
-A plugin can define a configuration policy for its plugin configuration. There are two
-policy types which can be set:
+A plugin may use a configuration policy in order to change the expected behavior
+for how it loads configuration data. There are currently two policy types which
+may be set:
 
 | Policy | Description |
 | :----- | :---------- |
@@ -197,7 +199,7 @@ id:
 
 ### Metrics
 
-Setting for exposing application metrics.
+Settings for exposing application metrics.
 
 Group key: `metrics`
 
@@ -287,7 +289,7 @@ settings:
 
 | | |
 | ------ | ------ |
-| ***description*** | The duration that the read loop should sleep between iterations. An interval may be useful for tuning the performance of a plugin, particularly for serial protocols. It is not recommended to set the interval to 0 as the loop would be unbounded and would consume excessive CPU resources. |
+| ***description*** | The duration that the read loop should wait between iterations. An interval may be useful for tuning the performance of a plugin, particularly for serial protocols. It is not recommended to set the interval to 0 as the loop would be unbounded and would consume excessive CPU resources. |
 | ***type*** | duration |
 | ***key*** | `interval` |
 | ***default*** | `1s` |
@@ -356,7 +358,7 @@ settings:
 
 | | |
 | ------ | ------ |
-| ***description*** | The duration that the write loop should sleep between iterations. An interval may be useful for tuning the performance of a plugin, particularly for serial protocols. It is not recommended to set the interval to 0 as the loop would be unbounded and would consume excessive CPU resources. |
+| ***description*** | The duration that the write loop should wait between iterations. An interval may be useful for tuning the performance of a plugin, particularly for serial protocols. It is not recommended to set the interval to 0 as the loop would be unbounded and would consume excessive CPU resources. |
 | ***type*** | duration |
 | ***key*** | `interval` |
 | ***default*** | `1s` |
@@ -431,8 +433,9 @@ Group key: `transaction`
 | ***supported*** | [duration](https://golang.org/pkg/time/#example_Duration) strings |
 
 ```YAML tab=
-transaction:
-  ttl: 5m
+settings:
+  transaction:
+    ttl: 5m
 ```
 
 #### Limiter
@@ -451,8 +454,9 @@ Group key: `limiter`
 | ***default*** | `0` |
 
 ```YAML tab=
-limiter:
-  rate: 0
+settings:
+  limiter:
+    rate: 0
 ```
 
 ***Burst***
@@ -465,8 +469,9 @@ limiter:
 | ***default*** | `0` |
 
 ```YAML tab=
-limiter:
-  burst: 0
+settings:
+  limiter:
+    burst: 0
 ```
 
 #### Cache
@@ -486,8 +491,9 @@ Group key: `cache`
 | ***supported*** | `true`, `false` |
 
 ```YAML tab=
-cache:
-  enabled: true
+settings:
+  cache:
+    enabled: true
 ```
 
 ***TTL***
@@ -501,8 +507,9 @@ cache:
 | ***supported*** | [duration](https://golang.org/pkg/time/#example_Duration) strings |
 
 ```YAML tab=
-cache:
-  ttl: 3m
+settings:
+  cache:
+    ttl: 3m
 ```
 
 -----
@@ -610,7 +617,7 @@ network:
 
 ### Dynamic Registration
 
-Settings for dynamic device registration,
+Settings for dynamic device registration.
 
 Group key: `dynamicRegistration`
 

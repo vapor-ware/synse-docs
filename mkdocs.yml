@@ -64,7 +64,20 @@ nav:
       - Plugin: sdk/configuration/plugin.md
       - Device: sdk/configuration/device.md
     - Concepts:
-      - Device Outputs: sdk/concepts/outputs.md
+      - C Backend: sdk/concepts/c_backend.md
+      - Command Line Arguments: sdk/concepts/command_line_arguments.md
+      - Device Aliases: sdk/concepts/device_aliases.md
+      - Device Handlers: sdk/concepts/device_handlers.md
+      - Device IDs: sdk/concepts/device_ids.md
+      - Device Tags: sdk/concepts/device_tags.md
+      - Dynamic Registration: sdk/concepts/dynamic_registration.md
+      - Plugin Actions: sdk/concepts/plugin_actions.md
+      - Plugin Functions: sdk/concepts/plugin_functions.md
+      - Plugin Health: sdk/concepts/plugin_health.md
+      - Plugin Metadata: sdk/concepts/plugin_metadata.md
+      - Plugin Metrics: sdk/concepts/plugin_metrics.md
+      - Plugin Options: sdk/concepts/plugin_options.md
+      - Reading Outputs: sdk/concepts/reading_outputs.md
     - Tutorial: sdk/tutorial.md
     - FAQ: sdk/questions.md
     - Developer Guide:
