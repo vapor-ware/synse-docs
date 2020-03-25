@@ -55,7 +55,6 @@ nav:
       - Setup: server/developer/setup.md
       - Testing: server/developer/testing.md
       - Debugging: server/developer/debugging.md
-      - Localization: server/developer/localization.md
   - Synse SDK:
     - Introduction: sdk/intro.md
     - Architecture: sdk/architecture.md
