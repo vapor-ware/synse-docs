@@ -8,12 +8,6 @@ The documentation covers multiple projects:
 - [Synse SDK](https://github.com/vapor-ware/synse-sdk)
 - [Synse CLI](https://github.com/vapor-ware/synse-cli)
 
-Other projects which do not make up the core of the Synse platform are hosted separately.
-Some of these project include:
-
-- [Synse Client (Python)](https://github.com/vapor-ware/synse-client-python)
-- [Synse Client (Golang)](https://github.com/vapor-ware/synse-client-go)
-
 ## Structure
 
 All project documentation is written in Markdown and is found in the [`docs`](docs)
