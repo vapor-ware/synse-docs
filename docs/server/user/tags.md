@@ -3,10 +3,10 @@
     *Added in: 3.0.0*
 
 Synse uses *tags* to group and identify devices in the system. Tags can be arbitrary and
-are defined at the plugin level. Synse also generates system level tags for devices to
-provide a baked-in grouping.
+are assigned to devices at the plugin level. Synse also auto-generates system level tags
+for devices to provide some simple baked-in groupings.
 
-At a minimum, all devices will have an `id` tag. Every `id` tag should only ever reference
+At a minimum, all devices will have an `id` tag. Every `id` tag will only ever reference
 a single device for a given plugin.
 
 ## Definitions
@@ -29,7 +29,7 @@ Below are some basic definitions around the nomenclature used to describe device
 
 ```
 
-The scheme above shows all components which make up a tag. Components in brackets are optional. 
+The scheme above shows all components which make up a tag. Components in square brackets are optional. 
 Below, each component is described in more detail.
 
 ### Label
@@ -70,7 +70,7 @@ to note that the namespace applies only to the tag it is a component of; it does
 to the device itself (e.g. a single device can have multiple tags in different namespaces).
 
 A tag without an explicit namespace defined will be put into the `default` namespace.
-The default namespace may be applied explicitly, e.g. `default/foo`. The "default" namespace
+The default namespace may also be applied explicitly, e.g. `default/foo`. The "default" namespace
 name is reserved.
 
 A tag may have only one namespace.
@@ -79,7 +79,7 @@ A tag may have only one namespace.
 
 Some tags may need to apply to all namespaces, such as the auto-generated `id` tag. For
 such cases, the *system-wide namespace* should be used. This namespace, identified with 
-`system/`, considers the tag a member of all namespaces. It is strongly discouraged
+`system/`, considers the tag a member of all namespaces. While possible, it is discouraged
 to put custom tags into the system-wide namespace.
 
 ### Tag
@@ -92,8 +92,9 @@ In this case, only the ID string needs to be provided (Synse will automatically 
 into the appropriate ID tag). Other endpoints can take a collection of tags to filter
 devices by. See the [API Documentation](../api.v3.md) for more details.
 
-It is important to note that tag filtering is subtractive, not additive. This means that
-Synse will only select the devices which match each specified tag.
+It is important to note that within a *tag group*, tag filtering is subtractive, not additive.
+This means that Synse will only select the devices which match each specified tag. For additive
+behaviors, multiple tag groups may be specified.
 
 ## Tag Types
 
@@ -104,19 +105,19 @@ any need for user configuration. These tags are currently limited to `id` and `t
 
 All auto-generated tags will include an annotation component. The annotation will be [well-known
 and reserved](#annotation) from use in [user-defined tags](#user-defined). If a user-defined
-tag annotation conflicts with a reserved annotation name, an error will be returned.
+tag annotation conflicts with a reserved annotation name, an error is returned.
 
 ### User Defined
 
-User-defined tags may be specified for a device in the device's [configuration](../../sdk/configuration/device.md)
-itself. For example:
+User-defined tags may be specified for a device in the device's [configuration](../../sdk/configuration/device.md).
+For example:
 
 ```yaml
 tags:
 - synse/fan-sensor
 ```
 
-If any component of a user-defined tag conflicts with a reserved name, an error will be returned.
+If any component of a user-defined tag conflicts with a reserved name, an error is returned.
 
 ## Formatting
 
@@ -157,7 +158,7 @@ Below are the rules for tag formatting:
    ```
    vaporio/type:temperature
    ```
-0. **Passing multiple tags to Synse Server**
+0. **Passing multiple tags (single group) to Synse Server**
    ```
    ?tags=vaporio/type:temperature,foo,other/bar
    ```
@@ -165,6 +166,18 @@ Below are the rules for tag formatting:
    ```
    vaporio/type:temperature
    default/foo
+   other/bar
+   ```
+0. **Passing multiple tags (multiple groups) to Synse Server**
+   ```
+   ?tags=vaporio/type:temperature,foo&tags=other/bar
+   ```
+   The above query parameter(s) translates to the following tag groups:
+   ```
+   vaporio/type:temperature
+   default/foo
+   ```
+   ```
    other/bar
    ```
 0. **Setting a namespace and specifying a tag to Synse Server**

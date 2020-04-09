@@ -19,10 +19,10 @@ docker run --name synse-server -p 5000:5000 -d vaporio/synse-server
 ```
 
 This will run a new Synse Server container, exposed on port 5000. You can hit [API Endpoints](../api.v3.md)
-to see what Synse Server exposes, but there will be minimal data available. Synse gets
+to see what Synse Server provides, but there will be minimal data available. Synse gets
 all device data from plugins; with no plugins registered, there will be no device data.
 
-You can also verify it started up correctly by inspecting the container logs:
+You may also verify it started up correctly by inspecting the container logs:
 
 ```
 docker logs synse-server

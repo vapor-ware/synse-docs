@@ -4,7 +4,7 @@ hero: Configuration
 
 This page describes the configuration options and methodologies for Synse Server.
 It has a sane set of default configurations allowing it to run "out of the box",
-however minimal configuration is required to register any plugins with it.
+however a minimal configuration is required to register any plugins with it.
 
 Synse Server has three sources of configuration:
 
@@ -22,7 +22,7 @@ variable configuration(s) would override YAML file configuration(s)).
 Synse Server looks for a YAML file (`.yml` or `.yaml` extension) named `config` in the
 current working directory (`./`) and within the default configuration directory (`/etc/synse/server`).
 If the configuration file is not found in either of those locations, no config file is
-used and it will just use the default values and any specified environment variables.
+used and it will fall back to using the default configuration values.
 
 A custom configuration specified in `custom-config.yml` can be used to configure a
 Synse Server instance by placing the config in one of the search paths, e.g.
@@ -34,11 +34,11 @@ docker run -d \
     vaporio/synse-server
 ```
 
-Assuming the configuration is correct and Synse Server could successfully load it,
+Assuming the configuration is valid and Synse Server can successfully load it,
 you can verify that the config was picked up either by looking at the server logs,
 or by hitting the [`/config`](../api.v3.md#config) endpoint.
 
-The above can also be done in a compose file:
+The above may also be done in a compose file:
 
 ```yaml
 version: '3'
@@ -58,7 +58,7 @@ that each environment variable is the upper-cased configuration key path joined 
 and prefixed with `SYNSE_`. That is to say, for the example config `#!json {"foo": {"bar": 20}}`,
 the corresponding environment variable would be `SYNSE_FOO_BAR`.
 
-As a more real example, logging and the transaction cache TTL can be set with:
+As a more concrete example, logging and the transaction cache TTL can be set with:
 
 ```
 docker run -d \
@@ -68,7 +68,7 @@ docker run -d \
     vaporio/synse-server
 ```
 
-The above can also be done in a compose file:
+The above may also be done in a compose file:
 
 ```yaml
 version: '3'
@@ -157,7 +157,7 @@ SYNSE_PLUGIN_TCP="localhost:5001,192.1.53.2:5002"
 
 | | |
 | ------ | ------ |
-| ***description*** | Register plugins configured for Unix socket based communication. Generally, plugins should be configured for TCP. This option holds a list of paths to the unix sockets for each plugin to register. |
+| ***description*** | Register plugins configured for Unix socket based communication. Generally, plugins should prefer TCP transport over unix socket. This option holds a list of paths to the unix sockets for each plugin to register. |
 | ***type*** | list[string] |
 | ***key*** | `plugin.unix` |
 | ***env variable*** | `SYNSE_PLUGIN_UNIX` |
@@ -187,18 +187,18 @@ SYNSE_PLUGIN_UNIX="/tmp/example.sock"
 #### Discover
 
 Configuration options for dynamic plugin discovery. Currently, the only mode of plugin discovery that is
-supported is via Kubernetes endpoint labels. As more modes are supported, this section will be updated.
+supported is via Kubernetes Endpoint labels. As more modes are supported, this section will be updated.
 Examples of using Kubernetes discovery can be found on the [Advanced Usage](advanced.md) page. 
 
 ***Kubernetes Namespace***
 
 | | |
 | ------ | ------ |
-| ***description*** | The Kubernetes namespace to use for any configured plugin selectors. If there are no plugin selectors defined, this will have no effect. |
+| ***description*** | The Kubernetes namespace to use for any configured plugin selectors. If there are no plugin selectors defined, this will have no effect. If plugin discovery is enabled and this field is left unspecified, the default namespace (`default`) is used. |
 | ***type*** | string | 
 | ***key*** | `plugin.discover.kubernetes.namespace` |
 | ***env variable*** | `SYNSE_PLUGIN_DISCOVER_KUBERNETES_NAMESPACE` |
-| ***default*** | -- |
+| ***default*** | 'default' |
 
 ```YAML tab=
 plugin:
@@ -215,7 +215,7 @@ SYNSE_PLUGIN_DISCOVER_KUBERNETES_NAMESPACE=default
 
 | | |
 | ------ | ------ |
-| ***description*** | The endpoint labels to use as selectors for Kubernetes services which belong to plugins. This is a map where the key is the label name and the value is the value which the key should match to. |
+| ***description*** | The Endpoint labels to use as selectors for Kubernetes Services belonging to plugins. This is a map where the key is the label name and the value is the value which the label should match to. |
 | ***type*** | map[string]string |
 | ***key*** | `plugin.discover.kubernetes.endpoints.labels` |
 | ***env variable*** | `SYNSE_PLUGIN_DISCOVER_KUBERNETES_ENDPOINTS_LABELS_<KEY>` |
@@ -424,7 +424,6 @@ SYNSE_METRICS_ENABLED=true
 Below is what the default configuration for Synse Server looks like as YAML.
 
 ```yaml
-locale: en_US
 pretty_json: true
 logging: debug
 cache:
@@ -445,7 +444,6 @@ Below is a valid (if contrived) and complete example configuration file.
 ```yaml
 logging: debug
 pretty_json: true
-locale: en_US
 plugin:
   tcp:
     - localhost:6000
@@ -460,14 +458,11 @@ plugin:
           component: plugin
 cache:
   device:
-    # time to live in seconds
-    rebuild_every: 200
+    rebuild_every: 200  # seconds
   transaction:
-    # time to live in seconds
-    ttl: 300
+    ttl: 300  # seconds
 grpc:
-  # timeout in seconds
-  timeout: 5
+  timeout: 5  # seconds
   tls:
     cert: /tmp/ssl/example.crt
 ```

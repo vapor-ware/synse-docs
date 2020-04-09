@@ -21,7 +21,7 @@ image tags would be created:
 
 ## Helm
 
-A [Helm](https://helm.sh/) chart for Synse Server is available from the [Synse Charts repository](https://charts.vapor.io).
+A [Helm](https://helm.sh/) chart for Synse Server is available from the [Synse Charts repository](https://github.com/vapor-ware/synse-charts).
 
 You can add the repo to a local helm http web server (`helm serve`) with
 
@@ -39,7 +39,7 @@ To see the available helm charts that the Synse Charts repo provides, simply sea
 
 ```console
 $ helm search synse
-synse/synse-server 	0.1.1        	2.2.4      	An HTTP API for the monitoring and control of physical an...
+synse/synse-server 	3.0.0        	3.0.0      	An API to monitor and control physical and virtual infras...
 ...
 ```
 

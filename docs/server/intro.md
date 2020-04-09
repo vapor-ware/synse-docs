@@ -28,7 +28,7 @@ curl-able interface.
 
 Synse Server is designed as a containerized micro-service to provide a uniform interface
 to monitor and control devices registered to plugins. It does not directly interface with
-the devices -- that job is left to the plugins which Synse Server interfaces with over an
+devices -- that job is left to the plugins which Synse Server interfaces with over an
 internal gRPC API.
 
 Synse Server can be thought of as the "front-end" interface for devices. When a plugin is
