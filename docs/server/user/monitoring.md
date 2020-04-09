@@ -2,7 +2,7 @@
 hero: Monitoring 
 ---
 
-Synse Server does not provide any kind of monitoring solution for the
+Synse Server does not provide any kind of monitoring or analytics solution for the
 data that it exposes. It does provide basic application-level metrics via a
 [Prometheus](https://prometheus.io) exporter.
 
@@ -25,7 +25,7 @@ SYNSE_METRICS_ENABLED=true
 ## Getting metrics
 
 Once configured, you can run Synse Server and verify that metrics are enabled by
-hitting `#!shell http://${server}/metrics`. If enabled, the route should resolve and
+hitting `#!shell http://${server_ip}/metrics`. If enabled, the route should resolve and
 you should get Prometheus export data, e.g.
 
 ```
@@ -56,7 +56,7 @@ of those metrics.
 | **name** | `synse_http_request_count` |
 | **description** | The total number of HTTP requests processed. |
 | **metric type** | Counter |
-| **labels** | `method`, `endpoint`, `http_code` |
+| **labels** | `method`, `template`, `endpoint`, `http_code`, `ip` |
 
 ### HTTP Request Latency (seconds)
 
@@ -65,7 +65,7 @@ of those metrics.
 | **name** | `synse_http_request_latency_sec` |
 | **description** | The time it takes for an HTTP request to be fulfilled. |
 | **metric type** | Histogram |
-| **labels** | `method`, `endpoint`, `http_code` |
+| **labels** | `method`, `template`, `endpoint`, `http_code`, `ip` |
 
 ### HTTP Response Bytes
 
@@ -74,7 +74,7 @@ of those metrics.
 | **name** | `synse_http_response_bytes` |
 | **description** | The total number of bytes returned in HTTP API responses. |
 | **metric type** | Counter |
-| **labels** | `method`, `endpoint`, `http_code` |
+| **labels** | `method`, `template`, `endpoint`, `http_code`, `ip` |
 
 ### WebSocket Request Count
 
@@ -157,12 +157,47 @@ of those metrics.
 | **metric type** | Histogram |
 | **labels** | `type`, `service`, `method`, `plugin` |
 
+### Plugin Active State
+
+| | |
+| :--- | :--- |
+| **name** | `synse_plugin_active_state` |
+| **description** | Whether a plugin is currently in the active (1) or inactive (0) state. |
+| **metric type** | Gauge |
+| **labels** | `plugin` |
+
+### Plugin Connect Count
+
+| | |
+| :--- | :--- |
+| **name** | `synse_plugin_connect_count` |
+| **description** | The total number of times a plugin has been successfully connected to. |
+| **metric type** | Counter |
+| **labels** | `plugin` |
+
+### Plugin Disconnect Count
+
+| | |
+| :--- | :--- |
+| **name** | `synse_plugin_disconnect_count` |
+| **description** | The total number of times a plugin has disconnected (become unreachable). |
+| **metric type** | Counter |
+| **labels** | `plugin` |
+
+### Plugin Disabled
+
+| | |
+| :--- | :--- |
+| **name** | `synse_plugin_disabled` |
+| **description** | The number of plugins which are currently in a "disabled" state. |
+| **metric type** | Gauge |
+| **labels** | `plugin` |
 
 ## Viewing application metrics
 
 An example deployment is provided in the project's [GitHub repository](https://github.com/vapor-ware/synse-server/tree/master/examples/monitoring)
-which starts up a Synse Server instance, a Prometheus instance to collect application metrics,
-and a Grafana instance (with pre-built example dashboard) to visualize those metrics.
+which starts up a Synse Server instance, a [Prometheus](https://prometheus.io/) instance to collect application metrics,
+and a [Grafana](https://grafana.com/) instance (with pre-built example dashboard) to visualize those metrics.
 
 From the project source, you can simply run:
 
@@ -190,6 +225,8 @@ To get requests data, you will need to hit Synse Server [endpoints](../api.v3.md
 - `localhost:5000/v3/plugin`
 - `localhost:5000/v3/scan`
 - ...
+
+Or use [synse-loadgen](https://github.com/vapor-ware/synse-loadgen).
 
 
 ![](../../assets/img/server-monitoring.png)

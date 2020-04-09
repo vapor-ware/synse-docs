@@ -15,9 +15,11 @@ Alternatively, you can search for `synse` with `helm`:
 
 ```
 $ helm search synse
-NAME               	CHART VERSION	APP VERSION	DESCRIPTION
-synse/synse-server 	0.1.1        	2.2.4      	An HTTP API for the monitoring and control of physical an...
-synse/emulator     	0.1.0        	2.2.0      	Emulator plugin for Synse Server.
-synse/modbus       	0.2.0        	1.1.0      	Synse Modbus Over IP Plugin.
-synse/snmp         	0.1.0        	           	Synse SNMP Plugin.
+NAME               	CHART VERSION	APP VERSION	DESCRIPTION                                                 
+synse/synse-loadgen	1.0.0        	1.0.0      	Generate request loads against the Synse Server API         
+synse/synse-server 	3.0.0        	3.0.0      	An API to monitor and control physical and virtual infras...
+synse/emulator     	3.0.0        	3.0.0      	A Synse plugin providing emulated devices and reading data  
+synse/modbus       	2.0.0        	2.0.0      	Modbus over IP plugin for Synse                             
+synse/prophetess   	1.0.0        	0.2.0      	A tool for extracting data from extractors, transforming ...
+synse/snmp         	2.0.0        	2.0.0      	SNMP plugin for Synse                                       
 ```

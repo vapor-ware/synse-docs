@@ -3,7 +3,7 @@ hero: Deploying
 ---
 
 This page discusses different ways of deploying Synse Server. Because of Synse's
-plugin architecture, it is often easiest and most convenient to run Synse as a
+plugin architecture, it is often easiest and most convenient to run Synse in a
 deployment of some sort. Two types of deployments are described here:
 
 - [Deploying with Docker Compose](#deploying-with-docker-compose)
@@ -19,7 +19,7 @@ section. Here, that example is extended to use some more advanced features.
 !!! note
     Even though communication via unix sockets is supported, it is recommended
     to use TCP based communication when possible, as it is generally easier to
-    manage and configure.
+    manage and configure in containerized environments.
 
 The [emulator plugin](https://github.com/vapor-ware/synse-emulator-plugin) will be
 [configured](../../sdk/configuration/plugin.md) for TCP with a secure communication
@@ -95,7 +95,7 @@ services:
       SYNSE_PLUGIN_TCP: emulator:5001
       SYNSE_GRPC_TLS_CERT: /tmp/ssl/emulator-plugin.crt
 
-  # TCP-based Emulator Plugin
+  # Emulator Plugin
   emulator:
     container_name: emulator
     image: vaporio/emulator-plugin
@@ -152,7 +152,8 @@ $ curl localhost:5000/v3/scan
     "tags":[
       "system/id:104aeeaa-2125-5649-8dcb-c516cf6f65c2",
       "system/type:airflow"
-    ]
+    ],
+    "metadata": {}
   },
   {
     "id":"1c565336-8969-5818-94a6-e4f4a4cf99ba",
@@ -163,7 +164,8 @@ $ curl localhost:5000/v3/scan
     "tags":[
       "system/id:1c565336-8969-5818-94a6-e4f4a4cf99ba",
       "system/type:pressure"
-    ]
+    ],
+    "metadata": {}
   },
   {
     "id":"39a9ca9a-aabf-5241-998f-3d15068a8630",
@@ -174,7 +176,8 @@ $ curl localhost:5000/v3/scan
     "tags":[
       "system/id:39a9ca9a-aabf-5241-998f-3d15068a8630",
       "system/type:fan"
-    ]
+    ],
+    "metadata": {}
   },
   ... 
 ]

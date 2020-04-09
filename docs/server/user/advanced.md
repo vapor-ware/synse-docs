@@ -78,7 +78,7 @@ reduces the amount of configuration for deployments with many plugins.
 
 Currently, the only supported mode of plugin discovery is through [Kubernetes service endpoints](https://kubernetes.io/docs/concepts/services-networking/service/).
 In short, this means that for a plugin deployment with a Service specified,
-labels can be set on that Service to identify it as a plugin. 
+labels can be set on that Service to identify it to Synse Server as a plugin. 
 
 This is useful because a [Pod](https://kubernetes.io/docs/concepts/workloads/pods/pod/) may
 be restarted or scheduled on a different Node; tying the plugin's identity to the resource
@@ -196,7 +196,7 @@ the plugin.
 
 In such cases, attempts to communicate with the plugin will fail, and Synse Server will mark it as
 "inactive". This flag is used internally to skip over the plugin when performing subsequent gRPC calls
-in order to reduce the time overhead of waiting for the gRPC request to time out.
+in order to reduce the overhead of waiting for the gRPC request to time out.
 
 Periodically, Synse Server refreshes its plugins. That means it will look at plugin sources (whether
 that is config or dynamic discovery) and attempt to re-establish communication with all of them. This
@@ -238,7 +238,7 @@ plugin.
 
 The server APIs can be secured by providing a [certificate and key](configuration.md#ssl). While
 this may work for small/personal use cases, it is recommended to use a more robust TLS termination
-frontend for us in production. Many such solutions, such as [Nginx](https://www.nginx.com/), exist
+frontend for it in production. Many such solutions exist, such as [Nginx](https://www.nginx.com/),
 and there are numerous examples of how to set this up elsewhere.
 
 The internal server --> plugin gRPC API may also be secured via TLS. The [configuration](configuration.md)

@@ -11,6 +11,6 @@ Briefly, that means that:
 > including (via compiler) GPL-licensed code must also be made available under
 > the GPL along with build & install instructions.*
 >
->    -- [tldrleagal](https://tldrlegal.com/license/gnu-general-public-license-v3-(gpl-3))
+>    -- [tldrlegal](https://tldrlegal.com/license/gnu-general-public-license-v3-(gpl-3))
 
 For the full licenses, see the `LICENSE` file found in each project's source repo.

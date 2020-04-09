@@ -6,9 +6,9 @@ hero: Home
 
 <p align="center"><img src="assets/img/logo.png" width="200px" /></p>
 
-**Synse** is a simple, scalable platform which enabled detailed monitoring and control
+**Synse** is a simple, scalable platform which enables detailed monitoring and control
 of *physical and virtual devices*. These devices could be data center equipment,
-IoT devices, building management systems, or devices on the edge. The platform is
+IoT devices, building management systems, or hardware on the edge. The platform is
 designed to support remote lights-out management and automation.
 
 There are two core components to the Synse platform, the [API server](server/intro.md) and
@@ -46,7 +46,7 @@ API. Doing so would reduce the configuration burden, as many API-specific detail
 codified into the custom plugin itself.
 
 Regardless of how simple, complex, general, or specific, the job of a plugin is to communicate
-with a device, enabling the collection of the reading data it provides, such as temperature,
+with a device, enabling the collection of any data it provides, such as temperature,
 humidity, power consumption, LED status, lock state, etc. Additionally, if a device can be
 written to, plugins provide a means to issue write requests to those devices. This can range
 from simply blinking an LED indicator, to remotely managing a building's HVAC system.
