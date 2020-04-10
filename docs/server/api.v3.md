@@ -2,9 +2,9 @@
 hero: v3 API Reference
 ---
 
-Synse Server can provide an interface to registered devices through an HTTP API or
-a WebSocket API. Both APIs expose the same information, with only some changes to the
-expected response data.
+Synse Server provides an interface to physical and virtual devices through an HTTP or
+WebSocket API. Both APIs expose the same information, with only a few changes to the
+expected response data framing.
 
 ## HTTP API
 
@@ -15,7 +15,7 @@ Within this document:
 
 - `localhost:5000`, `#!shell ${server}`, and other references to the hostname/IP and port
   of the Synse Server instance are all functionally equivalent and serve only as a placeholder
-  which should be replaced with instance's IP/port.
+  which should be replaced with your instance's IP/port.
 - The examples provided for each item use the [Synse Python Client](https://github.com/vapor-ware/synse-client-python)
   for the Python examples.
 - All specified URI parameters are required.
@@ -23,7 +23,7 @@ Within this document:
 
 ### Requests
 
-Each item defines the basic endpoint information in a table which looks like:
+Each route defines the basic endpoint information in a table which looks like:
 
 | | | |
 | --- | --- | --- |
@@ -38,7 +38,7 @@ GET http://localhost:5000/test
 
 ### Responses
 
-Each item also defines a *Response Data* section, which describes the JSON payload that is returned
+Each route also defines a *Response Data* section, which describes the JSON payload that is returned
 on success. For the HTTP API, this is the exact data that is returned (no additional formatting is done).
 
 ## WebSocket API
@@ -64,14 +64,14 @@ for the WebSocket API. Both client requests and server responses use the same me
 
 The fields of the request structure are described below:
 
-| Field | Description |
-| :---- | :---------- |
-| *id* | The numeric ID of the message. Each client session should track and increment its own IDs. The server reflects this ID in the response message(s). This can be used for matching responses with their originating requests. |
-| *event* | The type of the message that is being sent. All client requests are prefixed with `request/`. All server responses are prefixed with `response/`. |
-| *data* | The data being sent. For **requests**, this will include the equivalent of URI parameters and query parameters. If a given event does not have any such parameters, this can be left empty (`"data": {}`) or it can be omitted entirely. For **responses**, this will hold the server response data -- this is equivalent to the response you would get from the HTTP API. |
+| Field   | Type     | Description |
+| :------ | :------: | :---------- |
+| *id*    | `int`    | The numeric ID of the message. Each client session should track and increment its own IDs. The server reflects this ID in the response message(s). This can be used for matching responses with their originating requests. |
+| *event* | `string` | The type of message that is being sent. All client requests are prefixed with `request/`. All server responses are prefixed with `response/`. |
+| *data*  | `object` | The data being sent. For **requests**, this will include the equivalent of URI parameters and query parameters. If a given event does not have any such parameters, this can be left empty (`"data": {}`) or omitted entirely. For **responses**, this will hold the server response data -- this is equivalent to the response you would get from the HTTP API, as defined in the *Response Data* section. |
 
-An error is returned with `response/error`. If the error occurs prior to the request
-being parsed (or due to an invalid request which cannot be parsed), the return ID will be -1.
+Errors are returned with `response/error`. If an error occurs prior to the request
+being parsed (or due to an invalid request which cannot be parsed), the return ID will be `-1`.
 
 Within this document:
 
@@ -107,9 +107,8 @@ Responses use the same message scheme, where:
 - the `event` is the corresponding response event for the given request type
 - the `data` contains the JSON data defined in the *Response Data* section
 
-The table, above, also lists the response event corresponding to the given request
-event. A consolidated table of all request-response event mappings follows. Note
-that all requests can have an error response.
+A table of all request-response event mappings follows. Note
+that all requests may have an error response.
 
 | Request | Response |
 | :------ | :------- |
@@ -164,12 +163,12 @@ An error response will be returned with one of the following HTTP codes:
 
 The fields of the response are described below:
 
-| Field | Description |
-| :---- | :---------- |
-| *http_code* | The HTTP code corresponding to the error. (e.g. 400, 404, 500) |
-| *description* | A short description of the error. |
-| *timestamp* | The RFC3339 formatted timestamp at which the error occurred. |
-| *context* | Contextual message associated with the error's root cause. This will typically include the pertinent internal state. |
+| Field         | Type     | Description |
+| :------------ | :------: | :---------- |
+| *http_code*   | `int`    | The HTTP code corresponding to the error. (e.g. 400, 404, 500) |
+| *description* | `string` | A short description of the error. |
+| *timestamp*   | `string` | The RFC3339 formatted timestamp at which the error occurred. |
+| *context*     | `string` | Contextual message associated with the error's root cause. This will typically include the pertinent internal state. |
 
 ??? note "HTTP"
     **Request**
@@ -228,8 +227,8 @@ The fields of the response are described below:
 Check whether the server is reachable and responsive.
 
 If the endpoint is reachable (e.g. if Synse Server is up and ready), this
-will return a 200 response with the described JSON response, below. If the test
-endpoint is unreachable or otherwise fails, it will return a 500 response.
+will return a 200 response. If the test endpoint is unreachable or otherwise fails,
+it will return a 500 response, typically with no JSON payload.
 
 ??? hint "Example"
     ***shell***
@@ -239,12 +238,18 @@ endpoint is unreachable or otherwise fails, it will return a 500 response.
     
     ***python***
     ```python
+    import asyncio
+
     from synse import client
-    
-    api_client = client.HTTPClientV3('localhost')
-    resp = api_client.test()
-    
-    print(resp.raw)
+
+
+    async def main():
+        async with client.HTTPClientV3('localhost') as api_client:
+            resp = await api_client.status()
+
+
+    if __name__ == '__main__':
+        asyncio.get_event_loop().run_until_complete(main())
     ```
 
 #### *Response Data*
@@ -252,16 +257,16 @@ endpoint is unreachable or otherwise fails, it will return a 500 response.
 ```json
 {
   "status": "ok",
-  "timestamp": "2019-01-01T12:00:00Z"
+  "timestamp": "2020-01-01T12:00:00Z"
 }
 ```
 
 The fields of the response are described below:
 
-| Field | Description |
-| :---- | :---------- |
-| *status* | "ok" if the endpoint returns successfully. |
-| *timestamp* | An RFC3339 timestamp of when the status was tested. |
+| Field       | Type     | Description |
+| :---------- | :---:    | :---------- |
+| *status*    | `string` | "ok" if the endpoint returns successfully. |
+| *timestamp* | `string` | An RFC3339 timestamp of when the status was tested. |
 
 ??? note "HTTP"
     **Request**
@@ -273,7 +278,7 @@ The fields of the response are described below:
     ```json
     {
       "status": "ok",
-      "timestamp": "2019-01-01T12:00:00Z"
+      "timestamp": "2020-01-01T12:00:00Z"
     }
     ```
 
@@ -293,7 +298,7 @@ The fields of the response are described below:
       "event": "response/status",
       "data": {
         "status": "ok",
-        "timestamp": "2019-01-01T12:00:00Z"
+        "timestamp": "2020-01-01T12:00:00Z"
       }
     }
     ```
@@ -325,12 +330,17 @@ provided by this endpoint should be used in subsequent requests.
     
     ***python***
     ```python
+    import asyncio
+
     from synse import client
-    
-    api_client = client.HTTPClientV3('localhost')
-    resp = api_client.version()
-    
-    print(resp.raw)
+
+
+    async def main():
+        async with client.HTTPClientV3('localhost') as api_client:
+            resp = await api_client.version()
+
+    if __name__ == '__main__':
+        asyncio.get_event_loop().run_until_complete(main())
     ```
 
 #### *Response Data*
@@ -344,10 +354,10 @@ provided by this endpoint should be used in subsequent requests.
 
 The fields of the response are described below:
 
-| Field | Description |
-| :---- | :---------- |
-| *version* | The full version (*<major.minor.micro\>*) of the Synse Server instance. |
-| *api_version* | The API version (*v<major\>*) that can be used to construct subsequent API requests. |
+| Field         | Type     | Description |
+| :------------ | :---:    | :---------- |
+| *version*     | `string` | The full version (*<major.minor.micro\>*) of the Synse Server instance. |
+| *api_version* | `string` | The API version (*v<major\>*) that can be used to construct subsequent API requests. |
 
 ??? note "HTTP"
     **Request**
@@ -415,12 +425,18 @@ which Synse Server ultimately runs with.
     
     ***python***
     ```python
+    import asyncio
+
     from synse import client
-    
-    api_client = client.HTTPClientV3('localhost')
-    resp = api_client.config()
-    
-    print(resp.raw)
+
+
+    async def main():
+        async with client.HTTPClientV3('localhost') as api_client:
+            resp = await api_client.config()
+
+
+    if __name__ == '__main__':
+        asyncio.get_event_loop().run_until_complete(main())
     ```
 
 #### *Response Data*
@@ -461,19 +477,25 @@ You can get a summary of all currently registered plugins via [Plugins](#plugins
     
     ***python***
     ```python
+    import asyncio
+
     from synse import client
-    
-    api_client = client.HTTPClientV3('localhost')
-    resp = api_client.plugin('4032ffbe-80db-5aa5-b794-f35c88dff85c')
-    
-    print(resp.raw)
+
+
+    async def main():
+        async with client.HTTPClientV3('localhost') as api_client:
+            resp = await api_client.plugin('4032ffbe-80db-5aa5-b794-f35c88dff85c')
+
+
+    if __name__ == '__main__':
+        asyncio.get_event_loop().run_until_complete(main())
     ```
 
 #### *URI Parameters*
 
 | Parameter | Description |
 | :-------- | :---------- |
-| *plugin* | The ID of the plugin to get more information for. Plugin IDs can be enumerated via the `/plugin` endpoint without specifying a URI parameter. |
+| *plugin*  | The ID of the plugin to get more information for. Plugin IDs can be enumerated via the `/plugin` endpoint without specifying a URI parameter. |
 
 #### *Response Data*
 
@@ -492,15 +514,15 @@ You can get a summary of all currently registered plugins via [Plugins](#plugins
   },
   "version": {
     "plugin_version": "3.0.0",
-    "sdk_version": "3.0.0",
-    "build_date": "2019-05-13T16:20:40",
-    "git_commit": "1a1d95b",
-    "git_tag": "2.4.5-5-g1a1d95b",
+    "sdk_version": "2.0.0",
+    "build_date": "2020-01-01T12:00:00Z",
+    "git_commit": "00d612b",
+    "git_tag": "3.0.0",
     "arch": "amd64",
     "os": "linux"
   },
   "health": {
-    "timestamp": "2019-01-01T12:00:00Z",
+    "timestamp": "2020-01-01T12:00:00Z",
     "status": "OK",
     "checks": [
       {
@@ -508,14 +530,14 @@ You can get a summary of all currently registered plugins via [Plugins](#plugins
         "status": "OK",
         "type": "periodic",
         "message": "",
-        "timestamp": "2019-01-01T12:00:00Z"
+        "timestamp": "2020-01-01T12:00:00Z"
       },
       {
         "name": "write queue health",
         "status": "OK",
         "type": "periodic",
         "message": "",
-        "timestamp": "2019-01-01T12:00:00Z"
+        "timestamp": "2020-01-01T12:00:00Z"
       }
     ]
   }
@@ -524,41 +546,41 @@ You can get a summary of all currently registered plugins via [Plugins](#plugins
 
 The fields of the response are described below:
 
-| Field | Description |
-| :---- | :---------- |
-| *active* | This field specifies whether the plugin is active or not. |
-| *id* | A deterministic ID hash for identifying the plugin. |
-| *tag* | The plugin tag. This is a normalized string made up of its name and maintainer. |
-| *name* | The name of plugin. |
-| *maintainer* | The maintainer of the plugin. |
-| *description* | A short description of the plugin. |
-| *vcs* | A link to the version control repo for the plugin. |
-| *version* | An object that contains version information about the plugin. |
-| *version.plugin_version* | The plugin version. |
-| *version.sdk_version* | The version of the [Synse SDK](../sdk/intro.md) that the plugin is using. |
-| *version.build_date* | The date that the plugin was built. |
-| *version.git_commit* | The git commit at which the plugin was built. |
-| *version.git_tag* | The git tag at which the plugin was built. |
-| *version.arch* | The architecture that the plugin is built for. |
-| *version.os* | The OS that the plugin is built for. |
-| *network* | An object that describes the network configurations for the plugin. |
-| *network.address* | The address of the plugin for the protocol used. |
-| *network.protocol* | The protocol that is used to communicate with the plugin (unix, tcp). |
-| *health* | An object that describes the overall health of the plugin. |
-| *health.timestamp* | The time at which the health status applies. |
-| *health.status* | The health status of the plugin (unknown, ok, failing) |
-| *health.checks* | A collection of health check snapshots for the plugin. |
+| Field                    | Type     | Description |
+| :----------------------- | :------: | :---------- |
+| *active*                 | `bool`   | This field specifies whether the plugin is [active](./user/advanced.md#plugin-state-active-vs-inactive) or not. |
+| *id*                     | `string` | A deterministic ID hash for identifying the plugin. |
+| *tag*                    | `string` | The plugin tag. This is a normalized string made up of its name and maintainer. |
+| *name*                   | `string` | The name of plugin. |
+| *maintainer*             | `string` | The maintainer of the plugin. |
+| *description*            | `string` | A short description of the plugin. |
+| *vcs*                    | `string` | A link to the version control repo for the plugin. |
+| *version*                | `object` | An object which contains version information about the plugin. |
+| *version.plugin_version* | `string` | The plugin version. |
+| *version.sdk_version*    | `string` | The version of the [Synse SDK](../sdk/intro.md) that the plugin is using. |
+| *version.build_date*     | `string` | The date that the plugin was built. |
+| *version.git_commit*     | `string` | The git commit at which the plugin was built. |
+| *version.git_tag*        | `string` | The git tag at which the plugin was built. |
+| *version.arch*           | `string` | The architecture that the plugin is built for. |
+| *version.os*             | `string` | The OS that the plugin is built for. |
+| *network*                | `object` | An object which describes the network configurations for the plugin. |
+| *network.address*        | `string` | The address of the plugin for the protocol used. |
+| *network.protocol*       | `string` | The protocol that is used to communicate with the plugin (unix, tcp). |
+| *health*                 | `object` | An object which describes the overall health of the plugin. |
+| *health.timestamp*       | `string` | The time at which the health status applies. |
+| *health.status*          | `string` | The health status of the plugin (unknown, ok, failing) |
+| *health.checks*          | `list` | A collection of health check snapshots for the plugin. |
 
 There may be `0..N` health checks for a Plugin, depending on how it is configured.
 The health check elements here make up a snapshot of the plugin's health at a given time.
 
-| Field | Description |
-| :---- | :---------- |
-| *name* | The name of the health check. |
-| *status* | The status of the health check (unknown, ok, failing) |
-| *message* | A message describing the failure, if in a failing state. |
-| *timestamp* | An RFC3339 timestamp for when the status applied. |
-| *type* | The type of health check (e.g. periodic) |
+| Field       | Type     | Description |
+| :---------- | :------: | :---------- |
+| *name*      | `string` | The name of the health check. |
+| *status*    | `string` | The status of the health check (unknown, ok, failing) |
+| *message*   | `string` | A message describing the failure, if in a failing state. |
+| *timestamp* | `string` | An RFC3339 timestamp for when the status applied. |
+| *type*      | `string` | The type of health check (e.g. periodic) |
 
 ??? note "HTTP"
     **Request**
@@ -582,15 +604,15 @@ The health check elements here make up a snapshot of the plugin's health at a gi
       },
       "version": {
         "plugin_version": "3.0.0",
-        "sdk_version": "3.0.0",
-        "build_date": "2019-05-13T16:20:40",
-        "git_commit": "1a1d95b",
-        "git_tag": "2.4.5-5-g1a1d95b",
+        "sdk_version": "2.0.0",
+        "build_date": "2020-01-01T12:00:00Z",
+        "git_commit": "00d612b",
+        "git_tag": "3.0.0",
         "arch": "amd64",
         "os": "linux"
       },
       "health": {
-        "timestamp": "2019-01-01T12:00:00Z",
+        "timestamp": "2020-01-01T12:00:00Z",
         "status": "OK",
         "checks": [
           {
@@ -598,14 +620,14 @@ The health check elements here make up a snapshot of the plugin's health at a gi
             "status": "OK",
             "type": "periodic",
             "message": "",
-            "timestamp": "2019-01-01T12:00:00Z"
+            "timestamp": "2020-01-01T12:00:00Z"
           },
           {
             "name": "write queue health",
             "status": "OK",
             "type": "periodic",
             "message": "",
-            "timestamp": "2019-01-01T12:00:00Z"
+            "timestamp": "2020-01-01T12:00:00Z"
           }
         ]
       }
@@ -643,15 +665,15 @@ The health check elements here make up a snapshot of the plugin's health at a gi
         },
         "version": {
           "plugin_version": "3.0.0",
-          "sdk_version": "3.0.0",
-          "build_date": "2019-05-13T16:20:40",
-          "git_commit": "1a1d95b",
-          "git_tag": "2.4.5-5-g1a1d95b",
+          "sdk_version": "2.0.0",
+          "build_date": "2020-01-01T12:00:00Z",
+          "git_commit": "00d612b",
+          "git_tag": "3.0.0",
           "arch": "amd64",
           "os": "linux"
         },
         "health": {
-          "timestamp": "2019-01-01T12:00:00Z",
+          "timestamp": "2020-01-01T12:00:00Z",
           "status": "OK",
           "checks": [
             {
@@ -659,14 +681,14 @@ The health check elements here make up a snapshot of the plugin's health at a gi
               "status": "OK",
               "type": "periodic",
               "message": "",
-              "timestamp": "2019-01-01T12:00:00Z"
+              "timestamp": "2020-01-01T12:00:00Z"
             },
             {
               "name": "write queue health",
               "status": "OK",
               "type": "periodic",
               "message": "",
-              "timestamp": "2019-01-01T12:00:00Z"
+              "timestamp": "2020-01-01T12:00:00Z"
             }
           ]
         }
@@ -703,12 +725,18 @@ Get a summary of all plugins currently registered with the server instance.
     
     ***python***
     ```python
+    import asyncio
+
     from synse import client
-    
-    api_client = client.HTTPClientV3('localhost')
-    resp = api_client.plugins()
-    
-    print(resp.raw)
+
+
+    async def main():
+        async with client.HTTPClientV3('localhost') as api_client:
+            resp = await api_client.plugins()
+
+
+    if __name__ == '__main__':
+        asyncio.get_event_loop().run_until_complete(main())
     ```
 
 !!! info
@@ -720,8 +748,8 @@ Get a summary of all plugins currently registered with the server instance.
 
 #### *Query Parameters*
 
-| Key  | Description |
-| :--- | :---------- |
+| Key     | Description |
+| :------ | :---------- |
 | refresh | Set to `true` to force a refresh of plugins. Plugins are refreshed in the background periodically, this allows it to be done on demand. (default: false) |
 
 #### *Response Data*
@@ -749,14 +777,14 @@ Get a summary of all plugins currently registered with the server instance.
 
 The fields of the response are described below:
 
-| Field | Description |
-| :---- | :---------- |
-| *active* | This field specifies whether the plugin is active or not. |
-| *id* | A deterministic ID hash for identifying the plugin. |
-| *tag* | The plugin tag. This is a normalized string made up of its name and maintainer. |
-| *name* | The name of plugin. |
-| *maintainer* | The maintainer of the plugin. |
-| *description* | A short description of the plugin. |
+| Field         | Type     | Description |
+| :------------ | :------: | :---------- |
+| *active*      | `bool`   | This field specifies whether the plugin is [active](./user/advanced.md#plugin-state-active-vs-inactive) or not. |
+| *id*          | `string` | A deterministic ID hash for identifying the plugin. |
+| *tag*         | `string` | The plugin tag. This is a normalized string made up of its name and maintainer. |
+| *name*        | `string` | The name of plugin. |
+| *maintainer*  | `string` | The maintainer of the plugin. |
+| *description* | `string` | A short description of the plugin. |
 
 ??? note "HTTP"
     **Request**
@@ -841,8 +869,8 @@ The [error response](#errors) can be one of:
 
 Get a summary of the health of registered plugins.
 
-This provides an easy way to programmatically determine whether the plugins
-registered and are considered healthy by the server.
+This provides an easy way to programmatically determine whether the registered plugins
+are considered healthy by the server.
 
 ??? hint "Example"
     ***shell***
@@ -852,12 +880,18 @@ registered and are considered healthy by the server.
     
     ***python***
     ```python
+    import asyncio
+
     from synse import client
-    
-    api_client = client.HTTPClientV3('localhost')
-    resp = api_client.plugin_health()
-    
-    print(resp.raw)
+
+
+    async def main():
+        async with client.HTTPClientV3('localhost') as api_client:
+            resp = await api_client.plugin_health()
+
+
+    if __name__ == '__main__':
+        asyncio.get_event_loop().run_until_complete(main())
     ```
 
 #### *Response Data*
@@ -865,7 +899,7 @@ registered and are considered healthy by the server.
 ```json
 {
   "status": "healthy",
-  "updated": "2019-01-01T12:00:00Z",
+  "updated": "2020-01-01T12:00:00Z",
   "healthy": [
     "4032ffbe-80db-5aa5-b794-f35c88dff85c",
     "3042ffce-81db-5bb6-b794-f35c88dff85d"
@@ -878,14 +912,14 @@ registered and are considered healthy by the server.
 
 The fields of the response are described below:
 
-| Field | Description |
-| :---- | :---------- |
-| *status* | A string describing the overall health state of the registered plugins. This can be either `"healthy"` or `"unhealthy"`. It will only be healthy if *all* plugins are found to be healthy, otherwise the overall state is unhealthy. |
-| *updated* | An RFC3339 timestamp describing the time that the plugin health state was last updated. |
-| *healthy* | A list containing the plugin IDs for those plugins deemed to be healthy. |
-| *unhealthy* | A list containing the plugin IDs for those plugins deemed to be unhealthy. |
-| *active* | The count of active plugins. |
-| *inactive* | The count of inactive plugins. |
+| Field       | Type           | Description |
+| :---------- | :------------: | :---------- |
+| *status*    | `string`       | A string describing the overall health state of the registered plugins. This can be either `"healthy"` or `"unhealthy"`. It will only be healthy if *all* plugins are found to be healthy, otherwise the overall state is unhealthy. |
+| *updated*   | `string`       | An RFC3339 timestamp describing the time that the plugin health state was last updated. |
+| *healthy*   | `list[string]` | A list containing the plugin IDs for those plugins deemed to be healthy. |
+| *unhealthy* | `list[string]` | A list containing the plugin IDs for those plugins deemed to be unhealthy. |
+| *active*    | `int`          | The count of [active](./user/advanced.md#plugin-state-active-vs-inactive) plugins. |
+| *inactive*  | `int`          | The count of [inactive](./user/advanced.md#plugin-state-active-vs-inactive) plugins. |
 
 ??? note "HTTP"
     **Request**
@@ -897,7 +931,7 @@ The fields of the response are described below:
     ```json
     {
       "status": "healthy",
-      "updated": "2019-01-01T12:00:00Z",
+      "updated": "2020-01-01T12:00:00Z",
       "healthy": [
         "4032ffbe-80db-5aa5-b794-f35c88dff85c",
         "3042ffce-81db-5bb6-b794-f35c88dff85d"
@@ -924,7 +958,7 @@ The fields of the response are described below:
       "event": "response/plugin_health",
       "data": {
         "status": "healthy",
-        "updated": "2019-01-01T12:00:00Z",
+        "updated": "2020-01-01T12:00:00Z",
         "healthy": [
           "4032ffbe-80db-5aa5-b794-f35c88dff85c",
           "3042ffce-81db-5bb6-b794-f35c88dff85d"
@@ -958,12 +992,12 @@ List the devices that Synse knows about and can read from/write to via
 the registered plugins.
 
 This endpoint provides an aggregated view of the devices made known to the
-server by each of its registered plugins. This endpoint provides a high-level
+server by each of its registered plugins. It provides a high-level
 view of what exists in the system. Scan info can be filtered to show only those
 devices which match a set of provided tags.
 
 By default, scan results are sorted by device id. The `sort` query parameter
-can be used to modify the sort behavior.
+may be used to modify the sort behavior.
 
 ??? hint "Example"
     ***shell***
@@ -973,22 +1007,28 @@ can be used to modify the sort behavior.
     
     ***python***
     ```python
+    import asyncio
+
     from synse import client
-    
-    api_client = client.HTTPClientV3('localhost')
-    resp = api_client.scan()
-    
-    print(resp.raw)
+
+
+    async def main():
+        async with client.HTTPClientV3('localhost') as api_client:
+            resp = await api_client.scan()
+
+
+    if __name__ == '__main__':
+        asyncio.get_event_loop().run_until_complete(main())
     ```
 
 #### *Query Parameters*
 
-| Key  | Description |
-| :--- | :---------- |
-| ns | The default namespace to use for the specified labels. (default: `default`) |
-| tags | The tags to filter devices on. If specifying multiple tags, they should be comma-separated. |
+| Key   | Description |
+| :---- | :---------- |
+| ns    | The default namespace to use for the specified labels. (default: `default`) |
+| tags  | The tags to filter devices by. Multiple *tag groups* may be specified by providing the `tags` query parameter multiple times, e.g. `?tags=foo&tags=bar`. Each tag group may consist of one or more comma-separated tags. Each tag group only selects devices which match all of the tags in the group. If multiple tag groups are specified, the result is the union of the matches from each individual tag group. |
 | force | Force a re-scan. This will take longer than scanning using the cache, since it needs to rebuild the cache. (default: false) |
-| sort | Specify the fields to sort by. Multiple fields can be specified as a comma separated string, e.g. `"plugin,id"`. The "tags" field can not be used for sorting. (default: "plugin,sort_index,id", where the `sort_index` is an internal sort preference which a plugin can optionally specify.) |
+| sort  | Specify the fields to sort by. Multiple fields can be specified as a comma separated string, e.g. `"plugin,id"`. The "tags" field can not be used for sorting. (default: "plugin,sort_index,id", where the `sort_index` is an internal sort preference which a plugin can optionally specify.) |
 
 #### *Response Data*
 
@@ -1023,15 +1063,15 @@ can be used to modify the sort behavior.
 
 The fields of the response are described below:
 
-| Field | Description |
-| :---- | :---------- |
-| *id* | The globally unique deterministic ID for the device. |
-| *alias* | A human-readable name for the device. |
-| *info* | A human-readable string providing identifying info about a device. |
-| *type* | The type of the device. |
-| *plugin* | The ID of the plugin which the device is managed by. |
-| *tags* | A list of the tags associated with this device. One of the tags will be the `id` tag. |
-| *metadata* | Any metadata or contextual information configured with the device. The data stored here are arbitrary keys and values. |
+| Field      | Type           | Description |
+| :--------- | :------------: | :---------- |
+| *id*       | `string`       | The globally unique deterministic ID for the device. |
+| *alias*    | `string`       | A human-readable name for the device. |
+| *info*     | `string`       | A human-readable string providing identifying info about a device. |
+| *type*     | `string`       | The type of the device. |
+| *plugin*   | `string`       | The ID of the plugin which the device is managed by. |
+| *tags*     | `list[string]` | A list of the tags associated with this device. One of the tags will be the `id` tag. |
+| *metadata* | `object`       | Any metadata or contextual information configured with the device. The data stored here are arbitrary keys and values. |
 
 ??? note "HTTP"
     **Request**
@@ -1137,11 +1177,11 @@ This will list the tags in the specified tag namespace. If no tag namespace
 is specified (via query parameters), the default tag namespace is used.
 
 By default, this endpoint will omit the `id` tags since they match the
-device id enumerated by the [`scan`](#scan) endpoint. The `id` tags can
+device id enumerated by the [`scan`](#scan) endpoint. The `id` tags may
 be included in the response by setting the `ids` query parameter to `true`.
 
-Multiple tag namespaces can be queried at once by using a comma delimiter
-between namespaces in the `ns` query parameter value string, e.g.
+Multiple tag namespaces may be queried at once by using a comma delimiter
+between namespaces in the `ns` query parameter value, e.g.
 `?ns=default,ns1,ns2`.
 
 Tags are sorted alphanumerically.
@@ -1154,20 +1194,26 @@ Tags are sorted alphanumerically.
     
     ***python***
     ```python
+    import asyncio
+
     from synse import client
-    
-    api_client = client.HTTPClientV3('localhost')
-    resp = api_client.tags()
-    
-    print(resp.raw)
+
+
+    async def main():
+        async with client.HTTPClientV3('localhost') as api_client:
+            resp = await api_client.tags()
+
+
+    if __name__ == '__main__':
+        asyncio.get_event_loop().run_until_complete(main())
     ```
 
 #### *Query Parameters*
 
 | Key  | Description |
 | :--- | :---------- |
-| ns | The tag namespace(s) to use when searching for tags. (default: `default`) |
-| ids | A flag which determines whether `id` tags are included in the response. (default: `false`) |
+| ns   | The tag namespace(s) to use when searching for tags. (default: `default`) |
+| ids  | A flag which determines whether `id` tags are included in the response. (default: `false`) |
 
 #### *Response Data*
 
@@ -1257,25 +1303,31 @@ Get the full set of metadata and capabilities for a specified device.
     
     ***python***
     ```python
+    import asyncio
+
     from synse import client
-    
-    api_client = client.HTTPClientV3('localhost')
-    resp = api_client.info('c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07')
-    
-    print(resp.raw)
+
+
+    async def main():
+        async with client.HTTPClientV3('localhost') as api_client:
+            resp = await api_client.info('c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07')
+
+
+    if __name__ == '__main__':
+        asyncio.get_event_loop().run_until_complete(main())
     ```
 
 #### *URI Parameters*
 
 | Parameter | Description |
 | :-------- | :---------- |
-| *device* | The globally unique deterministic ID or alias of the device to get info for. |
+| *device*  | The globally unique deterministic ID or alias of the device to get info for. |
 
 #### *Response Data*
 
 ```json
 {
-  "timestamp": "2019-01-01T12:00:00Z",
+  "timestamp": "2020-01-01T12:00:00Z",
   "id": "c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07",
   "alias": "",
   "type": "temperature",
@@ -1300,7 +1352,7 @@ Get the full set of metadata and capabilities for a specified device.
       "name": "temperature",
       "type": "temperature",
       "precision": 2,
-      "scalingFactor": 0,
+      "scalingFactor": 0.0,
       "unit": {
         "name": "celsius",
         "symbol": "C"
@@ -1312,40 +1364,39 @@ Get the full set of metadata and capabilities for a specified device.
 
 The fields of the response are described below:
 
-| Field | Description |
-| :---- | :---------- |
-| *timestamp* | An RFC3339 timestamp describing the time that the device info was gathered. |
-| *id* | The globally unique ID for the device. |
-| *alias* | A human-readable name for the device. |
-| *type* | The device type. |
-| *plugin* | The ID of the plugin that manages the device. |
-| *info* | A human-readable string providing identifying info about a device. |
-| *sort_index* | The custom sort index specified for the device by the plugin. The default value of 0 indicates no special sorting. |
-| *metadata* | A map of arbitrary values that provide additional data for the device. |
-| *capabilities* | Specifies the actions which the device is able to perform (e.g. read, write). |
-| *tags* | A list of the tags associated with this device. One of the tags will be the 'id' tag which should match the `id` field. |
-| *outputs* | A list of the output types that the device supports. |
+| Field          | Type           | Description |
+| :------------- | :------------: | :---------- |
+| *timestamp*    | `string`       | An RFC3339 timestamp describing the time that the device info was gathered. |
+| *id*           | `string`       | The globally unique ID for the device. |
+| *alias*        | `string`       | A human-readable name for the device. |
+| *type*         | `string`       | The device type. |
+| *plugin*       | `string`       | The ID of the plugin that manages the device. |
+| *info*         | `string`       | A human-readable string providing identifying info about a device. |
+| *sort_index*   | `int`          | The custom sort index specified for the device by the plugin. The default value of 0 indicates no special sorting. |
+| *metadata*     | `object`       | A map of arbitrary values that provide additional data for the device. |
+| *capabilities* | `object`       | Specifies the actions which the device is able to perform (e.g. for writes). |
+| *tags*         | `list[string]` | A list of the tags associated with this device. One of the tags will be the 'id' tag which should match the `id` field. |
+| *outputs*      | `list[object]` | A list of the output types that the device supports. |
 
 ###### Capabilities
 
-| Field | Description |
-| :---- | :---------- |
-| *mode* | A string specifying the device capabilities. This can be "r" (read only), "rw" (read write), "w" (write only). |
-| *read* | Any additional information regarding the device reads. This will currently remain empty. |
-| *write* | Any additional information regarding device writes. |
-| *write.actions* | A list of actions which the device supports for writing. |
+| Field           | Type           | Description |
+| :-------------- | :------------: | :---------- |
+| *mode*          | `string`       | A string specifying the device capabilities. This can be "r" (read only), "rw" (read write), "w" (write only). |
+| *write*         | `object`       | Any additional information regarding device writes. |
+| *write.actions* | `list[string]` | A list of actions which the device supports for writing. |
 
 ###### Outputs
 
-| Field | Description |
-| :---- | :---------- |
-| *name* | The name of the output type. |
-| *type* | The type of the output. |
-| *precision* | The number of decimal places the value will be rounded to. |
-| *scalingFactor* | A scaling factor which will be applied to the raw reading value. The default factor of 0 indicates no scaling factor applied. |
-| *unit* | Information for the reading's units of measure. |
-| *unit.name* | The complete name of the unit of measure (e.g. "meters per second"). |
-| *unit.symbol* | A symbolic representation of the unit of measure (e.g. m/s). |
+| Field           | Type     | Description |
+| :-------------- | :------: | :---------- |
+| *name*          | `string` | The name of the output type. |
+| *type*          | `string` | The type of the output. |
+| *precision*     | `int`    | The number of decimal places the value will be rounded to. |
+| *scalingFactor* | `float`  | A scaling factor which is applied to readings using the output. The default factor of 0 indicates no scaling factor applied. |
+| *unit*          | `object` | Information for the reading's units of measure. |
+| *unit.name*     | `string` | The complete name of the unit of measure (e.g. "meters per second"). |
+| *unit.symbol*   | `string` | A symbolic representation of the unit of measure (e.g. "m/s"). |
 
 ??? note "HTTP"
     **Request**
@@ -1356,7 +1407,7 @@ The fields of the response are described below:
     **Response**
     ```json
     {
-      "timestamp": "2019-01-01T12:00:00Z",
+      "timestamp": "2020-01-01T12:00:00Z",
       "id": "c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07",
       "type": "temperature",
       "plugin": "4032ffbe-80db-5aa5-b794-f35c88dff85c",
@@ -1409,7 +1460,7 @@ The fields of the response are described below:
       "id": 0,
       "event": "response/device_info",
       "data": {
-        "timestamp": "2019-01-01T12:00:00Z",
+        "timestamp": "2020-01-01T12:00:00Z",
         "id": "c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07",
         "type": "temperature",
         "plugin": "4032ffbe-80db-5aa5-b794-f35c88dff85c",
@@ -1464,20 +1515,21 @@ The [error response](#errors) can be one of:
 | WebSocket | **request**  | `"request/read"` |
 |           | **response** | `"response/reading"` |
 
-Read data from devices which match the set of provided tags. 
+Read data from devices which match the set of provided tags. If no tags are provided,
+all devices are read.
 
 Passing in the `id` tag here is functionally equivalent to using the [read device](#read-device)
 endpoint.
 
-Reading data will be returned for devices which match *all* of the specified tags.
-The contents of prior reads is not necessarily indicative of the content of future
+Reading data will be returned only for devices which match *all* of the specified tags.
+The contents of prior reads are not necessarily indicative of the content of future
 reads. That is to say, if a plugin terminates and a read command is issued, the
-devices managed by that plugin which would have matched the tags are no longer available
+devices managed by that plugin which previously would have matched the tags are no longer available
 to Synse (until the plugin comes back up), and as such, can not be read from.
 When the plugin becomes available again, the devices from that plugin are available
 to be read from.
 
-For readability, readings are sorted by a combination of originating plugin ID, any
+For readability and consistency, readings are sorted by a combination of originating plugin ID, any
 plugin-specified sort index on the reading's device (by default, there is no additional sort
 index), and by device ID.
 
@@ -1489,20 +1541,26 @@ index), and by device ID.
     
     ***python***
     ```python
+    import asyncio
+
     from synse import client
-    
-    api_client = client.HTTPClientV3('localhost')
-    resp = api_client.read()
-    
-    print(resp.raw)
+
+
+    async def main():
+        async with client.HTTPClientV3('localhost') as api_client:
+            resp = await api_client.read()
+
+
+    if __name__ == '__main__':
+        asyncio.get_event_loop().run_until_complete(main())
     ```
 
 #### *Query Parameters*
 
-| Key  | Description |
-| :--- | :---------- |
-| ns | The default namespace to use for the tags which do not include a namespace. This will not effect tags with a namespace already specified. (default: `default`) |
-| tags | The [tags](user/tags.md) to filter devices on. If specifying multiple tags, they should be comma-separated. |
+| Key    | Description |
+| :----- | :---------- |
+| ns     | The default namespace to use for the tags which do not include a namespace. This will not effect tags with a namespace already specified. (default: `default`) |
+| tags   | The [tags](user/tags.md) to filter devices by. Multiple tag groups may be specified by providing multiple `tags` query parameters, e.g. `?tags=foo&tags=bar`. Each tag group may consist of one or more comma-separated tags. Each tag group only selects devices which match all of the tags in the group. If multiple tag groups are specified, the result is the union of the matches from each individual tag group. |
 | plugin | The ID of the plugin to get device readings from. If not specified, all plugins are considered valid for reading. |
 
 #### *Response Data*
@@ -1511,7 +1569,7 @@ index), and by device ID.
 [
   {
     "device": "1b714cf2-cc56-5c36-9741-fd6a483b5f10",
-    "timestamp": "2019-01-01T12:00:00Z",
+    "timestamp": "2020-01-01T12:00:00Z",
     "type": "status",
     "device_type": "lock",
     "unit": null,
@@ -1520,7 +1578,7 @@ index), and by device ID.
   },
   {
     "device": "fef34490-4952-5e92-bf4d-aad169df980e",
-    "timestamp": "2019-01-01T12:00:00Z",
+    "timestamp": "2020-01-01T12:00:00Z",
     "type": "humidity",
     "device_type": "humidity",
     "unit": {
@@ -1532,7 +1590,7 @@ index), and by device ID.
   },
   {
     "device": "fef34490-4952-5e92-bf4d-aad169df980e",
-    "timestamp": "2019-01-01T12:00:00Z",
+    "timestamp": "2020-01-01T12:00:00Z",
     "type": "temperature",
     "device_type": "humidity",
     "unit": {
@@ -1544,7 +1602,7 @@ index), and by device ID.
   },
   {
     "device": "69c2e1e2-e658-5d71-8e43-091f68aa6e84",
-    "timestamp": "2019-01-01T12:00:00Z",
+    "timestamp": "2020-01-01T12:00:00Z",
     "type": "",
     "device_type": "airflow",
     "unit": {
@@ -1556,7 +1614,7 @@ index), and by device ID.
   },
   {
     "device": "01976737-085c-5e4c-94bc-a383d3d130fb",
-    "timestamp": "2019-01-01T12:00:00Z",
+    "timestamp": "2020-01-01T12:00:00Z",
     "type": "state",
     "device_type": "led",
     "unit": null,
@@ -1565,7 +1623,7 @@ index), and by device ID.
   },
   {
     "device": "01976737-085c-5e4c-94bc-a383d3d130fb",
-    "timestamp": "2019-01-01T12:00:00Z",
+    "timestamp": "2020-01-01T12:00:00Z",
     "type": "color",
     "device_type": "led",
     "unit": null,
@@ -1574,7 +1632,7 @@ index), and by device ID.
   },
   {
     "device": "494bd3ed-72ec-53e9-ba65-729610516e25",
-    "timestamp": "2019-01-01T12:00:00Z",
+    "timestamp": "2020-01-01T12:00:00Z",
     "type": "pressure",
     "device_type": "pressure",
     "unit": {
@@ -1586,7 +1644,7 @@ index), and by device ID.
   },
   {
     "device": "c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07",
-    "timestamp": "2019-01-01T12:00:00Z",
+    "timestamp": "2020-01-01T12:00:00Z",
     "type": "temperature",
     "device_type": "temperature",
     "unit": {
@@ -1601,18 +1659,18 @@ index), and by device ID.
 
 The fields of the response are described below:
 
-| Field | Description |
-| :---- | :---------- |
-| *device* | The globally unique ID of the device which the reading(s) originated from. |
-| *device_type* | The type of the device (defined by the plugin). |
-| *type* | The type of the reading. Devices may produce readings of different types (e.g. LED status and LED color). |
-| *value* | The value of the reading. |
-| *timestamp* | An RFC3339 timestamp describing the time at which the reading was taken. |
-| *unit* | The unit of measure for the reading. If there is no unit, this will be `null`. |
-| *context* | A mapping of arbitrary values to provide additional context for the reading. |
+| Field         | Type     | Description |
+| :------------ | :------: | :---------- |
+| *device*      | `string` | The globally unique ID of the device which the reading(s) originated from. |
+| *device_type* | `string` | The type of the device (defined by the plugin). |
+| *type*        | `string` | The type of the reading. A single device may produce readings of different types (e.g. LED status and LED color). |
+| *value*       | `any`    | The value of the reading. |
+| *timestamp*   | `string` | An RFC3339 timestamp describing the time at which the reading was taken. |
+| *unit*        | `object` | The unit of measure for the reading. If there is no unit, this will be `null`. |
+| *context*     | `object` | A mapping of arbitrary values to provide additional context for the reading. |
 
 The `context` field of a reading allows the plugin to specify additional context related to
-that particular reading. It is optional and can be left empty. The contents of the context
+that particular reading. It is optional and may be left empty. The contents of the context
 are arbitrary and unrestricted, so the plugin can include whatever information it needs to.
 
 As an example, the context could contain additional information about the data provenance or
@@ -1636,7 +1694,7 @@ of the device/reading.
     [
       {
         "device": "1b714cf2-cc56-5c36-9741-fd6a483b5f10",
-        "timestamp": "2019-01-01T12:00:00Z",
+        "timestamp": "2020-01-01T12:00:00Z",
         "type": "status",
         "device_type": "lock",
         "unit": null,
@@ -1645,7 +1703,7 @@ of the device/reading.
       },
       {
         "device": "fef34490-4952-5e92-bf4d-aad169df980e",
-        "timestamp": "2019-01-01T12:00:00Z",
+        "timestamp": "2020-01-01T12:00:00Z",
         "type": "humidity",
         "device_type": "humidity",
         "unit": {
@@ -1675,7 +1733,7 @@ of the device/reading.
       "data": [
         {
           "device": "1b714cf2-cc56-5c36-9741-fd6a483b5f10",
-          "timestamp": "2019-01-01T12:00:00Z",
+          "timestamp": "2020-01-01T12:00:00Z",
           "type": "status",
           "device_type": "lock",
           "unit": null,
@@ -1684,7 +1742,7 @@ of the device/reading.
         },
         {
           "device": "fef34490-4952-5e92-bf4d-aad169df980e",
-          "timestamp": "2019-01-01T12:00:00Z",
+          "timestamp": "2020-01-01T12:00:00Z",
           "type": "humidity",
           "device_type": "humidity",
           "unit": {
@@ -1728,19 +1786,25 @@ same as using the [`read`](#read) endpoint with a device ID tag.
     
     ***python***
     ```python
+    import asyncio
+
     from synse import client
-    
-    api_client = client.HTTPClientV3('localhost')
-    resp = api_client.read('c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07')
-    
-    print(resp.raw)
+
+
+    async def main():
+        async with client.HTTPClientV3('localhost') as api_client:
+            resp = await api_client.read_device('c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07')
+
+
+    if __name__ == '__main__':
+        asyncio.get_event_loop().run_until_complete(main())
     ```
 
 #### *URI Parameters*
 
 | Parameter | Description |
 | :-------- | :---------- |
-| *device* | The globally unique ID or alias of the device to read. |
+| *device*  | The globally unique ID or alias of the device to read. |
 
 #### *Response Data*
 
@@ -1748,7 +1812,7 @@ same as using the [`read`](#read) endpoint with a device ID tag.
 [
   {
     "device": "c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07",
-    "timestamp": "2019-01-01T12:00:00Z",
+    "timestamp": "2020-01-01T12:00:00Z",
     "type": "temperature",
     "device_type": "temperature",
     "unit": {
@@ -1763,15 +1827,15 @@ same as using the [`read`](#read) endpoint with a device ID tag.
 
 The fields of the response are described below:
 
-| Field | Description |
-| :---- | :---------- |
-| *device* | The globally unique ID of the device which the reading(s) originated from. |
-| *device_type* | The type of the device (defined by the plugin). |
-| *type* | The type of the reading. Devices may produce readings of different types (e.g. LED status and LED color). |
-| *value* | The value of the reading. |
-| *timestamp* | An RFC3339 timestamp describing the time at which the reading was taken. |
-| *unit* | The unit of measure for the reading. If there is no unit, this will be `null`. |
-| *context* | A mapping of arbitrary values to provide additional context for the reading. |
+| Field         | Type     | Description |
+| :------------ | :------: | :---------- |
+| *device*      | `string` | The globally unique ID of the device which the reading(s) originated from. |
+| *device_type* | `string` | The type of the device (defined by the plugin). |
+| *type*        | `string` | The type of the reading. A single device may produce readings of different types (e.g. LED status and LED color). |
+| *value*       | `any`    | The value of the reading. |
+| *timestamp*   | `string` | An RFC3339 timestamp describing the time at which the reading was taken. |
+| *unit*        | `object` | The unit of measure for the reading. If there is no unit, this will be `null`. |
+| *context*     | `object` | A mapping of arbitrary values to provide additional context for the reading. |
 
 !!! info
     The [`read`](#read), [`read device`](#read-device), and [`read cache`](#read-cache)
@@ -1789,7 +1853,7 @@ The fields of the response are described below:
     [
       {
         "device": "c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07",
-        "timestamp": "2019-01-01T12:00:00Z",
+        "timestamp": "2020-01-01T12:00:00Z",
         "type": "temperature",
         "device_type": "temperature",
         "unit": {
@@ -1822,7 +1886,7 @@ The fields of the response are described below:
       "data": [
         {
           "device": "c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07",
-          "timestamp": "2019-01-01T12:00:00Z",
+          "timestamp": "2020-01-01T12:00:00Z",
           "type": "temperature",
           "device_type": "temperature",
           "unit": {
@@ -1875,25 +1939,32 @@ will return a dump of the current reading state held by the plugin. In this case
     
     ***python***
     ```python
+    import asyncio
+
     from synse import client
-    
-    api_client = client.HTTPClientV3('localhost')
-    resp = api_client.read_cache()
-    
-    print(resp.raw)
+
+
+    async def main():
+        async with client.HTTPClientV3('localhost') as api_client:
+            async for reading in api_client.read_cache():
+                print(reading)
+
+
+    if __name__ == '__main__':
+        asyncio.get_event_loop().run_until_complete(main())
     ```
 
 #### *Query Parameters*
 
-| Key  | Description |
-| :--- | :---------- |
+| Key   | Description |
+| :---- | :---------- |
 | start | An RFC3339 formatted timestamp which specifies a starting bound on the cache data to return. If no timestamp is specified, there will not be a starting bound. |
-| end | An RFC3339 formatted timestamp which specifies an ending bound on the cache data to return. If no timestamp is specified, there will not be an ending bound. |
+| end   | An RFC3339 formatted timestamp which specifies an ending bound on the cache data to return. If no timestamp is specified, there will not be an ending bound. |
 
 #### *Response Data*
 
 ```
-{"device":"01976737-085c-5e4c-94bc-a383d3d130fb","timestamp":"2019-01-01T12:00:00Z","type":"state","device_type":"led","unit":null,"value":"off","context":{}}{"device":"01976737-085c-5e4c-94bc-a383d3d130fb","timestamp":"2019-01-01T12:00:00Z","type":"color","device_type":"led","unit":null,"value":"000000","context":{}}
+{"device":"01976737-085c-5e4c-94bc-a383d3d130fb","timestamp":"2020-01-01T12:00:00Z","type":"state","device_type":"led","unit":null,"value":"off","context":{}}{"device":"01976737-085c-5e4c-94bc-a383d3d130fb","timestamp":"2020-01-01T12:00:00Z","type":"color","device_type":"led","unit":null,"value":"000000","context":{}}
 ```
 
 Unlike the [`read`](#read) and [`read device`](#read-device) endpoints, the response for this endpoint is
@@ -1903,7 +1974,7 @@ read endpoints, e.g.
 ```json
 {
   "device": "01976737-085c-5e4c-94bc-a383d3d130fb",
-  "timestamp": "2019-01-01T12:00:00Z",
+  "timestamp": "2020-01-01T12:00:00Z",
   "type": "state", 
   "device_type": "led",
   "unit" :null,
@@ -1914,15 +1985,15 @@ read endpoints, e.g.
 
 The fields of the response are described below:
 
-| Field | Description |
-| :---- | :---------- |
-| *device* | The globally unique ID of the device which the reading(s) originated from. |
-| *device_type* | The type of the device (defined by the plugin). |
-| *type* | The type of the reading. Devices may produce readings of different types (e.g. LED status and LED color). |
-| *value* | The value of the reading. |
-| *timestamp* | An RFC3339 timestamp describing the time at which the reading was taken. |
-| *unit* | The unit of measure for the reading. If there is no unit, this will be `null`. |
-| *context* | A mapping of arbitrary values to provide additional context for the reading. |
+| Field         | Type     | Description |
+| :------------ | :------: | :---------- |
+| *device*      | `string` | The globally unique ID of the device which the reading(s) originated from. |
+| *device_type* | `string` | The type of the device (defined by the plugin). |
+| *type*        | `string` | The type of the reading. A single device may produce readings of different types (e.g. LED status and LED color). |
+| *value*       | `any`    | The value of the reading. |
+| *timestamp*   | `string` | An RFC3339 timestamp describing the time at which the reading was taken. |
+| *unit*        | `object` | The unit of measure for the reading. If there is no unit, this will be `null`. |
+| *context*     | `object` | A mapping of arbitrary values to provide additional context for the reading. |
 
 !!! info
     The [`read`](#read), [`read device`](#read-device), and [`read cache`](#read-cache)
@@ -1937,8 +2008,8 @@ The fields of the response are described below:
     
     **Response**
     ```
-    {"device":"01976737-085c-5e4c-94bc-a383d3d130fb","timestamp":"2019-01-01T12:00:00Z","type":"state","device_type":"led","unit":null,"value":"off","context":{}}
-    {"device":"01976737-085c-5e4c-94bc-a383d3d130fb","timestamp":"2019-01-01T12:00:00Z","type":"color","device_type":"led","unit":null,"value":"000000","context":{}}
+    {"device":"01976737-085c-5e4c-94bc-a383d3d130fb","timestamp":"2020-01-01T12:00:00Z","type":"state","device_type":"led","unit":null,"value":"off","context":{}}
+    {"device":"01976737-085c-5e4c-94bc-a383d3d130fb","timestamp":"2020-01-01T12:00:00Z","type":"color","device_type":"led","unit":null,"value":"000000","context":{}}
     ```
 
 ??? note "WebSocket"
@@ -1958,7 +2029,7 @@ The fields of the response are described below:
       "data": [
         {
           "device": "c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07",
-          "timestamp": "2019-01-01T12:00:00Z",
+          "timestamp": "2020-01-01T12:00:00Z",
           "type": "temperature",
           "device_type": "temperature",
           "unit": {
@@ -2001,16 +2072,16 @@ plugins. This is effectively a "live stream" of data. Reading data will continue
 over the WebSocket connection until either the connection is closed, or the `stop` parameter
 is sent with a value of `true`.
 
-Data can be streamed for all devices across all plugins, or the devices to stream readings from
+Data may be streamed for all devices across all plugins, or the devices to stream readings from
 may be filtered by device ID or tag groups.
 
 #### *Query Parameters*
 
-| Key  | Description |
-| :--- | :---------- |
-| ids | A list of device IDs which can be used to constrain the devices for which readings should be streamed. If no IDs are specified, no filtering by ID is done. |
+| Key        | Description |
+| :--------- | :---------- |
+| ids        | A list of device IDs which can be used to constrain the devices for which readings should be streamed. If no IDs are specified, no filtering by ID is done. |
 | tag_groups | A collection of tag groups to constrain the devices for which readings should be streamed. The tags within a group are subtractive (e.g. a device must match all tags in the group to match the filter), but each tag group specified is additive (e.g. readings will be streamed for the union of all specified groups). If no tag groups are specified, no filtering by tags is done. |
-| stop | A boolean value indicating whether or not to stop the reading stream. By default, this is False. |
+| stop       | A boolean value indicating whether or not to stop the reading stream. By default, this is False. |
 
 #### *Response Data*
 
@@ -2018,7 +2089,7 @@ may be filtered by device ID or tag groups.
 [
   {
     "device": "c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07",
-    "timestamp": "2019-01-01T12:00:00Z",
+    "timestamp": "2020-01-01T12:00:00Z",
     "type": "temperature",
     "device_type": "temperature",
     "unit": {
@@ -2033,15 +2104,15 @@ may be filtered by device ID or tag groups.
 
 The fields of the response are described below:
 
-| Field | Description |
-| :---- | :---------- |
-| *device* | The globally unique ID of the device which the reading(s) originated from. |
-| *device_type* | The type of the device (defined by the plugin). |
-| *type* | The type of the reading. Devices may produce readings of different types (e.g. LED status and LED color). |
-| *value* | The value of the reading. |
-| *timestamp* | An RFC3339 timestamp describing the time at which the reading was taken. |
-| *unit* | The unit of measure for the reading. If there is no unit, this will be `null`. |
-| *context* | A mapping of arbitrary values to provide additional context for the reading. |
+| Field         | Type     | Description |
+| :------------ | :------: | :---------- |
+| *device*      | `string` | The globally unique ID of the device which the reading(s) originated from. |
+| *device_type* | `string` | The type of the device (defined by the plugin). |
+| *type*        | `string` | The type of the reading. A single device may produce readings of different types (e.g. LED status and LED color). |
+| *value*       | `any`    | The value of the reading. |
+| *timestamp*   | `string` | An RFC3339 timestamp describing the time at which the reading was taken. |
+| *unit*        | `object` | The unit of measure for the reading. If there is no unit, this will be `null`. |
+| *context*     | `object` | A mapping of arbitrary values to provide additional context for the reading. |
 
 ??? note "WebSocket"
     **Request**
@@ -2060,7 +2131,7 @@ The fields of the response are described below:
       "data": [
         {
           "device": "c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07",
-          "timestamp": "2019-01-01T12:00:00Z",
+          "timestamp": "2020-01-01T12:00:00Z",
           "type": "temperature",
           "device_type": "temperature",
           "unit": {
@@ -2082,16 +2153,16 @@ The fields of the response are described below:
 | --- | --- | --- | --- |
 | HTTP      | **POST**     | `/v3/write/<device>` | `#!json {"action": "<action>", "data": "<data>"}` |
 | WebSocket | **request**  | `"request/write_async"` | |
-|           | **response** | `"response/transaction_info"` |
+|           | **response** | `"response/transaction_info"` | |
 
 Write data to a device asynchronously.
 
-At the plugin level, Synse performs writes asynchronously. This endpoint issues a device
+At the plugin level, Synse performs writes asynchronously. This endpoint issues a
 write to a plugin and returns the transaction information that is associated with the
 write action. The transaction can be checked later for completion with the [`transaction`](#transaction)
 endpoint.
 
-Multiple write operations can be specified in the POSTed JSON payload. When this is done,
+Multiple write operations may be specified in the POSTed JSON payload. When this is done,
 write actions will be processed in the order by which they are specified in the array.
 
 There are four states a transaction can be in:
@@ -2106,8 +2177,8 @@ state, no further processing will be done for the action and no further updates 
 so the returned response will not change.
 
 Not all devices support writing. This is determined per-device at the plugin level. If
-a device that does not support writing is written to, an error is returned. The [`info`](#info)
-endpoint can also be used to check if a device supports writing.
+a device which does not support writing is written to, an error is returned. The [`info`](#info)
+endpoint can be used to check if a device supports writing (via the `capabilities` field).
 
 In some cases, it may be desirable to issue writes synchronously. For such cases, see
 the [`synchronous write`](#write-synchronous) endpoint.
@@ -2119,30 +2190,36 @@ the [`synchronous write`](#write-synchronous) endpoint.
       -H "Content-Type: application/json" \
       -X POST \
       -d '{"action": "color", "data": "f38ac2"}' \
-      http://${server}:5000/v3/write/4032ffbe-80db-5aa5-b794-f35c88dff85c
+      http://${server}:5000/v3/write/f041883c-cf87-55d7-a978-3d3103836412
     ```
     
     ***python***
     ```python
+    import asyncio
+
     from synse import client
-    
-    api_client = client.HTTPClientV3('localhost')
-    resp = api_client.write_async(
-      '4032ffbe-80db-5aa5-b794-f35c88dff85c',
-      {
-        'action': 'color',
-        'data': 'f38ac2',
-      },
-    )
-    
-    print(resp.raw)
+
+
+    async def main():
+        async with client.HTTPClientV3('localhost') as api_client:
+            resp = await api_client.write_async(
+                'f041883c-cf87-55d7-a978-3d3103836412',
+                payload={
+                    'action': 'color',
+                    'data': 'f38ac2',
+                },
+            )
+
+
+    if __name__ == '__main__':
+        asyncio.get_event_loop().run_until_complete(main())
     ```
 
 #### *URI Parameters*
 
 | Parameter | Description |
 | :-------- | :---------- |
-| *device* | The globally unique ID or alias of the device that is being written to. |
+| *device*  | The globally unique ID or alias of the device that is being written to. |
 
 #### *POST Body*
 
@@ -2163,11 +2240,11 @@ the [`synchronous write`](#write-synchronous) endpoint.
 
 The fields of the payload are described below:
 
-| Field | Required | Description |
-| :---- | :------- | :---------- |
-| *transaction* | no | A user-defined transaction ID for the write. If this conflicts with an existing transaction ID, an error is returned. If this is not specified, a transaction ID will be automatically generated for the write action. |
-| *action* | yes | The action that the device will perform. This is set at the plugin level and exposed in the [`info`](#info) endpoint. |
-| *data* | sometimes | Any data that an action may require. Not all actions require data. This is plugin-defined. |
+| Field         | Required  | Description |
+| :------------ | :-------- | :---------- |
+| *transaction* | no        | A user-defined transaction ID for the write. If this conflicts with an existing transaction ID, an error is returned. If this is not specified, a transaction ID will be automatically generated for the write action. |
+| *action*      | yes       | The action that the device will perform. This is set at the plugin level and exposed in the [`info`](#info) endpoint. |
+| *data*        | sometimes | Any data that an action may require. Not all actions require data. This is plugin-defined. |
 
 
 To batch multiple writes to a device, the additional writes can be appended to the
@@ -2216,12 +2293,12 @@ in this array. In the example below, "color" will be processed first, then "stat
 
 The fields of the response are described below:
 
-| Field | Description |
-| :---- | :---------- |
-| *context* | The data written to the device. This is provided as context info to help identify the write action. |
-| *device* | The globally unique ID of the device being written to. |
-| *id* | The ID of the transaction. This can be passed to the [`transaction`](#transaction) endpoint to get the status of the write action. |
-| *timeout* | The timeout for the write transaction, after which it will be cancelled. This is effectively the maximum wait time for the transaction to resolve. This is defined by the plugin. |
+| Field     | Type     | Description |
+| :-------- | :------: | :---------- |
+| *context* | `object` | The data written to the device. This is provided as context info to help identify the write action. |
+| *device*  | `string` | The globally unique ID of the device being written to. |
+| *id*      | `string` | The ID of the transaction. This can be passed to the [`transaction`](#transaction) endpoint to get the status of the write action. |
+| *timeout* | `string` | The timeout for the write transaction, after which it will be cancelled. This is effectively the maximum wait time for the transaction to resolve. This is defined by the plugin. |
 
 ??? note "HTTP"
     **Request**
@@ -2327,14 +2404,14 @@ The [error response](#errors) can be one of:
 | --- | --- | --- | --- |
 | HTTP      | **POST**     | `/v3/write/wait/<device>` | `#!json {"action": "<action>", "data": "<data>"}` |
 | WebSocket | **request**  | `"request/write_sync"` | |
-|           | **response** | `"response/transaction_status"` |
+|           | **response** | `"response/transaction_status"` | |
 
 Write data to a device, waiting for the write to complete.
 
 This endpoint is the synchronous version of the [`asynchronous write`](#write-asynchronous) endpoint.
 In some cases, it may be more convenient to just wait for a response instead of polling
 Synse Server to check whether the transaction completed. For these cases, this endpoint
-can be used.
+may be used.
 
 Note that the length of time it takes for a write to complete depends on the device and its
 plugin, so there is likely to be a variance in response times when waiting. It is up to the
@@ -2350,30 +2427,36 @@ status should always be one of the two terminal states (DONE, ERROR).
       -H "Content-Type: application/json" \
       -X POST \
       -d '{"action": "color", "data": "f38ac2"}' \
-      http://${server}:5000/v3/write/wait/4032ffbe-80db-5aa5-b794-f35c88dff85c
+      http://${server}:5000/v3/write/wait/f041883c-cf87-55d7-a978-3d3103836412
     ```
     
     ***python***
     ```python
+    import asyncio
+
     from synse import client
-    
-    api_client = client.HTTPClientV3('localhost')
-    resp = api_client.write_sync(
-      '4032ffbe-80db-5aa5-b794-f35c88dff85c',
-      {
-        'action': 'color',
-        'data': 'f38ac2',
-      },
-    )
-    
-    print(resp.raw)
+
+
+    async def main():
+        async with client.HTTPClientV3('localhost') as api_client:
+            resp = await api_client.write_sync(
+                'f041883c-cf87-55d7-a978-3d3103836412',
+                payload={
+                    'action': 'color',
+                    'data': 'f38ac2',
+                },
+            )
+
+
+    if __name__ == '__main__':
+        asyncio.get_event_loop().run_until_complete(main())
     ```
 
 #### *URI Parameters*
 
 | Parameter | Description |
 | :-------- | :---------- |
-| *device* | The globally unique ID or alias of the device that is being written to. |
+| *device*  | The globally unique ID or alias of the device that is being written to. |
 
 #### *POST Body*
 
@@ -2394,11 +2477,11 @@ status should always be one of the two terminal states (DONE, ERROR).
 
 The fields of the payload are described below:
 
-| Field | Required | Description |
-| :---- | :------- | :---------- |
-| *transaction* | no | A user-defined transaction ID for the write. If this conflicts with an existing transaction ID, an error is returned. If this is not specified, a transaction ID will be automatically generated for the write action. |
-| *action* | yes | The action that the device will perform. This is set at the plugin level and exposed in the [`info`](#info) endpoint. |
-| *data* | sometimes | Any data that an action may require. Not all actions require data. This is plugin-defined. |
+| Field         | Required  | Description |
+| :------------ | :-------- | :---------- |
+| *transaction* | no        | A user-defined transaction ID for the write. If this conflicts with an existing transaction ID, an error is returned. If this is not specified, a transaction ID will be automatically generated for the write action. |
+| *action*      | yes       | The action that the device will perform. This is set at the plugin level and exposed in the [`info`](#info) endpoint. |
+| *data*        | sometimes | Any data that an action may require. Not all actions require data. This is plugin-defined. |
 
 
 To batch multiple writes to a device, the additional writes can be appended to the
@@ -2424,8 +2507,8 @@ in this array. In the example below, "color" will be processed first, then "stat
 [
   {
     "id": "ea80f074-bc80-4fdd-b842-8392514bd19b",
-    "created": "2019-01-01T12:00:00Z",
-    "updated": "2019-01-01T12:00:00Z",
+    "created": "2020-01-01T12:00:00Z",
+    "updated": "2020-01-01T12:00:00Z",
     "timeout": "30s",
     "status": "DONE",
     "context": {
@@ -2438,8 +2521,8 @@ in this array. In the example below, "color" will be processed first, then "stat
   },
   {
     "id": "56a32eba-1aa6-4868-84ee-fe01af8b2e6d",
-    "created": "2019-01-01T12:00:00Z",
-    "updated": "2019-01-01T12:00:00Z",
+    "created": "2020-01-01T12:00:00Z",
+    "updated": "2020-01-01T12:00:00Z",
     "timeout": "30s",
     "status": "DONE",
     "context": {
@@ -2458,7 +2541,7 @@ albeit in a list.
 
 It is up to the user to iterate though the response and ensure that each individual write completed
 successfully. While this endpoint will return an error in cases where the plugin is not reachable, the data is
-invalid, etc., it will not return an error if a write fails to execute properly.
+invalid, etc., it will not return an error if a write returns an error state.
 
 ??? note "HTTP"
     **Request**
@@ -2472,8 +2555,8 @@ invalid, etc., it will not return an error if a write fails to execute properly.
     [
       {
         "id": "ea80f074-bc80-4fdd-b842-8392514bd19b",
-        "created": "2019-01-01T12:00:00Z",
-        "updated": "2019-01-01T12:00:00Z",
+        "created": "2020-01-01T12:00:00Z",
+        "updated": "2020-01-01T12:00:00Z",
         "timeout": "30s",
         "status": "DONE",
         "context": {
@@ -2486,8 +2569,8 @@ invalid, etc., it will not return an error if a write fails to execute properly.
       },
       {
         "id": "56a32eba-1aa6-4868-84ee-fe01af8b2e6d",
-        "created": "2019-01-01T12:00:00Z",
-        "updated": "2019-01-01T12:00:00Z",
+        "created": "2020-01-01T12:00:00Z",
+        "updated": "2020-01-01T12:00:00Z",
         "timeout": "30s",
         "status": "DONE",
         "context": {
@@ -2531,8 +2614,8 @@ invalid, etc., it will not return an error if a write fails to execute properly.
       "data": [
         {
           "id": "ea80f074-bc80-4fdd-b842-8392514bd19b",
-          "created": "2019-01-01T12:00:00Z",
-          "updated": "2019-01-01T12:00:00Z",
+          "created": "2020-01-01T12:00:00Z",
+          "updated": "2020-01-01T12:00:00Z",
           "timeout": "30s",
           "status": "DONE",
           "context": {
@@ -2545,8 +2628,8 @@ invalid, etc., it will not return an error if a write fails to execute properly.
         },
         {
           "id": "56a32eba-1aa6-4868-84ee-fe01af8b2e6d",
-          "created": "2019-01-01T12:00:00Z",
-          "updated": "2019-01-01T12:00:00Z",
+          "created": "2020-01-01T12:00:00Z",
+          "updated": "2020-01-01T12:00:00Z",
           "timeout": "30s",
           "status": "DONE",
           "context": {
@@ -2586,8 +2669,8 @@ Check the status of a write transaction.
 
 If the provided transaction ID does not exist, an error is returned. Note that
 transaction IDs are not stored indefinitely. After a [configurable](user/configuration.md#cache)
-TLL, the transaction will be removed from the system and any subsequent lookups for it will
-result in a Not Found error.
+TTL, the transaction will be removed from the system and any subsequent lookups for it will
+result in a "Not Found" error.
 
 There are four states a transaction can be in:
 
@@ -2608,18 +2691,24 @@ so the returned response will not change.
     
     ***python***
     ```python
+    import asyncio
+
     from synse import client
-    
-    api_client = client.HTTPClientV3('localhost')
-    resp = api_client.transaction('2b717ced-58ff-43dc-ab6f-d4c0c6008ebb')
-    
-    print(resp.raw)
+
+
+    async def main():
+        async with client.HTTPClientV3('localhost') as api_client:
+            resp = await api_client.transaction('2b717ced-58ff-43dc-ab6f-d4c0c6008ebb')
+
+
+    if __name__ == '__main__':
+        asyncio.get_event_loop().run_until_complete(main())
     ```
 
 #### *URI Parameters*
 
-| Parameter | Description |
-| :-------- | :---------- |
+| Parameter     | Description |
+| :------------ | :---------- |
 | *transaction* | The ID of the transaction to get the status of. Transaction IDs are provided from a write response. |
 
 
@@ -2628,8 +2717,8 @@ so the returned response will not change.
 ```json
 {
   "id": "2b717ced-58ff-43dc-ab6f-d4c0c6008ebb",
-  "created": "2019-01-01T12:00:00Z",
-  "updated": "2019-01-01T12:00:00Z",
+  "created": "2020-01-01T12:00:00Z",
+  "updated": "2020-01-01T12:00:00Z",
   "timeout": "30s",
   "status": "DONE",
   "context": {
@@ -2644,16 +2733,16 @@ so the returned response will not change.
 
 The fields of the response are described below:
 
-| Field | Description |
-| :---- | :---------- |
-| *id* | The ID of the transaction. |
-| *timeout* | A string representing the timeout for the write transaction after which it will be cancelled. This is effectively the maximum wait time for the transaction to resolve. |
-| *device* | The globally unique ID of the device being written to. |
-| *context* | The POSTed write data for the given write transaction. |
-| *status* | The current status of the transaction. (`PENDING`, `WRITING`, `DONE`, `ERROR`) |
-| *created* | The time at which the transaction was created. This timestamp is generated by the plugin. |
-| *updated* | The last time the transaction status was updated. Once the transaction reaches a terminal state, no further updates will occur. |
-| *message* | Any context information relating to a transaction's error state. If there is no error, this will be an empty string. |
+| Field     | Type     | Description |
+| :-------- | :------: | :---------- |
+| *id*      | `string` | The ID of the transaction. |
+| *timeout* | `string` | A string representing the timeout for the write transaction after which it will be cancelled. This is effectively the maximum wait time for the transaction to resolve. |
+| *device*  | `string` | The globally unique ID of the device being written to. |
+| *context* | `object` | The POSTed write data for the given write transaction. |
+| *status*  | `string` | The current status of the transaction. (`PENDING`, `WRITING`, `DONE`, `ERROR`) |
+| *created* | `string` | The time at which the transaction was created. This timestamp is generated by the plugin. |
+| *updated* | `string` | The last time the transaction status was updated. Once the transaction reaches a terminal state, no further updates will occur. |
+| *message* | `string` | Any context information relating to a transaction's error state. If there is no error, this will be an empty string. |
 
 ??? note "HTTP"
     **Request**
@@ -2665,8 +2754,8 @@ The fields of the response are described below:
     ```json
     {
       "id": "2b717ced-58ff-43dc-ab6f-d4c0c6008ebb",
-      "created": "2019-01-01T12:00:00Z",
-      "updated": "2019-01-01T12:00:00Z",
+      "created": "2020-01-01T12:00:00Z",
+      "updated": "2020-01-01T12:00:00Z",
       "timeout": "30s",
       "status": "DONE",
       "context": {
@@ -2698,8 +2787,8 @@ The fields of the response are described below:
       "event": "response/transaction_status",
       "data": {
         "id": "2b717ced-58ff-43dc-ab6f-d4c0c6008ebb",
-        "created": "2019-01-01T12:00:00Z",
-        "updated": "2019-01-01T12:00:00Z",
+        "created": "2020-01-01T12:00:00Z",
+        "updated": "2020-01-01T12:00:00Z",
         "timeout": "30s",
         "status": "DONE",
         "context": {
@@ -2745,12 +2834,18 @@ will have their IDs returned by this endpoint.
     
     ***python***
     ```python
+    import asyncio
+
     from synse import client
-    
-    api_client = client.HTTPClientV3('localhost')
-    resp = api_client.transactions()
-    
-    print(resp.raw)
+
+
+    async def main():
+        async with client.HTTPClientV3('localhost') as api_client:
+            resp = await api_client.transactions()
+
+
+    if __name__ == '__main__':
+        asyncio.get_event_loop().run_until_complete(main())
     ```
 
 #### *Response Data*
@@ -2828,12 +2923,18 @@ and convenience. See the *scan* documentation for details.
     
     ***python***
     ```python
+    import asyncio
+
     from synse import client
-    
-    api_client = client.HTTPClientV3('localhost')
-    resp = api_client.scan()
-    
-    print(resp.raw)
+
+
+    async def main():
+        async with client.HTTPClientV3('localhost') as api_client:
+            resp = await api_client.scan()
+
+
+    if __name__ == '__main__':
+        asyncio.get_event_loop().run_until_complete(main())
     ```
 
 ---
@@ -2878,7 +2979,7 @@ endpoint and [`synchronous write`](#write-synchronous) endpoint.
 
 | Parameter | Description |
 | :-------- | :---------- |
-| *device* | The globally unique ID or alias of the device that is being read from/written to. |
+| *device*  | The globally unique ID or alias of the device that is being read from/written to. |
 
 #### *POST Body*
 ```json
@@ -2893,11 +2994,11 @@ endpoint and [`synchronous write`](#write-synchronous) endpoint.
 
 The fields of the payload are described below:
 
-| Field | Required | Description |
-| :---- | :------- | :---------- |
-| *transaction* | no | A user-defined transaction ID for the write. If this conflicts with an existing transaction ID, an error is returned. If this is not specified, a transaction ID will be automatically generated for the write action. |
-| *action* | yes | The action that the device will perform. This is set at the plugin level and exposed in the [`info`](#info) endpoint. |
-| *data* | sometimes | Any data that an action may require. Not all actions require data. This is plugin-defined. |
+| Field         | Required  | Description |
+| :------------ | :-------- | :---------- |
+| *transaction* | no        | A user-defined transaction ID for the write. If this conflicts with an existing transaction ID, an error is returned. If this is not specified, a transaction ID will be automatically generated for the write action. |
+| *action*      | yes       | The action that the device will perform. This is set at the plugin level and exposed in the [`info`](#info) endpoint. |
+| *data*        | sometimes | Any data that an action may require. Not all actions require data. This is plugin-defined. |
 
 #### *Response Data*
 
@@ -2909,7 +3010,7 @@ The fields of the payload are described below:
 [
   {
     "device": "c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07",
-    "timestamp": "2019-01-01T12:00:00Z",
+    "timestamp": "2020-01-01T12:00:00Z",
     "type": "temperature",
     "device_type": "temperature",
     "unit": {
@@ -2924,15 +3025,15 @@ The fields of the payload are described below:
 
 The fields of the response are described below:
 
-| Field | Description |
-| :---- | :---------- |
-| *device* | The globally unique ID of the device which the reading(s) originated from. |
-| *device_type* | The type of the device (defined by the plugin). |
-| *type* | The type of the reading. Devices may produce readings of different types (e.g. LED status and LED color). |
-| *value* | The value of the reading. |
-| *timestamp* | An RFC3339 timestamp describing the time at which the reading was taken. |
-| *unit* | The unit of measure for the reading. If there is no unit, this will be `null`. |
-| *context* | A mapping of arbitrary values to provide additional context for the reading. |
+| Field         | Type     | Description |
+| :------------ | :------: | :---------- |
+| *device*      | `string` | The globally unique ID of the device which the reading(s) originated from. |
+| *device_type* | `string` | The type of the device (defined by the plugin). |
+| *type*        | `string` | The type of the reading. A single device may produce readings of different types (e.g. LED status and LED color). |
+| *value*       | `any`    | The value of the reading. |
+| *timestamp*   | `string` | An RFC3339 timestamp describing the time at which the reading was taken. |
+| *unit*        | `object` | The unit of measure for the reading. If there is no unit, this will be `null`. |
+| *context*     | `object` | A mapping of arbitrary values to provide additional context for the reading. |
 
 ??? note "HTTP"
     **Request**
@@ -2945,7 +3046,7 @@ The fields of the response are described below:
     [
       {
         "device": "c2f6f762-fa30-5f0a-ba6c-f52d8deb3c07",
-        "timestamp": "2019-01-01T12:00:00Z",
+        "timestamp": "2020-01-01T12:00:00Z",
         "type": "temperature",
         "device_type": "temperature",
         "unit": {
@@ -2969,8 +3070,8 @@ The fields of the response are described below:
 [
   {
     "id": "2b717ced-58ff-43dc-ab6f-d4c0c6008ebb",
-    "created": "2019-01-01T12:00:00Z",
-    "updated": "2019-01-01T12:00:00Z",
+    "created": "2020-01-01T12:00:00Z",
+    "updated": "2020-01-01T12:00:00Z",
     "timeout": "30s",
     "status": "DONE",
     "context": {
@@ -2986,16 +3087,16 @@ The fields of the response are described below:
 
 The fields of the response are described below:
 
-| Field | Description |
-| :---- | :---------- |
-| *id* | The ID of the transaction. |
-| *timeout* | A string representing the timeout for the write transaction after which it will be cancelled. This is effectively the maximum wait time for the transaction to resolve. |
-| *device* | The globally unique ID of the device being written to. |
-| *context* | The POSTed write data for the given write transaction. |
-| *status* | The current status of the transaction. (`PENDING`, `WRITING`, `DONE`, `ERROR`) |
-| *created* | The time at which the transaction was created. This timestamp is generated by the plugin. |
-| *updated* | The last time the transaction status was updated. Once the transaction reaches a terminal state, no further updates will occur. |
-| *message* | Any context information relating to a transaction's error state. If there is no error, this will be an empty string. |
+| Field     | Type     | Description |
+| :-------- | :------: | :---------- |
+| *id*      | `string` | The ID of the transaction. |
+| *timeout* | `string` | A string representing the timeout for the write transaction after which it will be cancelled. This is effectively the maximum wait time for the transaction to resolve. |
+| *device*  | `string` | The globally unique ID of the device being written to. |
+| *context* | `object` | The POSTed write data for the given write transaction. |
+| *status*  | `string` | The current status of the transaction. (`PENDING`, `WRITING`, `DONE`, `ERROR`) |
+| *created* | `string` | The time at which the transaction was created. This timestamp is generated by the plugin. |
+| *updated* | `string` | The last time the transaction status was updated. Once the transaction reaches a terminal state, no further updates will occur. |
+| *message* | `string` | Any context information relating to a transaction's error state. If there is no error, this will be an empty string. |
 
 ??? note "HTTP"
     **Request**
@@ -3009,8 +3110,8 @@ The fields of the response are described below:
     [
       {
         "id": "ea80f074-bc80-4fdd-b842-8392514bd19b",
-        "created": "2019-01-01T12:00:00Z",
-        "updated": "2019-01-01T12:00:00Z",
+        "created": "2020-01-01T12:00:00Z",
+        "updated": "2020-01-01T12:00:00Z",
         "timeout": "30s",
         "status": "DONE",
         "context": {
@@ -3023,8 +3124,8 @@ The fields of the response are described below:
       },
       {
         "id": "56a32eba-1aa6-4868-84ee-fe01af8b2e6d",
-        "created": "2019-01-01T12:00:00Z",
-        "updated": "2019-01-01T12:00:00Z",
+        "created": "2020-01-01T12:00:00Z",
+        "updated": "2020-01-01T12:00:00Z",
         "timeout": "30s",
         "status": "DONE",
         "context": {

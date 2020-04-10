@@ -62,7 +62,7 @@ running at `localhost:5001`, you can add those contexts to the CLI via:
 
 ```
 synse context add server local-synse localhost:5000
-synse context add plugin local-pluin localhost:5001
+synse context add plugin local-plugin localhost:5001
 ```
 
 This will add the contexts to the CLI, but will not automatically set them

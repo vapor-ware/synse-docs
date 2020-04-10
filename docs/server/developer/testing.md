@@ -13,7 +13,7 @@ directory. Tests for a given file (e.g. `synse_server/foo/bar.py`) should have t
 with "test" (e.g. `tests/unit/foo/test_bar.py`).
 
 Tests are written using the [pytest](https://docs.pytest.org/en/latest/) framework. Test
-dependencies are defined in the project's `tox.ini` configuration.
+dependencies are defined in the project's `test-requirements.in` file.
 
 ## Running Tests
 

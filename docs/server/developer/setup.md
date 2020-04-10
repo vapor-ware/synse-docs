@@ -38,7 +38,6 @@ docker           Build the docker image
 fmt              Automatic source code formatting (isort, autopep8)
 github-tag       Create and push a tag with the current version
 help             Print Make usage information
-i18n             Update the translations catalog
 lint             Run linting checks on the project source code (isort, flake8, twine)
 test             Run the unit tests
 version          Print the version of Synse Server
