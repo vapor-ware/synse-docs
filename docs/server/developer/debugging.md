@@ -27,6 +27,30 @@ services:
       SYNSE_LOGGING: info
 ```
 
+## Debugging gRPC
+
+You may run into issues with Synse Server communicating with plugins, ranging anywhere from a bug
+in the application(s), a networking issue, or issues with TLS certs. The error messages returned by
+Synse Server's gRPC client may not be enough to get a detailed picture of whats going on. In such
+cases, you can enable more detailed gRPC logging by setting the `GRPC_TRACE` and `GRPC_VERBOSITY`
+environment variables, e.g. from compose file:
+
+```yaml
+version: '3'
+services:
+  synse-server:
+    image: vaporio/synse-server
+    ports:
+    - '5000:5000'
+    environment:
+      SYNSE_LOGGING: debug
+      GRPC_TRACE: all
+      GRPC_VERBOSITY: DEBUG
+```
+
+Additional info about these environment variables and their allowable values may be found
+[here](https://github.com/grpc/grpc/blob/master/doc/environment_variables.md).
+
 ## Getting Logs
 
 When running Synse Server in a Docker container, its logs are output to the container's
