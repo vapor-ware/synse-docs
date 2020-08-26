@@ -1,35 +1,18 @@
-pipeline {
+#!/usr/bin/env groovy
 
-  agent any
+// Include this shared CI repository to load script helpers and libraries.
+library identifier: 'vapor@1.0.0-RC10', retriever: modernSCM([
+  $class: 'GitSCMSource',
+  remote: 'https://github.com/vapor-ware/ci-shared.git',
+  credentialsId: 'vio-bot-gh',
+])
 
-  stages {
-    stage('Checkout') {
-      steps {
-        checkout scm
-      }
-    }
-
-    stage('Build Docs') {
-      steps {
-        sh 'tox -e docs'
-      }
-    }
-
-    stage('Draft GitHub Release') {
-      when {
-        // example matches: 1.2.3, 1.2.3-dev
-        tag pattern: '(0|[1-9]*)\\.(0|[1-9]*)\\.(0|[1-9]*)(-(\\S*))?$', comparator: "REGEXP"
-      }
-      environment {
-        GITHUB_USER = 'vapor-ware'
-        GITHUB_TOKEN = credentials('vio-bot-gh-token')
-        GITHUB_REPONAME = 'synse-docs'
-      }
-      steps {
-        sh 'docker pull edaniszewski/ghr'
-        sh 'docker run --rm -v ${WORKSPACE}:/repo edaniszewski/ghr -u ${GITHUB_USER} -r ${GITHUB_REPONAME} -t ${GITHUB_TOKEN} -replace -draft ${TAG_NAME} dist/'
-      }
-    }
-
-  }
-}
+pythonPipeline([
+  'pythonVersion': '3.8',
+  'publishToPypi': false,
+  'publishToGitHub': true,
+  'skipIntegrationTest': true,
+  'skipUnitTest': true,
+  'skipDocker': true,
+  'skipLint': true,
+])
