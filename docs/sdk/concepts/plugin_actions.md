@@ -144,6 +144,12 @@ The device setup actions will apply to the devices whose field values match the 
 Multiple device setup actions can target the same device(s). Note that they are applied
 to the device in the order by which they were registered with the plugin.
 
+Filters use glob-style matching, so each of the following are valid use cases for filters:
+
+* Exact match, e.g. `{"type": {"temperature"}}`
+* Partial match, e.g. `{"type": {"temp*"}}`
+* Match all, e.g. `{"type": {"*"}}`
+
 ### Example
 
 Below is a simple example of defining a device setup action and registering
