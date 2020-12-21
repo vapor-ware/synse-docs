@@ -77,6 +77,7 @@ nav:
       - Plugin Metrics: sdk/concepts/plugin_metrics.md
       - Plugin Options: sdk/concepts/plugin_options.md
       - Reading Outputs: sdk/concepts/reading_outputs.md
+      - Subscribing to Data Streams: sdk/concepts/subscribing_to_data.md
     - Tutorial: sdk/tutorial.md
     - FAQ: sdk/questions.md
     - Developer Guide:

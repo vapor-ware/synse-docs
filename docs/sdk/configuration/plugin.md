@@ -243,6 +243,13 @@ settings:
 
 #### Listen
 
+!!! warning "Deprecation Notice"
+    The "listener" behavior has been deprecated as of SDK v2.0.3, and will be removed in a future release
+    of the SDK.
+
+    For an updated approach to implementing "listener" capabilities, see the
+    [Subscribing to data streams](../concepts/subscribing_to_data.md) page.
+
 The settings for how listener-type handlers should behave.
 
 Group key: `listen`

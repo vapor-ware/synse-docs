@@ -19,7 +19,9 @@ interfacing with devices:
 - **Read**: Defines single-device read behavior. 
 - **Bulk Read**: Defines group read behavior for all devices which use the handler.
 - **Write**: Defines single-device write behavior.
-- **Listen**: Defines push-based read behavior, where the plugin listens for the pushed readings.
+- **Listen**: *(Deprecated in v2.0.3)* Defines push-based read behavior, where the plugin listens for
+    the pushed readings. For an updated approach to implementing "listener" capabilities, see the
+    [Subscribing to data streams](./subscribing_to_data.md) page.
 
 For handlers which define a write function, `Actions` may also be specified on the handler -- this 
 is a list of the write actions which the handler supports. It is surfaced upstream to the user as
