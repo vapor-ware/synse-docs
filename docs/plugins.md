@@ -46,6 +46,14 @@ The *Modbus-IP* plugin provides general-purpose modbus-over-IP support for Synse
 
 -----
 
+### OpenConfig
+
+*project page: [vapor-ware/synse-openconfig-plugin](https://github.com/vapor-ware/synse-openconfig-plugin)*
+
+The *OpenConfig* plugin provides support for collecting network telemetry via OpenConfig over gRPC (TCP).
+
+-----
+
 ### SNMP
 
 *project page: [vapor-ware/synse-snmp-plugin](https://github.com/vapor-ware/synse-snmp-plugin)*
