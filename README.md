@@ -23,10 +23,9 @@ For more information on writing and styling docs, see the [`mkdocs` documentatio
 ## Building
 
 The documentation can be built locally, which can be helpful for writing and styling the docs.
-A make target is specified for convenience:
 
 ```
-make serve
+poetry run mkdocs serve
 ```
 
 This will build the docs into a `site` directory and serve them on `http://127.0.0.1:8000`.
