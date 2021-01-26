@@ -104,9 +104,10 @@ restrictions on the values.
 | ***type*** | int |
 | ***key*** | `version` |
 
-```YAML tab=
-version: 3
-```
+=== "YAML"
+    ```yaml
+    version: 3
+    ```
 
 -----
 
@@ -118,10 +119,11 @@ version: 3
 | ***type*** | list[[Device Prototype](#device-prototype)] |
 | ***key*** | `devices` |
 
-```YAML tab=
-devices:
-- <device prototype>
-```
+=== "YAML"
+    ```yaml
+    devices:
+    - <device prototype>
+    ```
 
 -----
 
@@ -138,12 +140,13 @@ A device prototype defines the high-level information which applies to a class o
 | ***type*** | string |
 | ***key*** | `type` |
 
-```YAML tab=
-version: 3
-devices:
--
-  type: temperature
-```
+=== "YAML"
+    ```yaml
+    version: 3
+    devices:
+    -
+      type: temperature
+    ```
 
 #### Context
 
@@ -156,15 +159,16 @@ devices:
 Values in the context may also include templates. Currently, the templates only support the `env` function to
 get a value from environment.
 
-```YAML tab=
-version: 3
-devices:
--
-  context:
-    manufacturer: vapor
-    part_number: 123
-    host: {{ env "NODE_NAME" }}
-```
+=== "YAML"
+    ```yaml
+    version: 3
+    devices:
+    -
+      context:
+        manufacturer: vapor
+        part_number: 123
+        host: {{ env "NODE_NAME" }}
+    ```
 
 #### Tags
 
@@ -177,15 +181,16 @@ devices:
 Tags definitions may also include templates. Currently, the tag templates only support the `env` function
 to get a value from environment.
 
-```YAML tab=
-version: 3
-devices:
--
-  tags:
-  - synse/tag1
-  - synse/tag2
-  - rack/{{ env "NODE_NAME" }}
-```
+=== "YAML"
+    ```yaml
+    version: 3
+    devices:
+    -
+      tags:
+      - synse/tag1
+      - synse/tag2
+      - rack/{{ env "NODE_NAME" }}
+    ```
 
 #### Data
 
@@ -195,15 +200,16 @@ devices:
 | ***type*** | map[string]Any |
 | ***key*** | `data` |
 
-```YAML tab=
-version: 3
-devices:
--
-  data:
-    address: localhost:5432
-    port: 3000
-    timeout: 10
-```
+=== "YAML"
+    ```yaml
+    version: 3
+    devices:
+    -
+      data:
+        address: localhost:5432
+        port: 3000
+        timeout: 10
+    ```
 
 #### Handler
 
@@ -213,12 +219,13 @@ devices:
 | ***type*** | string |
 | ***key*** | `handler` |
 
-```YAML tab=
-version: 3
-devices:
--
-  handler: temperature
-```
+=== "YAML"
+    ```yaml
+    version: 3
+    devices:
+    -
+      handler: temperature
+    ```
 
 #### Write Timeout
 
@@ -230,12 +237,13 @@ devices:
 | ***default*** | `30s` |
 | ***supported*** | [duration](https://golang.org/pkg/time/#example_Duration) strings |
 
-```YAML tab=
-version: 3
-devices:
--
-  writeTimeout: 20s
-```
+=== "YAML"
+    ```yaml
+    version: 3
+    devices:
+    -
+      writeTimeout: 20s
+    ```
 
 #### Transforms
 
@@ -257,14 +265,15 @@ they are applied.
 > **Note**: If a device instance also defines `transforms` and inheritance is enabled, the two lists will be
 > joined with their order preserved and the items in the prototype definition coming first.
 
-```YAML tab=
-version: 3
-devices:
--
-  transforms:
-  - scale: "0.1"
-  - apply: "FtoC"
-```
+=== "YAML"
+    ```yaml
+    version: 3
+    devices:
+    -
+      transforms:
+      - scale: "0.1"
+      - apply: "FtoC"
+    ```
 
 #### Instances
 
@@ -274,13 +283,14 @@ devices:
 | ***type*** | list[[device instance](#device-instance)] |
 | ***key*** | `instances` |
 
-```YAML tab=
-version: 3
-devices:
--
-  instances:
-  - <device instance>
-```
+=== "YAML"
+    ```yaml
+    version: 3
+    devices:
+    -
+      instances:
+      - <device instance>
+    ```
 
 -----
 
@@ -294,13 +304,14 @@ devices:
 | ***type*** | string |
 | ***key*** | `type` |
 
-```YAML tab=
-version: 3
-devices:
--
-  instances:
-  - type: temperature
-```
+=== "YAML"
+    ```yaml
+    version: 3
+    devices:
+    -
+      instances:
+      - type: temperature
+    ```
 
 #### Info
 
@@ -310,13 +321,14 @@ devices:
 | ***type*** | string |
 | ***key*** | `info` |
 
-```YAML tab=
-version: 3
-devices:
--
-  instances:
-  - info: Top of rack front temperature sensor
-```
+=== "YAML"
+    ```yaml
+    version: 3
+    devices:
+    -
+      instances:
+      - info: Top of rack front temperature sensor
+    ```
 
 #### Context
 
@@ -329,16 +341,17 @@ devices:
 Values in the context may also include templates. Currently, the templates only support the `env` function to
 get a value from environment.
 
-```YAML tab=
-version: 3
-devices:
--
-  instances:
-  - context:
-      model: abc123
-      position: rear
-      rack: {{ env "NODE_NAME" }}
-```
+=== "YAML"
+    ```yaml
+    version: 3
+    devices:
+    -
+      instances:
+      - context:
+          model: abc123
+          position: rear
+          rack: {{ env "NODE_NAME" }}
+    ```
 
 #### Tags
 
@@ -351,16 +364,17 @@ devices:
 Tags definitions may also include templates. Currently, the tag templates only support the `env` function
 to get a value from environment.
 
-```YAML tab=
-version: 3
-devices:
--
-  instances:
-  - tags:
-    - synse/tag1
-    - synse/tag2
-    - rack/{{ env "NODE_NAME" }}
-```
+=== "YAML"
+    ```yaml
+    version: 3
+    devices:
+    -
+      instances:
+      - tags:
+        - synse/tag1
+        - synse/tag2
+        - rack/{{ env "NODE_NAME" }}
+    ```
 
 #### Data
 
@@ -370,16 +384,17 @@ devices:
 | ***type*** | map[string]Any |
 | ***key*** | `data` |
 
-```YAML tab=
-version: 3
-devices:
--
-  instances:
-  - data:
-      address: /dev/ttyUSB0
-      baud: 9600
-      parity: e
-```
+=== "YAML"
+    ```yaml
+    version: 3
+    devices:
+    -
+      instances:
+      - data:
+          address: /dev/ttyUSB0
+          baud: 9600
+          parity: e
+    ```
 
 #### Output
 
@@ -389,13 +404,14 @@ devices:
 | ***type*** | string |
 | ***key*** | `output` |
 
-```YAML tab=
-version: 3
-devices:
--
-  instances:
-  - output: temperature
-```
+=== "YAML"
+    ```yaml
+    version: 3
+    devices:
+    -
+      instances:
+      - output: temperature
+    ```
 
 #### Sort Index
 
@@ -406,13 +422,14 @@ devices:
 | ***key*** | `sortIndex` |
 | ***default*** | `0` |
 
-```YAML tab=
-version: 3
-devices:
--
-  instances:
-  - sortIndex: 2
-```
+=== "YAML"
+    ```yaml
+    version: 3
+    devices:
+    -
+      instances:
+      - sortIndex: 2
+    ```
 
 #### Handler
 
@@ -422,13 +439,14 @@ devices:
 | ***type*** | string |
 | ***key*** | `handler` |
 
-```YAML tab=
-version: 3
-devices:
--
-  instances:
-  - handler: temperature
-```
+=== "YAML"
+    ```yaml
+    version: 3
+    devices:
+    -
+      instances:
+      - handler: temperature
+    ```
 
 #### Alias
 
@@ -442,14 +460,15 @@ An [alias](../concepts/device_aliases.md) which can be used to reference the dev
 | ***type*** | string |
 | ***key*** | `name` |
 
-```YAML tab=
-version: 3
-devices:
--
-  instances:
-  - alias:
-      name: front-temperature
-```
+=== "YAML"
+    ```yaml
+    version: 3
+    devices:
+    -
+      instances:
+      - alias:
+          name: front-temperature
+    ```
 
 ***Template***
 
@@ -459,14 +478,15 @@ devices:
 | ***type*** | string |
 | ***key*** | `template` |
 
-```YAML tab=
-version: 3
-devices:
--
-  instances:
-  - alias:
-      template: "{{ .Device.Type }}-{{ ctx port }}"
-```
+=== "YAML"
+    ```yaml
+    version: 3
+    devices:
+    -
+      instances:
+      - alias:
+          template: "{{ .Device.Type }}-{{ ctx port }}"
+    ```
 
 #### Transforms
 
@@ -488,15 +508,16 @@ they are applied.
 > **Note**: If a device prototype also defines `transforms` and inheritance is enabled, the two lists will be
 > joined with their order preserved and the items in the prototype definition coming first.
 
-```YAML tab=
-version: 3
-devices:
--
-  instances:
-  - transforms:
-    - scale: "0.1"
-    - apply: "FtoC"
-```
+=== "YAML"
+    ```yaml
+    version: 3
+    devices:
+    -
+      instances:
+      - transforms:
+        - scale: "0.1"
+        - apply: "FtoC"
+    ```
 
 #### Write Timeout
 
@@ -508,13 +529,14 @@ devices:
 | ***default*** | `30s` |
 | ***supported*** | [duration](https://golang.org/pkg/time/#example_Duration) strings |
 
-```YAML tab=
-version: 3
-devices:
--
-  instances:
-  - writeTimeout: 20s
-```
+=== "YAML"
+    ```yaml
+    version: 3
+    devices:
+    -
+      instances:
+      - writeTimeout: 20s
+    ```
 
 #### Disable Inheritance
 
@@ -526,13 +548,14 @@ devices:
 | ***default*** | `false` |
 | ***supported*** | `true`, `false` |
 
-```YAML tab=
-version: 3
-devices:
--
-  instances:
-  - disableInheritance: true
-```
+=== "YAML"
+    ```yaml
+    version: 3
+    devices:
+    -
+      instances:
+      - disableInheritance: true
+    ```
 
 ## Example
 
