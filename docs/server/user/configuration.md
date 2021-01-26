@@ -101,13 +101,15 @@ via environment variable.
 | ***default*** | `debug` |
 | ***supported*** | `debug`, `info`, `warning`, `error`, `critical` |
 
-```YAML tab=
-logging: info
-```
+=== "YAML"
+    ```yaml
+    logging: info
+    ```
 
-```Environment tab=
-SYNSE_LOGGING=info
-```
+=== "Environment"
+    ```.env
+    SYNSE_LOGGING=info
+    ```
 
 -----
 
@@ -122,9 +124,10 @@ SYNSE_LOGGING=info
 | ***default*** | `true` |
 | ***supported*** | `true`, `false` |
 
-```YAML tab=
-pretty_json: true
-```
+=== "YAML"
+    ```yaml
+    pretty_json: true
+    ```
 
 -----
 
@@ -142,16 +145,18 @@ Configuration options for registering plugins with the server instance.
 | ***env variable*** | `SYNSE_PLUGIN_TCP` |
 | ***default*** | -- |
 
-```YAML tab=
-plugin:
-  tcp:
-  - localhost:5001
-  - 192.1.53.2:5002
-```
+=== "YAML"
+    ```yaml
+    plugin:
+      tcp:
+      - localhost:5001
+      - 192.1.53.2:5002
+    ```
 
-```Environment tab=
-SYNSE_PLUGIN_TCP="localhost:5001,192.1.53.2:5002"
-```
+=== "Environment"
+    ```.env
+    SYNSE_PLUGIN_TCP="localhost:5001,192.1.53.2:5002"
+    ```
 
 #### Unix
 
@@ -163,15 +168,17 @@ SYNSE_PLUGIN_TCP="localhost:5001,192.1.53.2:5002"
 | ***env variable*** | `SYNSE_PLUGIN_UNIX` |
 | ***default*** | -- |
 
-```YAML tab=
-plugin:
-  unix:
-  - /tmp/example.sock
-```
+=== "YAML"
+    ```yaml
+    plugin:
+      unix:
+      - /tmp/example.sock
+    ```
 
-```Environment tab=
-SYNSE_PLUGIN_UNIX="/tmp/example.sock"
-```
+=== "Environment"
+    ```.env
+    SYNSE_PLUGIN_UNIX="/tmp/example.sock"
+    ```
 
 !!! note
     When registering a plugin via unix socket, Synse Server needs access to that socket. If the
@@ -200,16 +207,18 @@ Examples of using Kubernetes discovery can be found on the [Advanced Usage](adva
 | ***env variable*** | `SYNSE_PLUGIN_DISCOVER_KUBERNETES_NAMESPACE` |
 | ***default*** | 'default' |
 
-```YAML tab=
-plugin:
-  discover:
-    kubernetes:
-      namespace: default
-```
+=== "YAML"
+    ```yaml
+    plugin:
+      discover:
+        kubernetes:
+          namespace: default
+    ```
 
-```Environment tab=
-SYNSE_PLUGIN_DISCOVER_KUBERNETES_NAMESPACE=default
-```
+=== "Environment"
+    ```.env
+    SYNSE_PLUGIN_DISCOVER_KUBERNETES_NAMESPACE=default
+    ```
 
 ***Kubernetes Endpoint Labels***
 
@@ -221,20 +230,22 @@ SYNSE_PLUGIN_DISCOVER_KUBERNETES_NAMESPACE=default
 | ***env variable*** | `SYNSE_PLUGIN_DISCOVER_KUBERNETES_ENDPOINTS_LABELS_<KEY>` |
 | ***default*** | -- |
 
-```YAML tab=
-plugin:
-  discover:
-    kubernetes:
-      endpoints:
-        labels:
-          app: synse
-          foo: bar
-```
+=== "YAML"
+    ```yaml
+    plugin:
+      discover:
+        kubernetes:
+          endpoints:
+            labels:
+              app: synse
+              foo: bar
+    ```
 
-```Environment tab=
-SYNSE_PLUGIN_DISCOVER_KUBERNETES_ENDPOINTS_LABELS_APP=synse
-SYNSE_PLUGIN_DISCOVER_KUBERNETES_ENDPOINTS_LABELS_FOO=bar
-```
+=== "Environment"
+    ```.env
+    SYNSE_PLUGIN_DISCOVER_KUBERNETES_ENDPOINTS_LABELS_APP=synse
+    SYNSE_PLUGIN_DISCOVER_KUBERNETES_ENDPOINTS_LABELS_FOO=bar
+    ```
 
 -----
 
@@ -257,11 +268,12 @@ Configuration options for Synse Server caches. There are two caches in the serve
 | ***env variable*** | -- |
 | ***default*** | 180 |
 
-```YAML tab=
-cache:
-  device:
-    rebuild_every: 180  # three minutes
-```
+=== "YAML"
+    ```yaml
+    cache:
+      device:
+        rebuild_every: 180  # three minutes
+    ```
 
 #### Plugin
 
@@ -275,11 +287,12 @@ cache:
 | ***env variable*** | -- |
 | ***default*** | 120 |
 
-```YAML tab=
-cache:
-  plugin:
-    refresh_every: 120  # two minutes
-```
+=== "YAML"
+    ```yaml
+    cache:
+      plugin:
+        refresh_every: 120  # two minutes
+    ```
 
 #### Transaction
 
@@ -293,11 +306,12 @@ cache:
 | ***env variable*** | -- |
 | ***default*** | 300 |
 
-```YAML tab=
-cache:
-  transaction:
-    ttl: 300  # five minutes
-```
+=== "YAML"
+    ```yaml
+    cache:
+      transaction:
+        ttl: 300  # five minutes
+    ```
 
 -----
 
@@ -315,10 +329,11 @@ Configuration options for requests made from the server to plugins via the inter
 | ***env variable*** | -- |
 | ***default*** | 3 |
 
-```YAML tab=
-grpc:
-  timeout: 3
-```
+=== "YAML"
+    ```yaml
+    grpc:
+      timeout: 3
+    ```
 
 #### TLS
 
@@ -334,15 +349,17 @@ TLS configurations for the internal gRPC client used to communicate with plugins
 | ***env variable*** | `SYNSE_GRPC_TLS_CERT` |
 | ***default*** | -- |
 
-```YAML tab=
-grpc:
-  tls:
-    cert: /path/to/cert.pem
-```
+=== "YAML"
+    ```yaml
+    grpc:
+      tls:
+        cert: /path/to/cert.pem
+    ```
 
-```Environment tab=
-SYNSE_GRPC_TLS_CERT="/path/to/cert.pem"
-```
+=== "Environment"
+    ```.env
+    SYNSE_GRPC_TLS_CERT="/path/to/cert.pem"
+    ```
 
 -----
 
@@ -360,14 +377,16 @@ Configuration options for securing the server's HTTP/WebSocket APIs.
 | ***env variable*** | `SYNSE_SSL_CERT` |
 | ***default*** | -- |
 
-```YAML tab=
-ssl:
-  cert: /path/to/cert.pem
-```
+=== "YAML"
+    ```yaml
+    ssl:
+      cert: /path/to/cert.pem
+    ```
 
-```Environment tab=
-SYNSE_SSL_CERT="/path/to/cert.pem"
-```
+=== "Environment"
+    ```.env
+    SYNSE_SSL_CERT="/path/to/cert.pem"
+    ```
 
 ***Key***
 
@@ -379,14 +398,16 @@ SYNSE_SSL_CERT="/path/to/cert.pem"
 | ***env variable*** | `SYNSE_SSL_KEY` |
 | ***default*** | -- |
 
-```YAML tab=
-ssl:
-  key: /path/to/key.key
-```
+=== "YAML"
+    ```yaml
+    ssl:
+      key: /path/to/key.key
+    ```
 
-```Environment tab=
-SYNSE_SSL_KEY="/path/to/key.key"
-```
+=== "Environment"
+    ```.env
+    SYNSE_SSL_KEY="/path/to/key.key"
+    ```
 
 -----
 
@@ -405,14 +426,16 @@ Configuration options for exposing application metrics via Prometheus exporter.
 | ***default*** | `false` |
 | ***supported*** | `true`, `false` |
 
-```YAML tab=
-metrics:
-  enabled: true
-```
+=== "YAML"
+    ```yaml
+    metrics:
+      enabled: true
+    ```
 
-```Environment tab=
-SYNSE_METRICS_ENABLED=true
-```
+=== "Environment"
+    ```.env
+    SYNSE_METRICS_ENABLED=true
+    ```
 
 -----
 

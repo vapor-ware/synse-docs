@@ -105,9 +105,10 @@ restrictions on the values and any defaults.
 | ***type*** | int |
 | ***key*** | `version` |
 
-```YAML tab=
-version: 3
-```
+=== "YAML"
+    ```yaml
+    version: 3
+    ```
 
 -----
 
@@ -121,9 +122,10 @@ version: 3
 | ***default*** | `false` |
 | ***supported*** | `true`, `false` |
 
-```YAML tab=
-debug: true
-```
+=== "YAML"
+    ```yaml
+    debug: true
+    ```
 
 -----
 
@@ -143,10 +145,11 @@ Group key: `id`
 | ***default*** | `false` |
 | ***supported*** | `true`, `false` |
 
-```YAML tab=
-id:
-  useMachineID: true
-```
+=== "YAML"
+    ```yaml
+    id:
+      useMachineID: true
+    ```
 
 #### Use Plugin Tag
 
@@ -158,10 +161,11 @@ id:
 | ***default*** | `true` |
 | ***supported*** | `true`, `false` |
 
-```YAML tab=
-id:
-  usePluginTag: true
-```
+=== "YAML"
+    ```yaml
+    id:
+      usePluginTag: true
+    ```
 
 #### Use Env
 
@@ -172,12 +176,13 @@ id:
 | ***key*** | `useEnv` |
 | ***default*** | `[]` |
 
-```YAML tab=
-id:
-  useEnv:
-  - ENV_1
-  - ENV_2
-```
+=== "YAML"
+    ```yaml
+    id:
+      useEnv:
+      - ENV_1
+      - ENV_2
+    ```
 
 #### Use Custom
 
@@ -188,12 +193,13 @@ id:
 | ***key*** | `useCustom` |
 | ***default*** | `[]` |
 
-```YAML tab=
-id:
-  useCustom:
-  - foo
-  - bar
-```
+=== "YAML"
+    ```yaml
+    id:
+      useCustom:
+      - foo
+      - bar
+    ```
 
 -----
 
@@ -213,10 +219,11 @@ Group key: `metrics`
 | ***default*** | `false` |
 | ***supported*** | `true`, `false` |
 
-```YAML tab=
-metrics:
-  enabled: true
-```
+=== "YAML"
+    ```yaml
+    metrics:
+      enabled: true
+    ```
 
 -----
 
@@ -236,10 +243,11 @@ Group key: `settings`
 | ***default*** | `parallel` |
 | ***supported*** | `serial`, `parallel` |
 
-```YAML tab=
-settings:
-  mode: parallel
-```
+=== "YAML"
+    ```yaml
+    settings:
+      mode: parallel
+    ```
 
 #### Listen
 
@@ -264,11 +272,12 @@ Group key: `listen`
 | ***default*** | `false` |
 | ***supported*** | `true`, `false` |
 
-```YAML tab=
-settings:
-  listen:
-    disable: false
-```
+=== "YAML"
+    ```yaml
+    settings:
+      listen:
+        disable: false
+    ```
 
 #### Read
 
@@ -286,11 +295,12 @@ Group key: `read`
 | ***default*** | `false` |
 | ***supported*** | `true`, `false` |
 
-```YAML tab=
-settings:
-  read:
-    disable: false
-```
+=== "YAML"
+    ```yaml
+    settings:
+      read:
+        disable: false
+    ```
 
 ***Interval***
 
@@ -302,11 +312,12 @@ settings:
 | ***default*** | `1s` |
 | ***supported*** | [duration](https://golang.org/pkg/time/#example_Duration) strings |
 
-```YAML tab=
-settings:
-  read:
-    interval: 1s
-```
+=== "YAML"
+    ```yaml
+    settings:
+      read:
+        interval: 1s
+    ```
 
 ***Delay***
 
@@ -318,11 +329,12 @@ settings:
 | ***default*** | `0s` |
 | ***supported*** | [duration](https://golang.org/pkg/time/#example_Duration) strings |
 
-```YAML tab=
-settings:
-  read:
-    delay: 1s
-```
+=== "YAML"
+    ```yaml
+    settings:
+      read:
+        delay: 1s
+    ```
 
 ***QueueSize***
 
@@ -333,11 +345,12 @@ settings:
 | ***key*** | `queueSize` |
 | ***default*** | `128` |
 
-```YAML tab=
-settings:
-  read:
-    queueSize: 128
-```
+=== "YAML"
+    ```yaml
+    settings:
+      read:
+        queueSize: 128
+    ```
 
 #### Write 
 
@@ -355,11 +368,12 @@ Group key: `write`
 | ***default*** | `false` |
 | ***supported*** | `true`, `false` |
 
-```YAML tab=
-settings:
-  write:
-    disable: false
-```
+=== "YAML"
+    ```yaml
+    settings:
+      write:
+        disable: false
+    ```
 
 ***Interval***
 
@@ -371,11 +385,12 @@ settings:
 | ***default*** | `1s` |
 | ***supported*** | [duration](https://golang.org/pkg/time/#example_Duration) strings |
 
-```YAML tab=
-settings:
-  write:
-    interval: 1s
-```
+=== "YAML"
+    ```yaml
+    settings:
+      write:
+        interval: 1s
+    ```
 
 ***Delay***
 
@@ -387,11 +402,12 @@ settings:
 | ***default*** | `0s` |
 | ***supported*** | [duration](https://golang.org/pkg/time/#example_Duration) strings |
 
-```YAML tab=
-settings:
-  write:
-    delay: 1s
-```
+=== "YAML"
+    ```yaml
+    settings:
+      write:
+        delay: 1s
+    ```
 
 ***QueueSize***
 
@@ -402,11 +418,12 @@ settings:
 | ***key*** | `queueSize` |
 | ***default*** | `128` |
 
-```YAML tab=
-settings:
-  write:
-    queueSize: 128
-```
+=== "YAML"
+    ```yaml
+    settings:
+      write:
+        queueSize: 128
+    ```
 
 ***BatchSize***
 
@@ -417,11 +434,12 @@ settings:
 | ***key*** | `batchSize` |
 | ***default*** | `128` |
 
-```YAML tab=
-settings:
-  write:
-    batchSize: 128
-```
+=== "YAML"
+    ```yaml
+    settings:
+      write:
+        batchSize: 128
+    ```
 
 #### Transaction
 
@@ -439,11 +457,12 @@ Group key: `transaction`
 | ***default*** | `5m` |
 | ***supported*** | [duration](https://golang.org/pkg/time/#example_Duration) strings |
 
-```YAML tab=
-settings:
-  transaction:
-    ttl: 5m
-```
+=== "YAML"
+    ```yaml
+    settings:
+      transaction:
+        ttl: 5m
+    ```
 
 #### Limiter
 
@@ -460,11 +479,12 @@ Group key: `limiter`
 | ***key*** | `rate` |
 | ***default*** | `0` |
 
-```YAML tab=
-settings:
-  limiter:
-    rate: 0
-```
+=== "YAML"
+    ```yaml
+    settings:
+      limiter:
+        rate: 0
+    ```
 
 ***Burst***
 
@@ -475,11 +495,12 @@ settings:
 | ***key*** | `burst` |
 | ***default*** | `0` |
 
-```YAML tab=
-settings:
-  limiter:
-    burst: 0
-```
+=== "YAML"
+    ```yaml
+    settings:
+      limiter:
+        burst: 0
+    ```
 
 #### Cache
 
@@ -497,11 +518,12 @@ Group key: `cache`
 | ***default*** | `false` |
 | ***supported*** | `true`, `false` |
 
-```YAML tab=
-settings:
-  cache:
-    enabled: true
-```
+=== "YAML"
+    ```yaml
+    settings:
+      cache:
+        enabled: true
+    ```
 
 ***TTL***
 
@@ -513,11 +535,12 @@ settings:
 | ***default*** | `3m` |
 | ***supported*** | [duration](https://golang.org/pkg/time/#example_Duration) strings |
 
-```YAML tab=
-settings:
-  cache:
-    ttl: 3m
-```
+=== "YAML"
+    ```yaml
+    settings:
+      cache:
+        ttl: 3m
+    ```
 
 -----
 
@@ -537,10 +560,11 @@ Group key: `network`
 | ***default*** | `tcp` |
 | ***supported*** | `tcp`, `unix` |
 
-```YAML tab=
-network:
-  type: tcp
-```
+=== "YAML"
+    ```yaml
+    network:
+      type: tcp
+    ```
 
 #### Address
 
@@ -550,10 +574,11 @@ network:
 | ***type*** | string |
 | ***key*** | `address` |
 
-```YAML tab=
-network:
-  address: "0.0.0.0:5001"
-```
+=== "YAML"
+    ```yaml
+    network:
+      address: "0.0.0.0:5001"
+    ```
 
 #### TLS
 
@@ -569,11 +594,12 @@ Group key: `tls`
 | ***type*** | string |
 | ***key*** | `cert` |
 
-```YAML tab=
-network:
-  tls:
-    cert: /path/to/cert.crt
-```
+=== "YAML"
+    ```yaml
+    network:
+      tls:
+        cert: /path/to/cert.crt
+    ```
 
 ***Key***
 
@@ -583,11 +609,12 @@ network:
 | ***type*** | string |
 | ***key*** | `key` |
 
-```YAML tab=
-network:
-  tls:
-    key: /path/to/key.key
-```
+=== "YAML"
+    ```yaml
+    network:
+      tls:
+        key: /path/to/key.key
+    ```
 
 ***CA Certs***
 
@@ -597,12 +624,13 @@ network:
 | ***type*** | list[string] |
 | ***key*** | `caCerts` |
 
-```YAML tab=
-network:
-  tls:
-    caCerts: 
-    - /path/to/cacerts.ca
-```
+=== "YAML"
+    ```yaml
+    network:
+      tls:
+        caCerts: 
+        - /path/to/cacerts.ca
+    ```
 
 ***Skip Verify***
 
@@ -614,11 +642,12 @@ network:
 | ***default*** | `false` |
 | ***supported*** | `true`, `false` |
 
-```YAML tab=
-network:
-  tls:
-    skipVerify: true
-```
+=== "YAML"
+    ```yaml
+    network:
+      tls:
+        skipVerify: true
+    ```
 
 -----
 
@@ -637,12 +666,13 @@ Group key: `dynamicRegistration`
 | ***key*** | `config` |
 | ***default*** | `[]` |
 
-```YAML tab=
-dynamicRegistration:
-  config:
-  - foo: 1
-    bar: "baz"
-```
+=== "YAML"
+    ```yaml
+    dynamicRegistration:
+      config:
+      - foo: 1
+        bar: "baz"
+    ```
 
 -----
 
@@ -661,10 +691,11 @@ Group key: `health`
 | ***key*** | `healthFile` |
 | ***default*** | `/etc/synse/plugin/healthy` |
 
-```YAML tab=
-health:
-  healthFile: /etc/synse/plugin/healthy
-```
+=== "YAML"
+    ```yaml
+    health:
+      healthFile: /etc/synse/plugin/healthy
+    ```
 
 #### Update Interval
 
@@ -676,10 +707,11 @@ health:
 | ***default*** | `30s` |
 | ***supported*** | [duration](https://golang.org/pkg/time/#example_Duration) strings |
 
-```YAML tab=
-health:
-  updateInterval: 30s
-```
+=== "YAML"
+    ```yaml
+    health:
+      updateInterval: 30s
+    ```
 
 #### Checks
 
@@ -697,11 +729,12 @@ Group key: `checks`
 | ***default*** | `false` |
 | ***supported*** | `true`, `false` |
 
-```YAML tab=
-health:
-  checks:
-    disableDefaults: false
-```
+=== "YAML"
+    ```yaml
+    health:
+      checks:
+        disableDefaults: false
+    ```
 
 ## Example
 
