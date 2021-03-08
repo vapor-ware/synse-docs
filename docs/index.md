@@ -53,7 +53,7 @@ from simply blinking an LED indicator, to remotely managing a building's HVAC sy
 
 ### Server
 
-The server ("Sysne Server") provides a simple HTTP and WebSocket API which makes it easy to interact
+The server ("Synse Server") provides a simple HTTP and WebSocket API which makes it easy to interact
 with the devices exposed by plugins. It routes incoming requests to the appropriate plugin
 for the specified device, so the user does not need to worry about where the device is or
 what protocol it speaks. The API provides uniform access over HTTP (or WebSocket), meaning that
