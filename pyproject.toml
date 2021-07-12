@@ -8,7 +8,7 @@ license = "GPL-3.0-or-later"
 [tool.poetry.dependencies]
 python = "^3.6"
 mkdocs = "^1.2.1"
-mkdocs-material = "^7.1.9"
+mkdocs-material = "^7.1.10"
 pymdown-extensions = "^8.2"
 pygments = "^2.9.0"
 
