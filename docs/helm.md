@@ -5,7 +5,7 @@ hero: Helm Charts
 We provide a [Helm](https://helm.sh/) chart repo for various Synse components to help make
 deploying Synse on [Kubernetes](https://kubernetes.io/) fast and simple.
 
-You can add our helm chart repo to your local helm server with
+You can add our helm chart repo to your local helm server with:
 
 === "helm3"
 
